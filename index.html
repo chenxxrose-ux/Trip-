@@ -4,8 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>出國旅遊清單</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0e6e78">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="旅遊清單">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
 <style>
 html{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}
 
@@ -14,9 +20,9 @@ html{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]
   --bg:#f3f5f7; --paper:#ffffff; --ink:#14212b; --muted:#5d6b76; --line:#d9e0e5;
   --accent:#0e6e78; --accent-soft:#dcefef; --stamp:#b3263e; --stamp-soft:#f7e3e6;
   --ok:#2f7d4a; --warn:#a36a00; --warn-soft:#fbefd6;
-  --f-display:"Noto Serif TC","Songti TC",serif;
-  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
-  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --f-display:"Songti TC","Noto Serif TC","PMingLiU",serif;
+  --f-body:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:ui-monospace,"SF Mono",Menlo,"Roboto Mono",monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0f171d; --paper:#17222a; --ink:#e6edf1; --muted:#9aa8b2; --line:#2a3842;
@@ -251,6 +257,15 @@ th{font-size:.78rem;color:var(--muted);font-weight:500}
       <h3>我的備註</h3>
       <textarea id="memo" class="inp" rows="5" placeholder="飯店地址、航班編號、訂位代號、緊急聯絡人……"></textarea>
     </div>
+    <div class="box" id="backupBox">
+      <div class="cat-head"><h3>備份與還原</h3><span class="small muted" id="bkLast"></span></div>
+      <div class="small muted">清單只存在這台手機的瀏覽器裡。清除瀏覽紀錄或換手機前，先下載備份檔或把備份文字貼到 LINE 給自己。</div>
+      <div class="chips"><button class="btn" id="bkDownload">下載備份檔</button><button class="btn ghost" id="bkCopy">複製備份文字</button></div>
+      <h3 style="margin-top:6px">從備份還原</h3>
+      <div class="add-row"><input type="file" id="bkFile" accept=".json,application/json,text/plain" class="inp" aria-label="選擇備份檔"></div>
+      <textarea id="bkText" class="inp" rows="3" placeholder="或把備份文字貼在這裡"></textarea>
+      <div class="chips"><button class="btn ghost" id="bkRestore">還原</button><button class="btn" id="bkConfirm" hidden style="background:var(--stamp);border-color:var(--stamp)">確定覆蓋目前的清單</button></div>
+    </div>
     <div class="small muted">勾選和輸入的內容只存在這台裝置的瀏覽器裡。簽證與入境規定常變動，出發前請到 <a href="https://www.boca.gov.tw" target="_blank" rel="noopener">外交部領事事務局</a> 或目的地官方網站確認。</div>
   </section>
 </div>
@@ -386,45 +401,23 @@ const DEFAULT_PACK={'證件':['護照（效期 6 個月以上）','機票／電�
 const TODO_DEFAULT=['確認護照效期','查外交部旅遊警示燈號','登錄外交部「出國登錄」','買旅遊平安險與不便險','換外幣／開通海外刷卡','申請入境卡或電子簽','買 eSIM 或網卡','線上報到、選位','查行李托運重量限制'];
 
 let S;const KEY='trip-v2';
+function plusDays(n){return new Date(Date.now()+8*36e5+n*864e5).toISOString().slice(0,10)}
 function load(){try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
  if(S){if(S.origAp===undefined)S.origAp=S.orig==='TW'?'TPE':'';return}
  let old=null;try{old=JSON.parse(localStorage.getItem('trip-v1'))}catch(e){}
  const items={};let id=0;for(const[c,arr]of Object.entries(DEFAULT_PACK))items[c]=arr.map(t=>({id:id++,t,d:false}));
- S={orig:'TW',origAp:'TPE',dest:'JP',city:'tokyo',cityTxt:'',dep:'2026-11-14',ret:'2026-11-19',example:true,items,nid:id,todo:TODO_DEFAULT.map((t,i)=>({id:i,t,d:false})),memo:'',rates:{},
-  log:{'JPY>TWD':[{d:'2026-09-15',r:0.208,ex:1},{d:'2026-09-29',r:0.206,ex:1},{d:'2026-10-08',r:0.204,ex:1}]},tab:'pack',amt:10000,ai:{}};
+ S={orig:'TW',origAp:'TPE',dest:'JP',city:'tokyo',cityTxt:'',dep:plusDays(30),ret:plusDays(35),example:true,items,nid:id,todo:TODO_DEFAULT.map((t,i)=>({id:i,t,d:false})),memo:'',rates:{},
+  log:{},tab:'pack',amt:10000,ai:{}};
  if(old){if(old.items){S.items=old.items;S.nid=old.nid}if(old.todo)S.todo=old.todo;S.memo=old.memo||'';S.dep=old.dep||S.dep;S.ret=old.ret||S.ret;S.example=old.example;
   if(old.log)for(const[k,v]of Object.entries(old.log))S.log[k+'>TWD']=v;if(old.rates)for(const[k,v]of Object.entries(old.rates))S.rates[k+'>TWD']=v}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}schedulePush()}
-
-// ---------- 雲端同步與即時資料 ----------
-const CLIENT=Math.random().toString(36).slice(2);let dirty=false;let DB=null,UID=null,pushT=null,syncState='local',live={fx:null,forecast:null,safety:null},liveUnsub=[],liveKey='';
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let live={fx:null,forecast:null,safety:null};
 const hash=s=>{let h=5381;for(const ch of s)h=(h*33+ch.codePointAt(0))>>>0;return h.toString(36)};
 const placeId=()=>`${S.dest}-${city()?S.city:(S.cityTxt?'x'+hash(S.cityTxt):'main')}`;
 const fdt=iso=>{if(!iso)return'';const d=new Date(iso);if(isNaN(d))return String(iso);const t=new Date(d.getTime()+8*36e5);return `${t.getUTCMonth()+1}月${t.getUTCDate()}日（${WD[t.getUTCDay()]}）${String(t.getUTCHours()).padStart(2,'0')}:${String(t.getUTCMinutes()).padStart(2,'0')}`};
-function tripDoc(){const c=city();return{orig:S.orig,dest:S.dest,destName:cname(S.dest),city:S.city||'',cityName:c?c.n:(S.cityTxt||''),dep:S.dep||'',ret:S.ret||'',updatedAt:new Date().toISOString()}}
-function schedulePush(){dirty=true;if(!DB)return;clearTimeout(pushT);pushT=setTimeout(pushNow,700)}
-const myDoc=()=>DB.collection('data/users/'+UID).doc('state');
-let lastWanted='';
-async function pushNow(){if(!DB||!UID||syncState==='readonly')return;clearTimeout(pushT);const{tab,...rest}=S;
- try{await myDoc().set({s:JSON.parse(JSON.stringify(rest)),savedAt:new Date().toISOString(),by:CLIENT});dirty=false;syncState='cloud'}catch(e){syncState=e?.code==='invalid_argument'?'readonly':'error'}
- // 告訴每日更新任務：有人要去這個地方（只寫地點與日期，不含個人清單）
- const w=placeId(),t=tripDoc(),sig=w+t.dep+t.ret;
- if(syncState==='cloud'&&sig!==lastWanted){try{await DB.doc('wanted/'+w).set({dest:t.dest,destName:t.destName,cityName:t.cityName,dep:t.dep,ret:t.ret,updatedAt:t.updatedAt});lastWanted=sig}catch(e){}}
- renderLive()}
-function watchLive(){if(!DB)return;const k=placeId();if(k===liveKey)return;liveKey=k;liveUnsub.forEach(u=>{try{u()}catch(e){}});
- live.forecast=null;live.safety=null;
- liveUnsub=[DB.doc('live/forecast-'+k).onSnapshot(s=>{live.forecast=s.exists?s.data():null;all()},()=>{}),
-  DB.doc('live/safety-'+S.dest).onSnapshot(s=>{live.safety=s.exists?s.data():null;all()},()=>{})]}
-try{Promise.all([window.claude?.use?.('db'),window.claude?.use?.('user')]).then(async([db,user])=>{if(!db)return;DB=db;
- db.doc('live/fx').onSnapshot(s=>{live.fx=s.exists?s.data():null;all()},()=>{});watchLive();
- try{UID=user?await user.id():null}catch(e){UID=null}
- if(!UID){renderLive();return}
- myDoc().onSnapshot(snap=>{if(snap.metadata?.hasPendingWrites)return;
-  if(snap.exists){const raw=snap.data()||{},d=raw.s;if(d&&raw.by!==CLIENT&&!dirty){const tab=S.tab;S=Object.assign({},S,d,{tab});try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}all();setTab(tab||'pack')}syncState='cloud'}
-  else pushNow();renderLive()},()=>{syncState='error';renderLive()});
-}).catch(()=>{})}catch(e){}
-function renderLive(){const el=$('liveBar');if(!el)return;const fx=live.fx,fc=live.forecast;
- el.innerHTML=`<span><b>即時資訊</b>：匯率 ${fx?fdt(fx.fetchedAt):'載入中'}${fc?` · 天氣預報 ${fdt(fc.fetchedAt)}`:''}</span><span class="muted">每次打開網頁自動抓最新資料 · 清單存在這台裝置</span>`}
+function renderLive(){const el=$('liveBar');if(!el)return;const fx=live.fx,fc=live.forecast,off=navigator.onLine===false;
+ el.innerHTML=`<span><b>即時資訊</b>：匯率 ${fx?fdt(fx.fetchedAt):(off?'尚無資料':'載入中')}${fc?` · 天氣預報 ${fdt(fc.fetchedAt)}`:''}</span><span class="muted">${off?'<b style="color:var(--warn)">目前離線</b>，顯示上次抓到的資料 · ':'打開網頁自動抓最新資料 · '}清單存在這台裝置${S.lastBackup?`，上次備份 ${fdt(S.lastBackup)}`:'，<a href="#" data-tabgo="notes">記得備份</a>'}</span>`}
+window.addEventListener('online',()=>{loadFx();loadAdvisory();fetchKey='';all()});window.addEventListener('offline',()=>renderLive());
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1600)}
@@ -434,31 +427,7 @@ function today(){return new Date(Date.now()+8*36e5).toISOString().slice(0,10)}
 const city=()=>CITY[S.dest]?.[S.city]||null;
 const destLabel=()=>cname(S.dest)+(city()?'・'+city().n:(S.cityTxt?'・'+S.cityTxt:''));
 function tripMonths(){if(!S.dep)return[];const a=+S.dep.slice(5,7)-1,b=S.ret?+S.ret.slice(5,7)-1:a;const out=[a];let m=a;while(m!==b&&out.length<12){m=(m+1)%12;out.push(m)}return out}
-const aiKey=()=>[S.orig,S.dest,city()?'':S.cityTxt,tripMonths().join('.')].join('|');
-const AI=()=>S.ai?.[aiKey()]||null;
-
-// ---------- Claude 補充資料 ----------
-let SAMPLE=null,aiBusy=false,aiErr='';
-try{window.claude?.use?.('sample').then(s=>{SAMPLE=s;all()}).catch(()=>{})}catch(e){}
-function aiBox(what){return '';
- if(AI())return `<div class="small muted">以上「${what}」由 Claude 依訓練資料整理，可能不是最新，出發前請到官方網站查證。<button class="btn ghost small" data-ai="1" style="margin-left:6px">重新查詢</button></div>`;
- if(!SAMPLE)return `<div class="callout">這個目的地沒有內建的${what}資料，請出發前查詢官方資訊。</div>`;
- return `<div class="ai"><div><b>這個目的地沒有內建的${what}資料。</b></div><div class="small">可以請 Claude 依你的出發地與日期整理：天氣穿搭、退稅、入境規定、插座、安全提醒，一次補齊。會使用你的 Claude 用量。</div>
- ${aiBusy?'<div class="small">Claude 整理中，約需 10–60 秒…</div>':`<div><button class="btn" data-ai="1">請 Claude 補上資料</button></div>`}${aiErr?`<div class="small" style="color:var(--stamp)">${esc(aiErr)}</div>`:''}</div>`}
-async function askAI(){if(!SAMPLE||aiBusy)return;aiBusy=true;aiErr='';all();
- const o=cname(S.orig),d=cname(S.dest),c=city()?city().n:S.cityTxt,ms=tripMonths().map(m=>m+1);
- const prompt=`你是旅遊資訊助理。旅客持「${o}」護照，從${o}出發，前往「${d}」${c?'的'+c:''}，日期 ${S.dep||'未定'} 到 ${S.ret||'未定'}（涵蓋月份：${ms.join('、')||'未定'}）。
-請用繁體中文（台灣用語）整理，只回覆一個 JSON 物件，不要其他文字：
-{"city":"氣候參考城市","climate":[{"month":11,"hi":20,"lo":12,"rain":1,"wear":"一句穿搭建議"}],"rainNote":"降雨、颱風、颶風或下雪等一句提醒",
-"tax":{"available":true,"tax":"稅名與稅率","threshold":"最低消費門檻","steps":["退稅步驟"],"deadline":"帶出境期限","note":"其他提醒"},
-"entry":"以此護照前往的簽證與入境規定","plug":"插座型式與電壓","tips":["當地生活提醒，最多4條"],
-"safety":{"level":"none|gray|yellow|orange|red","why":"為什麼危險（戰爭、恐攻、治安、政治、天災等），沒有就空字串","watch":["要注意什麼，最多4條"]},
-"customs":"回到${o}入境時的免稅額與禁止攜帶物重點"}
-climate 只列涵蓋的月份，hi/lo 為歷年月平均攝氏溫度整數；rain：0 少雨、1 偶有雨、2 雨季或颱風季。沒有退稅制度時 available 為 false 並在 note 說明。safety 的 level 以台灣外交部旅遊警示燈號為準（若出發地不是台灣，以該國政府旅遊警示為準）。不確定的內容請寫「請出發前查證」。`;
- try{const r=await SAMPLE.json(prompt,{modelTier:'default'});if(!r||typeof r!=='object')throw{code:'invalid_json'};S.ai=S.ai||{};S.ai[aiKey()]=r;save();toast('資料已補上')}
- catch(e){aiErr={not_granted:'沒有取得使用 Claude 的許可。',sampling_disabled:'這個帳號無法使用 Claude。',rate_limited:'查詢太頻繁，請稍後再試。',invalid_json:'回覆格式有誤，請再試一次。'}[e?.code]||'查詢失敗，請稍後再試。';if(e?.code==='not_granted'||e?.code==='sampling_disabled')SAMPLE=null}
- aiBusy=false;all()}
-document.addEventListener('click',e=>{if(e.target.closest('[data-ai]'))askAI()});
+const SAMPLE=null,AI=()=>null;function aiBox(){return ''}
 
 // ---------- 行程 ----------
 function fillSelects(){
@@ -548,10 +517,10 @@ function forecastHtml(){const f=live.forecast,ds=fcDays();
 function tempChart(d,ms){const W=560,H=200,P={l:30,r:8,t:12,b:26};
  const min=Math.min(...d.lo)-3,max=Math.max(...d.hi)+3,y=v=>P.t+(max-v)/(max-min)*(H-P.t-P.b),cw=(W-P.l-P.r)/12;
  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="全年月均溫">`;
- const step=max-min>30?10:5;for(let v=Math.ceil(min/step)*step;v<=max;v+=step)s+=`<line x1="${P.l}" x2="${W-P.r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${P.l-4}" y="${y(v)+4}" text-anchor="end" font-size="10" fill="var(--muted)" font-family="IBM Plex Mono,monospace">${v}°</text>`;
+ const step=max-min>30?10:5;for(let v=Math.ceil(min/step)*step;v<=max;v+=step)s+=`<line x1="${P.l}" x2="${W-P.r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${P.l-4}" y="${y(v)+4}" text-anchor="end" font-size="10" fill="var(--muted)" font-family="ui-monospace,Menlo,monospace">${v}°</text>`;
  for(let i=0;i<12;i++){const on=ms.includes(i),x=P.l+i*cw+cw*.25,w=cw*.5;
   s+=`<rect x="${x}" y="${y(d.hi[i])}" width="${w}" height="${y(d.lo[i])-y(d.hi[i])}" rx="3" fill="${on?'var(--accent)':'var(--line)'}"/>`;
-  if(on)s+=`<text x="${x+w/2}" y="${y(d.hi[i])-3}" text-anchor="middle" font-size="10" fill="var(--ink)" font-family="IBM Plex Mono,monospace">${d.hi[i]}°</text>`;
+  if(on)s+=`<text x="${x+w/2}" y="${y(d.hi[i])-3}" text-anchor="middle" font-size="10" fill="var(--ink)" font-family="ui-monospace,Menlo,monospace">${d.hi[i]}°</text>`;
   if(d.rain[i]===2)s+=`<circle cx="${x+w/2}" cy="${H-P.b+16}" r="3" fill="var(--stamp)"/>`;
   s+=`<text x="${x+w/2}" y="${H-P.b+11}" text-anchor="middle" font-size="10" fill="${on?'var(--ink)':'var(--muted)'}">${i+1}月</text>`}
  return s+`</svg><div class="small muted">長條＝月均低溫到高溫，深色是你的旅行月份；紅點＝雨季。</div>`}
@@ -600,7 +569,7 @@ function renderFx(){const d=dc(),o=oc(),r=rate(),same=d===o;
  if(log.length>1){const f=log[0].r,l=log[log.length-1].r,p=(l-f)/f*100;$('fxChange').innerHTML=`<span class="mono ${p>0?'up':'down'}">${p>0?'▲':'▼'} ${Math.abs(p).toFixed(2)}%</span> <span class="muted">${p>0?'外幣變貴':'外幣變便宜'}</span>`;$('fxSpark').innerHTML=spark(log)}
  else{$('fxChange').textContent='';$('fxSpark').innerHTML=''}}
 function spark(log){const W=560,H=120,P={l:8,r:60,t:14,b:20},rs=log.map(e=>e.r),mn=Math.min(...rs),mx=Math.max(...rs),rg=mx-mn||mx*.01;
- const x=i=>P.l+i/(log.length-1)*(W-P.l-P.r),y=v=>P.t+(mx-v)/rg*(H-P.t-P.b),pts=log.map((e,i)=>`${x(i)},${y(e.r)}`).join(' '),last=log.length-1,T='font-size="10" fill="var(--muted)" font-family="IBM Plex Mono,monospace"';
+ const x=i=>P.l+i/(log.length-1)*(W-P.l-P.r),y=v=>P.t+(mx-v)/rg*(H-P.t-P.b),pts=log.map((e,i)=>`${x(i)},${y(e.r)}`).join(' '),last=log.length-1,T='font-size="10" fill="var(--muted)" font-family="ui-monospace,Menlo,monospace"';
  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="匯率走勢"><line x1="${P.l}" x2="${W-P.r}" y1="${y(mn)}" y2="${y(mn)}" stroke="var(--line)"/><line x1="${P.l}" x2="${W-P.r}" y1="${y(mx)}" y2="${y(mx)}" stroke="var(--line)"/>
  <polygon points="${x(0)},${H-P.b} ${pts} ${x(last)},${H-P.b}" fill="var(--accent-soft)"/><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="${x(last)}" cy="${y(log[last].r)}" r="4" fill="var(--accent)"/>
  <text x="${W-P.r+6}" y="${y(mx)+4}" ${T}>${mx}</text><text x="${W-P.r+6}" y="${y(mn)+4}" ${T}>${mn}</text><text x="${P.l}" y="${H-4}" ${T}>${fdate(log[0].d)}</text><text x="${x(last)}" y="${H-4}" text-anchor="end" ${T}>${fdate(log[last].d)}</text></svg>`}
@@ -633,19 +602,19 @@ let lastYear=null,geoState='',fetchKey='';
 async function loadFx(){
  let d=cacheGet('fx',3*36e5);
  if(!d){try{const j=await getJSON('https://open.er-api.com/v6/latest/USD');if(j.result==='success'){d={rates:j.rates,fetchedAt:j.time_last_update_utc};cacheSet('fx',d)}}catch(e){}}
- if(d){live.fx=d;all()}}
+ if(!d)d=cacheGet('fx',1e15);if(d){live.fx=d;all()}}
 let ADV=null;
 const ADVTXT=['一般注意','提高警覺','避免非必要旅行','避免一切旅行'],ADVLV=['none','note','orange','red'];
 async function loadAdvisory(){let d=cacheGet('adv',12*36e5);
  if(!d){try{const j=await getJSON('https://data.international.gc.ca/travel-voyage/index-updated.json');const out={};
   for(const[k,v]of Object.entries(j.data||{})){const st=+v['advisory-state'];if(isNaN(st))continue;out[(v['country-iso']||k).toUpperCase()]={st,text:v.eng?.['advisory-text']||'',date:v['date-published']?.date||''}}
   if(Object.keys(out).length){d=out;cacheSet('adv',d)}}catch(e){}}
- if(d){ADV=d;all()}}
+ if(!d)d=cacheGet('adv',1e15);if(d){ADV=d;all()}}
 const gsearch=q=>'https://www.google.com/search?q='+encodeURIComponent(q);
 async function placeCoords(){
  const c=city();if(c&&GEO[S.city])return{lat:GEO[S.city][0],lon:GEO[S.city][1],name:c.n};
  if(!S.cityTxt)return null;
- const k='geo:'+S.dest+':'+S.cityTxt;let g=cacheGet(k,30*864e5);
+ const k='geo:'+S.dest+':'+S.cityTxt;let g=cacheGet(k,1e15);
  if(!g){const j=await getJSON(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(S.cityTxt)}&count=1&language=zh&countryCode=${S.dest}`);const r=j.results?.[0];if(!r)return{missing:true};g={lat:r.latitude,lon:r.longitude,name:r.name};cacheSet(k,g)}
  return g}
 const shiftY=s=>{const[y,m,d]=s.split('-');return `${+y-1}-${m}-${d==='29'&&m==='02'?'28':d}`};
@@ -656,12 +625,13 @@ async function loadWeather(){
  if(!p){geoState='nocity';all();return}if(p.missing){geoState='notfound';all();return}
  // 實際預報（16 天內）
  try{const fk='fc:'+p.lat+','+p.lon;let f=cacheGet(fk,3*36e5);
+  if(!f&&navigator.onLine===false)f=cacheGet(fk,1e15);
   if(!f){const j=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${p.lat}&longitude=${p.lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&timezone=auto&forecast_days=16`);
    f={place:p.name,fetchedAt:new Date().toISOString(),source:'https://open-meteo.com/',days:j.daily.time.map((t,i)=>({date:t,hi:Math.round(j.daily.temperature_2m_max[i]),lo:Math.round(j.daily.temperature_2m_min[i]),rainPct:j.daily.precipitation_probability_max[i],desc:WCODE[j.daily.weather_code[i]]||''}))};cacheSet(fk,f)}
   if(key===fetchKey)live.forecast=f}catch(e){}
  // 去年同期實際天氣（任何城市都有）
  if(S.dep&&!city()){try{let a=shiftY(S.dep),b=shiftY(S.ret||S.dep);if(days(a,b)>31)b=new Date(new Date(a).getTime()+31*864e5).toISOString().slice(0,10);
-  const lk='ly:'+p.lat+','+p.lon+a+b;let L=cacheGet(lk,30*864e5);
+  const lk='ly:'+p.lat+','+p.lon+a+b;let L=cacheGet(lk,1e15);
   if(!L){const j=await getJSON(`https://archive-api.open-meteo.com/v1/archive?latitude=${p.lat}&longitude=${p.lon}&start_date=${a}&end_date=${b}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`);
    const by={};j.daily.time.forEach((t,i)=>{const m=+t.slice(5,7)-1;(by[m]=by[m]||[]).push([j.daily.temperature_2m_max[i],j.daily.temperature_2m_min[i],j.daily.precipitation_sum[i]])});
    L={place:p.name,rows:Object.entries(by).map(([m,arr])=>{const n=arr.length,wet=arr.filter(x=>(x[2]||0)>=1).length;return{m:+m,hi:Math.round(arr.reduce((s,x)=>s+x[0],0)/n),lo:Math.round(arr.reduce((s,x)=>s+x[1],0)/n),rain:wet/n>=.5?2:wet/n>=.2?1:0,wear:'',wet,n}})};cacheSet(lk,L)}
@@ -700,7 +670,19 @@ $('logAdd').onclick=()=>{const d=$('logDate').value,r=parseFloat($('logRate').va
 $('logBody').onclick=e=>{const b=e.target.closest('[data-ldel]');if(!b)return;const[d,r]=b.dataset.ldel.split('|'),k=pair();S.log[k]=S.log[k].filter(x=>!(x.d===d&&String(x.r)===r));save();renderFx()};
 document.addEventListener('click',e=>{if(e.target.id==='useLive'){delete S.rates[pair()];save();renderFx();toast('已改回自動匯率')}});
 $('clearLog').onclick=()=>{const k=pair();S.log[k]=(S.log[k]||[]).filter(e=>!e.ex);save();renderFx()};
+function backupText(){const{tab,...rest}=S;return JSON.stringify({app:'trip-checklist',v:2,savedAt:new Date().toISOString(),s:rest})}
+function markBackup(){S.lastBackup=new Date().toISOString();save();renderLive();$('bkLast').textContent='上次備份 '+fdt(S.lastBackup)}
+$('bkDownload').onclick=()=>{try{const b=new Blob([backupText()],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`旅遊清單備份-${today()}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);markBackup();toast('已下載備份檔')}catch(e){toast('無法下載，請改用複製備份文字')}};
+$('bkCopy').onclick=()=>{const t=backupText();const done=()=>{markBackup();toast('已複製，貼到 LINE 或備忘錄保存')};
+ if(navigator.clipboard?.writeText)navigator.clipboard.writeText(t).then(done).catch(()=>{$('bkText').value=t;$('bkText').select();toast('請手動複製下方文字')});else{$('bkText').value=t;$('bkText').select();toast('請手動複製下方文字')}};
+let pendingRestore=null;
+function parseBackup(t){try{const j=JSON.parse(t);if(j&&j.app==='trip-checklist'&&j.s&&j.s.items)return j.s}catch(e){}return null}
+$('bkFile').onchange=e=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('bkText').value=String(r.result||'');$('bkRestore').click()};r.readAsText(f)};
+$('bkRestore').onclick=()=>{const d=parseBackup($('bkText').value.trim());if(!d){toast('這不是有效的備份內容');return}pendingRestore=d;$('bkConfirm').hidden=false;toast('按紅色按鈕確認還原')};
+$('bkConfirm').onclick=()=>{if(!pendingRestore)return;const tab=S.tab;S=Object.assign({},S,pendingRestore,{tab,example:false});pendingRestore=null;$('bkConfirm').hidden=true;$('bkText').value='';save();fetchKey='';all();toast('已還原備份')};
+if(S.lastBackup)$('bkLast').textContent='上次備份 '+fdt(S.lastBackup);
 all();setTab(S.tab||'pack');loadFx();loadAdvisory();
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 
 </body>
