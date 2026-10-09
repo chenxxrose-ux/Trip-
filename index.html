@@ -2,7 +2,7 @@
 <html lang="zh-Hant-TW">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://open.er-api.com https://api.open-meteo.com https://archive-api.open-meteo.com https://geocoding-api.open-meteo.com https://data.international.gc.ca; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://open.er-api.com https://api.open-meteo.com https://archive-api.open-meteo.com https://geocoding-api.open-meteo.com https://data.international.gc.ca https://raw.githubusercontent.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>出國旅遊清單</title>
@@ -93,6 +93,16 @@ button,input,select{font:inherit;color:inherit}
 .rule dt{color:var(--muted);font-size:.88rem}
 .rule dd{margin:0;min-width:0}
 @media (max-width:420px){.rule{grid-template-columns:1fr}.rule dt{margin-top:6px}}
+.bank-list{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.bank-list li{display:grid;grid-template-columns:28px 1fr auto;gap:2px 10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper)}
+.bank-list li.top{border-color:var(--accent);background:var(--accent-soft)}
+.bk-rank{grid-row:span 2;font-weight:700;color:var(--muted);text-align:center}
+.bank-list li.top .bk-rank{color:var(--accent)}
+.bk-name{font-weight:600;min-width:0}
+.bk-rate{font-weight:700;text-align:right}
+.bk-sub{grid-column:2/4;font-size:.8rem;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.bk-free{display:inline-block;font-size:.72rem;font-weight:600;padding:1px 6px;border-radius:999px;background:var(--accent-soft);color:var(--accent);margin-left:4px;vertical-align:1px}
+.tips{margin:6px 0 0;padding-left:1.2em;display:grid;gap:6px}
 .callout{border-left:3px solid var(--warn);background:var(--warn-soft);padding:10px 12px;border-radius:0 8px 8px 0;font-size:.92rem}
 .callout.red{border-color:var(--stamp);background:var(--stamp-soft)}
 .steps{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
@@ -442,6 +452,14 @@ body.compact .route-top{display:none!important}
           <input id="rate" class="inp mono" type="number" step="any" inputmode="decimal" placeholder="請輸入匯率"></div></details>
       </div>
     </div>
+    <div class="box" id="bankBox">
+      <div class="cat-head"><h2>台灣哪家銀行換最划算</h2><span class="small muted mono" id="bankCur"></span></div>
+      <div id="bankBody"><p class="small muted">正在載入各銀行匯率…</p></div>
+    </div>
+    <div class="box" id="localBox">
+      <div class="cat-head"><h2>到當地換錢</h2><span class="small muted" id="localCity"></span></div>
+      <div id="localBody"></div>
+    </div>
     <details class="box acc" id="logBox"><summary><span class="acc-txt"><span class="acc-t">匯率變動紀錄</span><span class="acc-s" id="sumLog"></span></span><svg class="acc-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10l4 4 4-4"/></svg></summary><div class="acc-body"><div class="small" id="fxChange"></div>
       <div class="small muted">每次看到銀行匯率就記一筆（建議記「現金賣出」），觀察漲跌再換匯。</div>
       <div class="add-row">
@@ -468,7 +486,7 @@ body.compact .route-top{display:none!important}
       <ul class="steps small">
         <li>你的清單、行程、記帳<b>只存在這支手機</b>，不會上傳到任何伺服器，網頁作者也看不到。</li>
         <li>沒有 cookie、廣告或任何追蹤分析程式。</li>
-        <li>為了顯示即時資訊，會向這些公開服務送出請求：Open-Meteo（目的地城市座標與日期）、ExchangeRate-API 與加拿大政府（不含任何個人資料）。你的清單、航班、記帳絕不會送出。這些服務和 GitHub（網站主機）會看到你的 IP 位址。</li>
+        <li>為了顯示即時資訊，會向這些公開服務送出請求：Open-Meteo（目的地城市座標與日期）、ExchangeRate-API、加拿大政府與 GitHub 上的銀行匯率資料檔（不含任何個人資料）。你的清單、航班、記帳絕不會送出。這些服務和 GitHub（網站主機）會看到你的 IP 位址。</li>
         <li>點外部連結時，對方網站不會知道你從這裡過去。</li>
         <li>目前版本：<b id="appVer"></b></li>
         <li>網頁只會連到上述公開資料服務，不載入任何外部程式，也不能存取手機上的照片、檔案或其他 App。</li>
@@ -493,7 +511,7 @@ body.compact .route-top{display:none!important}
 <footer class="small muted" style="max-width:760px;margin:0 auto;padding-inline:16px;padding-block:0 calc(var(--nav-h) + 28px + env(safe-area-inset-bottom,0px));font-size:var(--t-xs);line-height:1.6">匯率：<a href="https://www.exchangerate-api.com" target="_blank" rel="noopener noreferrer">Rates By Exchange Rate API</a> · 天氣：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Weather data by Open-Meteo.com</a>（CC BY 4.0） · 國際參考評級：<a href="https://travel.gc.ca/travelling/advisories" target="_blank" rel="noopener noreferrer">Government of Canada</a> · 台灣燈號、退稅、入境規定為內建整理資料，可能已變動</footer>
 <div class="toast" id="toast" role="status"></div>
 <script>
-const APP_VERSION='v9.3';
+const APP_VERSION='v9.4';
 const M=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 const WD=['日','一','二','三','四','五','六'];
 const wd=s=>{if(!s)return'';const[y,m,d]=s.split('-').map(Number);return '（'+WD[new Date(y,m-1,d).getDay()]+'）'};
@@ -677,7 +695,7 @@ function sanitize(d){const out={};if(!d||typeof d!=='object')return out;for(cons
  if(out.memo!=null)out.memo=String(out.memo).slice(0,10000);if(out.cityTxt!=null)out.cityTxt=String(out.cityTxt).slice(0,60);
  if(out.types)out.types=Array.isArray(out.types)?out.types.map(String).slice(0,10):[];
  return out}
-let live={fx:null,forecast:null,safety:null};
+let live={fx:null,forecast:null,safety:null,bank:null};
 const TAXSRC={JP:['日本觀光廳免稅店資訊（JNTO）','https://tax-freeshop.jnto.go.jp/'],KR:['韓國觀光公社','https://korean.visitkorea.or.kr/'],TH:['泰國稅務局（VAT Refund for Tourists）','https://www.rd.go.th/'],SG:['新加坡稅務局 IRAS','https://www.iras.gov.sg/'],VN:['越南稅務總局','https://www.gdt.gov.vn/'],FR:['法國海關','https://www.douane.gouv.fr/'],GB:['英國政府：購物退稅','https://www.gov.uk/tax-on-shopping'],HK:['香港特區政府','https://www.gov.hk/'],MO:['澳門特區政府','https://www.gov.mo/'],US:['美國稅務局 IRS','https://www.irs.gov/']};
 const TAXSUM={JP:'未稅滿 ¥5,000 可退 10%（11/1 起先付後退）',KR:'單筆滿 ₩15,000 可退稅',TH:'同店滿 ฿2,000 可退 7%',SG:'同店滿 S$100 可退 9%',HK:'沒有銷售稅，不用退稅',MO:'沒有銷售稅，不用退稅',VN:'同店滿 ₫200 萬可退稅',FR:'同店滿 €100.01 可退稅',GB:'2021 年起取消旅客退稅',US:'銷售稅一般不退'};
 const setSum=(id,html)=>{const e=$(id);if(e)e.innerHTML=html};
@@ -985,7 +1003,7 @@ function setTab(t,jump){
  document.querySelectorAll('.segpill').forEach(b=>{const on=b.dataset.sec===sec;b.setAttribute('aria-selected',on);if(on&&t==='info')b.scrollIntoView({block:'nearest',inline:'nearest'})});
  save();if(jump){openAcc(jump);setTimeout(()=>$(jump)?.scrollIntoView({behavior:'smooth',block:'start'}),50)}}
 
-function all(){loadWeather();renderLive();renderTrip();renderNotice();renderTypes();renderPack();renderPlan();renderMoney();renderSafe();renderWx();renderTax();renderFx();renderNotes();renderSummaries()}
+function all(){loadWeather();renderLive();renderTrip();renderNotice();renderTypes();renderPack();renderPlan();renderMoney();renderSafe();renderWx();renderTax();renderFx();renderBank();renderNotes();renderSummaries()}
 
 
 // ---------- 獨立網頁版：瀏覽器直接抓公開資料（不使用 Claude） ----------
@@ -995,6 +1013,60 @@ const cacheGet=(k,maxMs)=>{try{const v=JSON.parse(localStorage.getItem('c:'+k));
 const cacheSet=(k,d)=>{try{localStorage.setItem('c:'+k,JSON.stringify({t:Date.now(),d}))}catch(e){}};
 async function getJSON(url){const r=await fetch(url);if(!r.ok)throw new Error(r.status);return r.json()}
 let lastYear=null,geoState='',fetchKey='';
+// ---------- 銀行現鈔比價（GitHub 自動排程抓取比率網資料，網頁只讀結果檔） ----------
+const BANK_URL='https://raw.githubusercontent.com/chenxxrose-ux/Trip-/rates/bankrates.json';
+let bankAll=false,bankErr=false;
+async function loadBank(){
+ let d=cacheGet('bank',2*36e5);
+ if(!d){try{const j=await getJSON(BANK_URL);if(j&&j.v===1&&j.cur&&typeof j.cur==='object'){d=j;cacheSet('bank',d)}}catch(e){}}
+ if(!d){d=cacheGet('bank',1e15);bankErr=!d}
+ live.bank=d||null;renderBank()}
+const MAJOR=['USD','EUR','GBP','AUD','NZD','CAD','CHF','JPY','HKD','SGD','CNY'];
+function bankRows(c){const x=live.bank&&live.bank.cur&&live.bank.cur[c];if(!x||!Array.isArray(x.rows))return[];
+ return x.rows.filter(r=>Array.isArray(r)&&typeof r[0]==='string'&&+r[1]>0).map(r=>({bank:r[0].slice(0,20),sell:+r[1],buy:+r[2]||null,at:String(r[3]||'').slice(0,16),fee:String(r[4]||'').slice(0,60)})).sort((a,b)=>a.sell-b.sell)}
+function bankList(c,rows){const n=bankAll?rows.length:Math.min(5,rows.length),dig=rows[0].sell<0.01?6:4;
+ return `<ol class="bank-list">${rows.slice(0,n).map((b,i)=>{const free=/免/.test(b.fee)&&(!/\d/.test(b.fee)||/(賣|結購)[^,，]*免/.test(b.fee));const get=10000/b.sell;
+  return `<li class="${i===0?'top':''}"><span class="bk-rank">${i+1}</span><span class="bk-name">${esc(b.bank)}${free?'<span class="bk-free">免手續費</span>':''}</span><span class="bk-rate mono">${b.sell.toFixed(dig)}</span>
+  <span class="bk-sub"><span>NT$10,000 ≈ ${fmt(get,get<100?2:0)} ${c}</span><span>${b.at?esc(b.at.slice(5).replace('-','/')):''}</span></span>${b.fee&&!free?`<span class="bk-sub"><span>手續費：${esc(b.fee)}</span></span>`:''}</li>`}).join('')}</ol>
+ ${rows.length>5?`<button class="btn ghost small" id="bankMore" style="margin-top:8px">${bankAll?'只看前 5 名':`顯示全部 ${rows.length} 家`}</button>`:''}`}
+function renderBank(){const d=dc(),o=oc(),body=$('bankBody');if(!body)return;
+ $('bankBox').hidden=$('localBox').hidden=d===o;if(d===o)return;
+ $('bankCur').textContent=o==='TWD'?`TWD → ${d}`:'';renderLocal();
+ const link=c=>`<a href="https://www.findrate.tw/${encodeURIComponent(c)}/" target="_blank" rel="noopener noreferrer">比率網</a>`;
+ if(o!=='TWD'){body.innerHTML='<p class="small muted">銀行比價目前只支援從台灣出發（用台幣換外幣）。</p>';return}
+ if(!live.bank){body.innerHTML=bankErr?`<p class="small muted">目前無法取得銀行比價（可能沒有網路）。可以稍後再開，或直接到 ${link(d)} 查詢。</p>`:'<p class="small muted">正在載入各銀行匯率…</p>';return}
+ const at=new Date(live.bank.fetchedAt),age=(Date.now()-at)/864e5;
+ if(!(age<5)){body.innerHTML=`<div class="callout">比價資料已經 ${isFinite(age)?Math.floor(age)+' 天':'很久'}沒有更新，為避免誤導先不顯示排名。請到 ${link(d)} 查看最新匯率。</div>`;return}
+ let rows=bankRows(d),h='',c=d;
+ if(rows.length<3){const u=bankRows('USD');
+  h+=`<div class="callout">${rows.length?`台灣只有 ${rows.length} 家銀行有 ${esc(d)} 現鈔，價差通常很大。`:`台灣的銀行通常沒有 ${esc(d)} 現鈔。`}常見做法：在台灣先換<b>美金</b>，到當地再換成 ${esc(d)}。下面是美金現鈔比價。</div>`;
+  if(rows.length)h+=`<p class="small muted" style="margin-top:8px">有 ${esc(d)} 現鈔的銀行：${rows.map(b=>`${esc(b.bank)} ${b.sell}`).join('、')}</p>`;
+  rows=u;c='USD'}
+ if(rows.length){h+=`<p class="small muted" style="margin:8px 0 0">比「現鈔賣出」：銀行賣你 1 ${c} 收多少台幣，<b>越低越划算</b>。</p>`+bankList(c,rows)}
+ h+=`<p class="small muted" style="margin-top:10px">資料來源：${link(c)}整理的各銀行牌告匯率，更新於 ${fdt(live.bank.fetchedAt)}。只列出 ${live.bank.freshDays||4} 天內有更新的銀行。排名<b>沒有計入手續費</b>，各家規定不同，換匯前請向銀行確認。各銀行的線上結匯、App 換匯常有匯率優惠，也可以比較。</p>`;
+ body.innerHTML=h}
+const LOCALFX={
+ JP:['日圓在台灣很好換，通常在台灣先換好比在日本換划算。','需要現金時，7-Eleven（Seven Bank）和郵局的 ATM 可用海外卡提款。'],
+ KR:['首爾明洞一帶的私人換錢所匯率通常比機場和銀行好，多數收美金，不少也收台幣。','換之前比較幾家店門口的匯率看板。'],
+ TH:['曼谷的 SuperRich 等換匯所匯率通常比機場好很多；換錢要出示護照。','泰國 ATM 對海外卡每次提款會加收一筆固定手續費（約 200 多泰銖），提款次數越少越划算。'],
+ VN:['台灣的越南盾現鈔選擇少、價差大，常見做法是帶美金到越南再換。','到當地請在銀行或有許可的換匯點換錢。越南法規禁止在未經許可的金店換外幣，曾有人因此被罰款。','越南盾面額很大，20,000 和 500,000 的鈔票顏色相近，付錢前多看一眼位數。'],
+ HK:['市區找換店（例如尖沙咀一帶）匯率通常比機場好；換之前看清楚招牌上的匯率和是否收手續費。','多數地方可用八達通或刷卡，現金不用換太多。'],
+ MO:['澳門普遍收港幣，可以直接帶港幣；找零可能是澳門幣，離開前記得用掉。'],
+ SG:['市區換匯所（例如 Mustafa Centre、Raffles Place 一帶）匯率通常比機場好。','多數地方可刷卡或用手機支付，現金不用換太多。'],
+ MY:['吉隆坡購物中心裡的換匯所（Money Changer）匯率通常比機場好，換前比較幾家。'],
+ CN:['大陸多數店家用支付寶或微信支付，出發前可以在 App 綁定台灣的信用卡，另外準備少量人民幣現金備用。'],
+ PH:['購物中心內的換匯所匯率通常比機場好；選有營業登記的店，換完當場點清。'],
+ ID:['峇里島請選有「Authorized Money Changer」標示的換匯所。路邊小店常有少找錢的情況，換完當場點清。']};
+const LOCAL_GEN=['機場櫃台的匯率通常最差，只換交通費等少量現金就好。','市區的銀行或合法換匯所通常比較好。比較招牌上的匯率，問清楚有沒有手續費，換完當場點清。','想用台灣的金融卡在當地 ATM 提款，出發前要先向銀行開通「海外提款」，並確認密碼和手續費。','刷卡時選擇用<b>當地貨幣</b>付款，不要選台幣（動態貨幣轉換通常比較貴）。','不要跟路上主動搭訕的人換錢。'];
+function renderLocal(){const d=dc(),city=dAp()?dAp().city:(S.cityTxt||cname(S.dest));
+ $('localCity').textContent=city||'';
+ const sp=(LOCALFX[S.dest]||[]).slice();
+ if(!LOCALFX[S.dest]&&['USD','EUR','GBP','AUD','NZD','CAD','CHF','DKK','SEK'].includes(d))sp.push(`${esc(d)} 在台灣很好換，當地換匯點少、匯率通常較差，建議在台灣先換好，或在當地刷卡。`);
+ const q=encodeURIComponent('currency exchange '+(city||cname(S.dest)||''));
+ $('localBody').innerHTML=(sp.length?`<ul class="tips">${sp.map(t=>`<li>${t}</li>`).join('')}</ul>`:'')+
+  `<details class="sub" style="margin-top:8px"><summary>通用換錢守則</summary><ul class="tips">${LOCAL_GEN.map(t=>`<li>${t}</li>`).join('')}</ul></details>`+
+  `<a class="btn ghost small" style="margin-top:10px;display:inline-block" href="https://www.google.com/maps/search/?api=1&query=${q}" target="_blank" rel="noopener noreferrer">在 Google 地圖找${esc(city||'')}附近的換匯所</a>`+
+  `<p class="small muted" style="margin-top:8px">以上是一般經驗，實際匯率與規定以現場和當地公告為準。</p>`}
 async function loadFx(){
  let d=cacheGet('fx',3*36e5);
  if(!d){try{const j=await getJSON('https://open.er-api.com/v6/latest/USD');if(j.result==='success'){d={rates:j.rates,fetchedAt:j.time_last_update_utc};cacheSet('fx',d)}}catch(e){}}
@@ -1068,7 +1140,7 @@ $('amtT').oninput=e=>{const v=parseFloat(e.target.value)||0,r=rate();if(r>0){S.a
 $('logAdd').onclick=()=>{const d=$('logDate').value,r=parseFloat($('logRate').value);if(!d||!(r>0)){toast('請填日期和匯率');return}
  const k=pair();S.log[k]=(S.log[k]||[]).filter(e=>!e.ex&&e.d!==d);S.log[k].push({d,r});S.rates[k]=r;$('logRate').value='';save();renderFx();toast('已記錄，換算也改用這個匯率')};
 $('logBody').onclick=e=>{const b=e.target.closest('[data-ldel]');if(!b)return;const[d,r]=b.dataset.ldel.split('|'),k=pair();S.log[k]=S.log[k].filter(x=>!(x.d===d&&String(x.r)===r));save();renderFx()};
-document.addEventListener('click',e=>{if(e.target.id==='useLive'){delete S.rates[pair()];save();renderFx();toast('已改回自動匯率')}});
+document.addEventListener('click',e=>{if(e.target.id==='bankMore'){bankAll=!bankAll;renderBank();return}if(e.target.id==='useLive'){delete S.rates[pair()];save();renderFx();toast('已改回自動匯率')}});
 $('clearLog').onclick=()=>{const k=pair();S.log[k]=(S.log[k]||[]).filter(e=>!e.ex);save();renderFx()};
 async function backupText(){const base={app:'trip-checklist',savedAt:new Date().toISOString()};if(LOCK)return JSON.stringify({...base,v:3,enc:await encObj(LOCK,stateForSave())});return JSON.stringify({...base,v:2,s:stateForSave()})}
 function askSaved(msg){$('bkConfirmMsg').textContent=msg;$('bkConfirmRow').hidden=false;S.tab!=='info'&&setTab('priv');setTimeout(()=>$('bkConfirmRow').scrollIntoView({block:'center',behavior:'smooth'}),80)}
@@ -1109,7 +1181,7 @@ const isTextField=e=>e&&((e.tagName==='INPUT'&&['text','number','search','email'
 document.addEventListener('focusin',e=>{if(isTextField(e.target)){document.body.classList.add('kb');setTimeout(()=>{try{e.target.scrollIntoView({block:'center',behavior:'smooth'})}catch(_){}},300)}});
 document.addEventListener('focusout',()=>setTimeout(()=>{if(!isTextField(document.activeElement))document.body.classList.remove('kb')},50));
 $('infoSeg').onclick=e=>{const b=e.target.closest('[data-sec]');if(b)setTab(b.dataset.sec)};
-all();setTab(S.tab||'pack');loadFx();loadAdvisory();
+all();setTab(S.tab||'pack');loadFx();loadBank();loadAdvisory();
 if('serviceWorker' in navigator&&window.isSecureContext)navigator.serviceWorker.register('sw.js').catch(()=>{});
 // 收合行程卡
 const applyCollapse=()=>{const c=!!S.collapsed;$('tripEdit').hidden=c;$('editToggle').textContent=c?'編輯行程':'收合';$('editToggle').setAttribute('aria-expanded',String(!c))};

@@ -1,0 +1,25 @@
+name: 更新銀行匯率
+on:
+  schedule:
+    # 台北時間週一到週五 9:17、12:17、15:17、18:17
+    - cron: '17 1,4,7,10 * * 1-5'
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency: { group: bankrates, cancel-in-progress: false }
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: 抓取匯率
+        run: python3 tools/bankrates.py /tmp/bankrates.json
+      - name: 存到 rates 分支
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git fetch --depth=1 origin rates; then git checkout -B rates FETCH_HEAD; else git checkout --orphan rates; git rm -rqf .; fi
+          cp /tmp/bankrates.json bankrates.json
+          git add bankrates.json
+          git diff --cached --quiet || { git commit -qm "更新銀行匯率 $(date -u +%FT%TZ)"; git push origin rates; }

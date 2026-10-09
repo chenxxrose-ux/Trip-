@@ -1,5 +1,5 @@
 // 旅遊清單離線快取：網頁本身先用快取，有網路時背景更新；外部資料有網路就抓新的，沒網路用上次的。
-const CACHE='trip-v9.3';
+const CACHE='trip-v9.4';
 const CORE=['./','./index.html','./manifest.json','./icon-180.png','./icon-192.png','./icon-512.png'];
 // 逐一快取：網頁本身必須成功，圖示等其他檔案失敗不影響安裝
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(async c=>{
