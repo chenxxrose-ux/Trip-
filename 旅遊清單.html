@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>出國旅遊清單</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+html{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}
+
+/* Layout: boarding-pass header + tab strip; one column of panels, cards only where a thing is a separate object */
+:root{
+  --bg:#f3f5f7; --paper:#ffffff; --ink:#14212b; --muted:#5d6b76; --line:#d9e0e5;
+  --accent:#0e6e78; --accent-soft:#dcefef; --stamp:#b3263e; --stamp-soft:#f7e3e6;
+  --ok:#2f7d4a; --warn:#a36a00; --warn-soft:#fbefd6;
+  --f-display:"Noto Serif TC","Songti TC",serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f171d; --paper:#17222a; --ink:#e6edf1; --muted:#9aa8b2; --line:#2a3842;
+  --accent:#4fb7c1; --accent-soft:#163a3f; --stamp:#ef7a8d; --stamp-soft:#3a1d24;
+  --ok:#6cc58a; --warn:#e3ad4a; --warn-soft:#3a2e15; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f171d; --paper:#17222a; --ink:#e6edf1; --muted:#9aa8b2; --line:#2a3842;
+  --accent:#4fb7c1; --accent-soft:#163a3f; --stamp:#ef7a8d; --stamp-soft:#3a1d24;
+  --ok:#6cc58a; --warn:#e3ad4a; --warn-soft:#3a2e15; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:16px 48px;display:flex;flex-direction:column;gap:16px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.3}
+h2{font-size:1.25rem}
+h3{font-size:1.02rem;font-family:var(--f-body);font-weight:700}
+.muted{color:var(--muted)}
+.small{font-size:.82rem}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+a{color:var(--accent)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* boarding pass */
+.pass{background:var(--paper);border:1px solid var(--line);border-radius:14px;display:grid;grid-template-columns:1fr auto;overflow:hidden}
+.pass-main{padding:16px 18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.pass-stub{border-left:2px dashed var(--line);padding:16px 18px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;min-width:110px;background:var(--accent-soft)}
+.pass-stub .big{font-family:var(--f-mono);font-size:2rem;font-weight:600;color:var(--accent);line-height:1}
+.label{font-size:.72rem;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.route{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.route .code{font-family:var(--f-mono);font-size:1.6rem;font-weight:600;letter-spacing:.04em}
+.route .arrow{color:var(--muted)}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field input,.field select,.inp{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:8px 10px;width:100%;min-width:0}
+.example{display:inline-block;font-size:.72rem;color:var(--stamp);border:1px solid var(--stamp);border-radius:4px;padding:0 6px;transform:rotate(-2deg)}
+@media (max-width:480px){.pass{grid-template-columns:1fr}.pass-stub{border-left:0;border-top:2px dashed var(--line);flex-direction:row;gap:10px;min-width:0}}
+
+/* tabs */
+.tabs{display:flex;gap:6px;overflow-x:auto;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding-block:6px;z-index:5;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:6px 14px;cursor:pointer;white-space:nowrap}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.panel{display:flex;flex-direction:column;gap:14px}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+
+/* checklist */
+.progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.progress>i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.cat-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.items li{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+.items li:last-child{border-bottom:0}
+.items input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent);flex:0 0 auto}
+.items label{flex:1;min-width:0;cursor:pointer}
+.items li.done label{color:var(--muted);text-decoration:line-through}
+.x{border:0;background:none;color:var(--muted);cursor:pointer;padding:4px 6px;border-radius:6px}
+.x:hover{color:var(--stamp);background:var(--stamp-soft)}
+.add-row{display:flex;gap:8px}
+.btn{border:1px solid var(--accent);background:var(--accent);color:var(--paper);border-radius:8px;padding:7px 14px;cursor:pointer;white-space:nowrap}
+.btn.ghost{background:transparent;color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px dashed var(--accent);background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:3px 12px;cursor:pointer;font-size:.88rem}
+
+/* notes / rules */
+.rule{display:grid;grid-template-columns:7.5em 1fr;gap:4px 12px;margin:0}
+.rule dt{color:var(--muted);font-size:.88rem}
+.rule dd{margin:0;min-width:0}
+@media (max-width:420px){.rule{grid-template-columns:1fr}.rule dt{margin-top:6px}}
+.callout{border-left:3px solid var(--warn);background:var(--warn-soft);padding:10px 12px;border-radius:0 8px 8px 0;font-size:.92rem}
+.callout.red{border-color:var(--stamp);background:var(--stamp-soft)}
+.steps{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:4px}
+
+/* weather */
+.wx-top{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.wx-cell{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.wx-cell .v{font-family:var(--f-mono);font-size:1.35rem;font-weight:600}
+.pill{display:inline-block;padding:1px 10px;border-radius:999px;font-size:.82rem;font-weight:500}
+.pill.r2{background:var(--stamp-soft);color:var(--stamp)}
+.pill.r1{background:var(--warn-soft);color:var(--warn)}
+.pill.r0{background:var(--accent-soft);color:var(--accent)}
+.chart{overflow-x:auto}
+.chart svg{display:block;width:100%;min-width:420px;height:auto}
+
+/* fx */
+.fx-row{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end}
+.fx-row .swap{padding-bottom:8px;color:var(--muted);text-align:center}
+.fx-big{font-family:var(--f-mono);font-size:1.15rem}
+table{border-collapse:collapse;width:100%}
+td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;font-variant-numeric:tabular-nums}
+th{font-size:.78rem;color:var(--muted);font-weight:500}
+.up{color:var(--stamp)} .down{color:var(--ok)}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:.88rem;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.safety{border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;border:1px solid}
+.safety.red{background:var(--stamp-soft);border-color:var(--stamp)}
+.safety.orange{background:var(--warn-soft);border-color:var(--warn)}
+.safety.note{background:var(--accent-soft);border-color:var(--accent)}
+.lv{display:inline-block;font-weight:700;font-size:.78rem;padding:1px 8px;border-radius:4px;color:var(--paper)}
+.lv.red{background:var(--stamp)} .lv.orange{background:var(--warn)} .lv.note{background:var(--accent)} .lv.ok{background:var(--ok)}
+.risk-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.risk-list li{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;padding:8px 0;border-bottom:1px solid var(--line);align-items:start}
+.risk-list li:last-child{border-bottom:0}
+.risk-list button{border:0;background:none;padding:0;font:inherit;color:var(--accent);cursor:pointer;text-align:left}
+.ai{border:1px dashed var(--accent);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--accent-soft)}
+.live{display:flex;flex-direction:column;gap:2px;border-top:1px dashed var(--line);padding-top:8px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <section class="pass" aria-label="行程">
+    <div class="pass-main">
+      <div class="route">
+        <div><div class="label">From</div><div class="code" id="origCode">TW</div></div>
+        <div class="arrow" aria-hidden="true">✈ ─────</div>
+        <div><div class="label">To</div><div class="code" id="destCode">TYO</div></div>
+        <span class="example" id="exTag">範例行程，請改成你的</span>
+      </div>
+      <div class="fields">
+        <div class="field"><label class="label" for="orig">出發機場</label><select id="orig"></select></div>
+        <div class="field"><label class="label" for="dest">目的地國家</label><select id="dest"></select></div>
+        <div class="field" id="citySelWrap"><label class="label" for="citySel">城市</label><select id="citySel"></select></div>
+        <div class="field" id="cityTxtWrap" hidden><label class="label" for="cityTxt">城市（選填）</label><input id="cityTxt" placeholder="例如：雪梨"></div>
+        <div class="field"><label class="label" for="dDep">出發日</label><input type="date" id="dDep" lang="zh-Hant-TW"><span class="small muted" id="wDep"></span></div>
+        <div class="field"><label class="label" for="dRet">回程日</label><input type="date" id="dRet" lang="zh-Hant-TW"><span class="small muted" id="wRet"></span></div>
+      </div>
+      <div class="small muted" id="tripLine"></div>
+      <div class="small live" id="liveBar"></div>
+      <div id="safetyBanner"></div>
+    </div>
+    <div class="pass-stub">
+      <div class="label">距離出發</div>
+      <div class="big" id="countdown">–</div>
+      <div class="small muted">天</div>
+    </div>
+  </section>
+
+  <nav class="tabs" role="tablist" aria-label="分頁">
+    <button class="tab" role="tab" data-tab="pack" aria-selected="true">行李清單</button>
+    <button class="tab" role="tab" data-tab="safe" aria-selected="false">安全警示</button>
+    <button class="tab" role="tab" data-tab="wx" aria-selected="false">天氣穿搭</button>
+    <button class="tab" role="tab" data-tab="tax" aria-selected="false">退稅</button>
+    <button class="tab" role="tab" data-tab="fx" aria-selected="false">匯率</button>
+    <button class="tab" role="tab" data-tab="notes" aria-selected="false">注意事項</button>
+  </nav>
+
+  <section class="panel" id="p-pack" role="tabpanel">
+    <div class="box">
+      <div class="cat-head"><h2>行李清單</h2><span class="mono" id="packCount"></span></div>
+      <div class="progress"><i id="packBar" style="width:0"></i></div>
+      <div id="suggestWrap" hidden>
+        <div class="small muted">依目的地天氣建議加入：</div>
+        <div class="chips" id="suggest"></div>
+      </div>
+    </div>
+    <div id="cats" class="panel"></div>
+    <div class="box">
+      <h3>新增物品</h3>
+      <div class="add-row">
+        <select id="newCat" class="inp" style="max-width:9em" aria-label="分類"></select>
+        <input id="newItem" class="inp" placeholder="例如：隱形眼鏡藥水" aria-label="物品名稱">
+        <button class="btn" id="addBtn">加入</button>
+      </div>
+      <div><button class="btn ghost small" id="resetChecks">全部取消勾選</button></div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-safe" role="tabpanel" hidden>
+    <div class="box" id="safeDest"></div>
+    <div class="box">
+      <h2>燈號代表什麼</h2>
+      <dl class="rule">
+        <dt><span class="lv red">紅色</span></dt><dd>戰爭、暴動、已撤僑或嚴重恐攻威脅。<b>不要前往</b>，一般旅遊平安險多不承保，可依契約與旅行社解約。</dd>
+        <dt><span class="lv orange">橙色</span></dt><dd>政局極不穩、有恐攻威脅或重大疫情天災。<b>避免非必要旅行</b>。</dd>
+        <dt><span class="lv" style="background:var(--warn)">黃色</span></dt><dd>政局不穩或治安、衛生變差。提高警覺，評估是否前往。</dd>
+        <dt><span class="lv" style="background:var(--muted)">灰色</span></dt><dd>局部地區有治安、交通、衛生問題，做好一般防護即可。</dd>
+      </dl>
+    </div>
+    <div class="box">
+      <div class="cat-head"><h2>高風險地區一覽</h2><span class="small muted">點名稱可直接選為目的地</span></div>
+      <ul class="risk-list" id="riskList"></ul>
+      <div class="small muted">依外交部旅遊警示與新聞整理（中東部分為 2026 年 3 月報導）。燈號隨時調整，出發前請到 <a href="https://www.boca.gov.tw/sp-trwa-list-1.html" target="_blank" rel="noopener">外交部旅遊警示</a> 查最新燈號，並登錄「出國登錄」。</div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-wx" role="tabpanel" hidden><div class="box" id="wxBox"></div></section>
+
+  <section class="panel" id="p-tax" role="tabpanel" hidden>
+    <div class="box" id="taxBox"></div>
+    <div class="box" id="customsBox"></div>
+  </section>
+
+  <section class="panel" id="p-fx" role="tabpanel" hidden>
+    <div class="box">
+      <div class="cat-head"><h2>匯率換算</h2><span class="small muted mono" id="fxCur"></span></div>
+      <div id="fxSame" class="callout" hidden>出發地和目的地用同一種貨幣，不用換匯。</div>
+      <div id="fxMain">
+        <div class="field"><label class="label" for="rate">1 <span id="rateUnit">JPY</span> = ? <span id="rateUnit2">TWD</span></label>
+          <input id="rate" class="inp mono" type="number" step="any" inputmode="decimal" placeholder="請輸入匯率"></div>
+        <div class="fx-row" style="margin-top:10px">
+          <div class="field"><label class="label" for="amtF" id="amtFLabel">外幣</label><input id="amtF" class="inp mono fx-big" type="number" step="any" inputmode="decimal" value="10000"></div>
+          <div class="swap" aria-hidden="true">⇄</div>
+          <div class="field"><label class="label" for="amtT" id="amtTLabel">本國</label><input id="amtT" class="inp mono fx-big" type="number" step="any" inputmode="decimal"></div>
+        </div>
+        <div class="chart" style="margin-top:10px"><table><thead><tr><th id="qh">外幣</th><th id="qh2">本國</th></tr></thead><tbody id="quick"></tbody></table></div>
+        <div class="small muted" id="fxNote"></div>
+      </div>
+    </div>
+    <div class="box" id="logBox">
+      <div class="cat-head"><h2>匯率變動紀錄</h2><span class="small" id="fxChange"></span></div>
+      <div class="small muted">每次看到銀行匯率就記一筆，觀察漲跌，挑低點換匯。</div>
+      <div class="add-row">
+        <input type="date" id="logDate" class="inp" style="max-width:11em" aria-label="日期">
+        <input type="number" step="any" id="logRate" class="inp mono" placeholder="匯率" aria-label="匯率">
+        <button class="btn" id="logAdd">記錄</button>
+      </div>
+      <div class="chart" id="fxSpark"></div>
+      <div class="chart"><table><thead><tr><th>日期</th><th>匯率</th><th>與上次比</th><th></th></tr></thead><tbody id="logBody"></tbody></table></div>
+      <div id="logEx" class="small" hidden><span class="example">範例資料</span> <button class="btn ghost small" id="clearLog">清除範例</button></div>
+    </div>
+  </section>
+
+  <section class="panel" id="p-notes" role="tabpanel" hidden>
+    <div class="box" id="destNotes"></div>
+    <div class="box">
+      <h3>出發前待辦</h3>
+      <ul class="items" id="todo"></ul>
+      <div class="add-row"><input id="newTodo" class="inp" placeholder="新增待辦" aria-label="新增待辦"><button class="btn" id="todoAdd">加入</button></div>
+    </div>
+    <div class="box">
+      <h3>我的備註</h3>
+      <textarea id="memo" class="inp" rows="5" placeholder="飯店地址、航班編號、訂位代號、緊急聯絡人……"></textarea>
+    </div>
+    <div class="small muted">勾選和輸入的內容只存在這台裝置的瀏覽器裡。簽證與入境規定常變動，出發前請到 <a href="https://www.boca.gov.tw" target="_blank" rel="noopener">外交部領事事務局</a> 或目的地官方網站確認。</div>
+  </section>
+</div>
+<footer class="small muted" style="max-width:760px;margin:0 auto;padding-inline:16px;padding-block:0 32px">匯率：<a href="https://www.exchangerate-api.com" target="_blank" rel="noopener">Rates By Exchange Rate API</a> · 天氣：<a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a>（CC BY 4.0） · 旅遊評級：<a href="https://travel.gc.ca/travelling/advisories" target="_blank" rel="noopener">Government of Canada</a> · 台灣外交部燈號為內建整理資料</footer>
+<div class="toast" id="toast" role="status"></div>
+<script>
+const M=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const WD=['日','一','二','三','四','五','六'];
+const wd=s=>{if(!s)return'';const[y,m,d]=s.split('-').map(Number);return '（'+WD[new Date(y,m-1,d).getDay()]+'）'};
+const fdate=s=>{if(!s)return'';const[y,m,d]=s.split('-').map(Number);return `${m}月${d}日`+wd(s)};
+const fdateY=s=>{if(!s)return'';const[y,m,d]=s.split('-').map(Number);return `${y}年${m}月${d}日 星期`+wd(s).slice(1,2)};
+try{document.documentElement.lang='zh-Hant-TW'}catch(e){}
+
+// 國家 → 貨幣
+const CUR={};
+'AD AT BE CY DE EE ES FI FR GR HR IE IT LT LU LV MC ME MT NL PT SI SK SM VA XK BG GF GP MQ RE YT PM BL MF'.split(' ').forEach(c=>CUR[c]='EUR');
+'US EC SV PR GU AS VI TL FM MH PW TC VG BQ'.split(' ').forEach(c=>CUR[c]='USD');
+'BJ BF CI GW ML NE SN TG'.split(' ').forEach(c=>CUR[c]='XOF');
+'CM CF TD CG GQ GA'.split(' ').forEach(c=>CUR[c]='XAF');
+'AG DM GD KN LC VC AI MS'.split(' ').forEach(c=>CUR[c]='XCD');
+'AU KI NR TV NF CX CC'.split(' ').forEach(c=>CUR[c]='AUD');
+'NZ CK NU PN TK'.split(' ').forEach(c=>CUR[c]='NZD');
+'DK FO GL'.split(' ').forEach(c=>CUR[c]='DKK');
+'CH LI'.split(' ').forEach(c=>CUR[c]='CHF');
+'NO SJ'.split(' ').forEach(c=>CUR[c]='NOK');
+'GB IM JE GG'.split(' ').forEach(c=>CUR[c]='GBP');
+'MA EH'.split(' ').forEach(c=>CUR[c]='MAD');
+'PF NC WF'.split(' ').forEach(c=>CUR[c]='XPF');
+'CW SX'.split(' ').forEach(c=>CUR[c]='XCG');
+('AE:AED AF:AFN AL:ALL AM:AMD AO:AOA AR:ARS AW:AWG AZ:AZN BA:BAM BB:BBD BD:BDT BH:BHD BI:BIF BM:BMD BN:BND BO:BOB BR:BRL BS:BSD BT:BTN BW:BWP BY:BYN BZ:BZD CA:CAD CD:CDF CL:CLP CN:CNY CO:COP CR:CRC CU:CUP CV:CVE CZ:CZK DJ:DJF DO:DOP DZ:DZD EG:EGP ER:ERN ET:ETB FJ:FJD FK:FKP GE:GEL GH:GHS GI:GIP GM:GMD GN:GNF GT:GTQ GY:GYD HK:HKD HN:HNL HT:HTG HU:HUF ID:IDR IL:ILS IN:INR IQ:IQD IR:IRR IS:ISK JM:JMD JO:JOD JP:JPY KE:KES KG:KGS KH:KHR KM:KMF KP:KPW KR:KRW KW:KWD KY:KYD KZ:KZT LA:LAK LB:LBP LK:LKR LR:LRD LS:LSL LY:LYD MD:MDL MG:MGA MK:MKD MM:MMK MN:MNT MO:MOP MR:MRU MU:MUR MV:MVR MW:MWK MX:MXN MY:MYR MZ:MZN NA:NAD NG:NGN NI:NIO NP:NPR OM:OMR PA:PAB PE:PEN PG:PGK PH:PHP PK:PKR PL:PLN PS:ILS PY:PYG QA:QAR RO:RON RS:RSD RU:RUB RW:RWF SA:SAR SB:SBD SC:SCR SD:SDG SE:SEK SG:SGD SH:SHP SL:SLE SO:SOS SR:SRD SS:SSP ST:STN SY:SYP SZ:SZL TH:THB TJ:TJS TM:TMT TN:TND TO:TOP TR:TRY TT:TTD TW:TWD TZ:TZS UA:UAH UG:UGX UY:UYU UZ:UZS VE:VES VN:VND VU:VUV WS:WST YE:YER ZA:ZAR ZM:ZMW ZW:ZWG').split(' ').forEach(p=>{const[c,v]=p.split(':');CUR[c]=v});
+// 約略匯率：每 1 美元可換多少（參考值）
+const USD={USD:1,TWD:30.5,JPY:149,KRW:1390,CNY:7.15,HKD:7.8,MOP:8.05,SGD:1.29,MYR:4.25,THB:32.5,VND:26000,IDR:16300,PHP:57,INR:87,KHR:4010,LAK:21600,NPR:139,LKR:300,MNT:3550,EUR:0.86,GBP:0.745,CHF:0.8,SEK:9.6,NOK:10.1,DKK:6.4,ISK:122,CZK:21.3,HUF:345,PLN:3.65,RON:4.35,TRY:41,AUD:1.53,NZD:1.68,CAD:1.37,MXN:18.7,BRL:5.5,ARS:1300,CLP:950,PEN:3.55,COP:4000,AED:3.6725,SAR:3.75,QAR:3.64,OMR:0.385,BHD:0.376,KWD:0.305,JOD:0.709,ILS:3.4,EGP:49,MAD:9,ZAR:17.8,KES:129,XOF:564,XAF:564,XPF:102.6,FJD:2.25,BND:1.29,BAM:1.68,RSD:100,GEL:2.7,KZT:520,UZS:12600};
+
+const RN=(()=>{try{return new Intl.DisplayNames(['zh-TW'],{type:'region'})}catch(e){return null}})();
+const CN=(()=>{try{return new Intl.DisplayNames(['zh-TW'],{type:'currency'})}catch(e){return null}})();
+const cname=c=>{try{return RN?RN.of(c):c}catch(e){return c}};
+const curName=c=>{try{return CN?CN.of(c):c}catch(e){return c}};
+const AIRPORTS=[
+ ['TW','台灣',[['TPE','桃園國際機場（台北）'],['TSA','松山機場（台北）'],['KHH','高雄國際機場'],['RMQ','台中國際機場'],['TNN','台南機場'],['KNH','金門機場']]],
+ ['JP','日本',[['NRT','東京成田'],['HND','東京羽田'],['KIX','大阪關西'],['NGO','名古屋中部'],['FUK','福岡'],['CTS','札幌新千歲'],['OKA','沖繩那霸']]],
+ ['KR','韓國',[['ICN','首爾仁川'],['GMP','首爾金浦'],['PUS','釜山金海']]],
+ ['HK','香港',[['HKG','香港國際機場']]],['MO','澳門',[['MFM','澳門國際機場']]],
+ ['CN','中國',[['PVG','上海浦東'],['SHA','上海虹橋'],['PEK','北京首都'],['PKX','北京大興'],['CAN','廣州白雲'],['SZX','深圳寶安'],['XMN','廈門高崎']]],
+ ['SG','新加坡',[['SIN','新加坡樟宜']]],['TH','泰國',[['BKK','曼谷蘇凡納布'],['DMK','曼谷廊曼'],['CNX','清邁'],['HKT','普吉']]],
+ ['MY','馬來西亞',[['KUL','吉隆坡'],['PEN','檳城']]],['VN','越南',[['SGN','胡志明市新山一'],['HAN','河內內排'],['DAD','峴港']]],
+ ['PH','菲律賓',[['MNL','馬尼拉'],['CEB','宿霧']]],['ID','印尼',[['CGK','雅加達'],['DPS','峇里島']]],
+ ['US','美國',[['LAX','洛杉磯'],['SFO','舊金山'],['SEA','西雅圖'],['JFK','紐約甘迺迪'],['ORD','芝加哥'],['IAH','休士頓'],['HNL','檀香山']]],
+ ['CA','加拿大',[['YVR','溫哥華'],['YYZ','多倫多']]],['GB','英國',[['LHR','倫敦希斯洛']]],['FR','法國',[['CDG','巴黎戴高樂']]],
+ ['DE','德國',[['FRA','法蘭克福'],['MUC','慕尼黑']]],['NL','荷蘭',[['AMS','阿姆斯特丹']]],['AU','澳洲',[['SYD','雪梨'],['MEL','墨爾本'],['BNE','布里斯本']]],
+ ['NZ','紐西蘭',[['AKL','奧克蘭']]],['AE','阿聯',[['DXB','杜拜']]],['TR','土耳其',[['IST','伊斯坦堡']]]];
+const APMAP={};AIRPORTS.forEach(([c,,list])=>list.forEach(([code,n])=>APMAP[code]={c,n}));
+const origLabel=()=>S.origAp&&APMAP[S.origAp]?`${APMAP[S.origAp].n}（${S.origAp}）`:cname(S.orig);
+const POPULAR=['JP','KR','TH','VN','SG','MY','HK','MO','PH','ID','CN','US','CA','GB','FR','DE','IT','ES','CH','AU','NZ','TR','AE'];
+
+// 內建城市氣候：hi/lo 歷年月平均高/低溫 °C（約略），rain 0 少雨 1 偶有雨 2 雨季/颱風
+const CITY={
+ JP:{tokyo:{n:'東京',code:'TYO',hi:[10,10,14,19,23,26,30,31,27,22,17,12],lo:[1,2,5,10,15,19,23,24,21,15,9,4],rain:[0,0,1,1,1,2,1,1,2,1,0,0]},
+     osaka:{n:'大阪・京都',code:'OSA',hi:[10,10,14,20,25,28,32,33,29,23,17,12],lo:[3,3,5,10,15,20,24,25,21,15,9,4],rain:[0,0,1,1,1,2,2,1,2,1,0,0]},
+     fukuoka:{n:'福岡',code:'FUK',hi:[10,11,15,20,24,27,31,32,28,23,18,12],lo:[3,4,7,11,16,20,25,25,21,15,10,5],rain:[0,0,1,1,1,2,2,1,2,1,0,0]},
+     sapporo:{n:'札幌・北海道',code:'SPK',hi:[-1,0,4,11,17,21,25,26,22,16,8,2],lo:[-7,-7,-3,3,8,13,17,19,14,7,1,-4],rain:[0,0,0,0,0,1,1,1,1,1,0,0]},
+     okinawa:{n:'沖繩',code:'OKA',hi:[19,20,21,24,27,30,32,32,31,28,25,21],lo:[15,15,16,19,22,25,27,27,26,23,20,16],rain:[0,0,1,1,2,2,1,2,2,1,0,0]}},
+ KR:{seoul:{n:'首爾',code:'SEL',hi:[2,5,11,18,23,27,29,30,26,20,12,4],lo:[-6,-4,1,7,12,18,22,22,17,10,3,-4],rain:[0,0,0,1,1,1,2,2,1,0,0,0]},
+     busan:{n:'釜山',code:'PUS',hi:[8,10,14,18,22,25,28,30,26,22,16,10],lo:[-1,1,5,10,14,18,23,24,20,14,8,2],rain:[0,0,1,1,1,2,2,2,2,0,0,0]}},
+ TH:{bangkok:{n:'曼谷',code:'BKK',hi:[32,33,34,35,34,33,33,32,32,32,32,31],lo:[22,24,26,27,27,26,26,26,25,25,24,22],rain:[0,0,0,1,1,2,2,2,2,2,1,0]}},
+ SG:{singapore:{n:'新加坡',code:'SIN',hi:[30,31,32,32,32,31,31,31,31,31,31,30],lo:[24,24,25,25,26,26,25,25,25,25,24,24],rain:[2,1,1,1,1,1,1,1,1,1,2,2]}},
+ MY:{kl:{n:'吉隆坡',code:'KUL',hi:[32,33,33,33,33,33,32,32,32,32,32,32],lo:[23,23,24,24,24,24,24,24,24,24,24,23],rain:[1,1,1,2,1,1,1,1,1,2,2,1]}},
+ HK:{hongkong:{n:'香港',code:'HKG',hi:[19,19,22,25,29,31,32,32,31,28,24,20],lo:[14,15,17,21,24,26,27,26,26,24,19,15],rain:[0,0,1,1,2,2,2,2,2,1,0,0]}},
+ VN:{hcmc:{n:'胡志明市',code:'SGN',hi:[32,33,34,35,34,32,32,32,31,31,31,31],lo:[22,23,24,26,26,25,25,25,24,24,23,22],rain:[0,0,0,1,2,2,2,2,2,2,1,0]}},
+ FR:{paris:{n:'巴黎',code:'PAR',hi:[7,8,12,16,20,23,25,25,21,16,10,7],lo:[3,3,5,7,11,14,16,16,13,10,6,3],rain:[1,1,1,1,1,1,1,1,1,1,1,1]}},
+ GB:{london:{n:'倫敦',code:'LON',hi:[8,9,12,15,18,21,23,23,20,16,11,8],lo:[2,2,4,6,9,12,14,14,11,9,5,3],rain:[1,1,1,1,1,1,1,1,1,1,1,1]}},
+ US:{newyork:{n:'紐約',code:'NYC',hi:[4,6,10,17,22,27,29,29,25,18,12,7],lo:[-3,-2,2,8,13,18,21,21,17,10,5,0],rain:[1,1,1,1,1,1,1,1,1,1,1,1]}}
+};
+
+// 安全警示（台灣外交部燈號為主，參考用）
+const SAFETY={
+ UA:['red','俄烏戰爭持續，飛彈與無人機攻擊可能波及各地城市。','全境不要前往；已在當地請依空襲警報避難並與駐外館處聯繫。'],
+ RU:['note','俄烏戰爭期間國際制裁，台灣發行的信用卡多無法使用，航班與入境審查也較嚴。','請先查外交部最新燈號；備足現金，避免拍攝軍事設施或發表政治言論。'],
+ IL:['red','以色列與哈瑪斯、伊朗等衝突，有飛彈攻擊與恐攻風險。','不要前往。'],PS:['red','加薩與約旦河西岸戰事與武裝衝突。','不要前往。'],
+ IR:['red','與以色列、美國的軍事衝突，台灣人入境亦可能遭刁難或拘留。','不要前往。'],
+ IQ:['red','武裝衝突與恐怖攻擊，且受中東戰事波及。','不要前往。'],SY:['red','長年內戰，政局與治安極不穩。','不要前往。'],
+ LB:['red','與以色列的軍事衝突，真主黨活動區域危險。','不要前往。'],JO:['red','鄰近中東戰區，受區域衝突與飛彈攔截影響。','不要前往；已在當地留意空域關閉與航班異動。'],
+ YE:['red','內戰與胡塞武裝攻擊，紅海航運也受影響。','不要前往。'],
+ AF:['red','塔利班統治，恐攻與綁架風險高。','不要前往。'],KP:['red','與台灣無邦交，遭拘留時幾乎無法協助。','不要前往。'],
+ LY:['red','派系武裝衝突，治安極差。','不要前往。'],SO:['red','恐怖組織活躍、海盜與綁架。','不要前往。'],SD:['red','內戰，大規模暴力與人道危機。','不要前往。'],SS:['red','武裝衝突與治安崩壞。','不要前往。'],
+ ML:['red','軍政府與恐怖組織活動，綁架風險高。','不要前往。'],NE:['red','政變後局勢不穩，恐怖組織活躍。','不要前往。'],BF:['red','恐怖攻擊頻繁。','不要前往。'],CF:['red','武裝衝突持續。','不要前往。'],
+ HT:['red','幫派控制首都，暴力與綁架頻傳。','不要前往。'],
+ QA:['orange','2026 年 3 月起因中東戰火升溫調為橙色，可能受飛彈攻擊或空域關閉影響。','避免非必要旅行；轉機旅客留意航班取消與改道。'],
+ AE:['orange','2026 年 3 月起因中東戰火升溫調為橙色（杜拜、阿布達比）。','避免非必要旅行；在杜拜轉機要留意航班異動。'],
+ KW:['orange','2026 年 3 月起因中東戰火升溫調為橙色。','避免非必要旅行。'],SA:['orange','2026 年 3 月起因中東戰火升溫調為橙色。','避免非必要旅行。'],
+ BH:['orange','2026 年 3 月起因中東戰火升溫調為橙色。','避免非必要旅行。'],OM:['orange','2026 年 3 月起因中東戰火升溫調為橙色。','避免非必要旅行。'],
+ CN:['orange','陸委會 2024 年起調為橙色。對台灣人有政治言論、手機檢查、被留置的風險，「懲戒台獨」等規定可能被任意適用。','避免非必要旅行；不帶敏感書刊與資料，手機少存政治內容；行前上陸委會網站登錄行程。'],
+ HK:['orange','陸委會 2024 年起調為橙色。《國安法》與《基本法 23 條》立法後，言論與攜帶物品都可能觸法，台灣人有被留置風險。','避免非必要旅行；不參與政治活動、不發表敏感言論，手機與行李避免敏感內容。'],
+ MO:['orange','陸委會 2024 年起調為橙色，維護國家安全相關法律適用範圍廣。','避免非必要旅行；言行注意同香港。'],
+ KH:['note','詐騙園區與人口販運案件多，常以「高薪工作」誘騙台灣人，2025 年泰柬邊境也曾爆發衝突。','只走觀光行程，不接受網路上的海外工作邀約；不要把護照交給他人保管。'],
+ MM:['note','軍事政變後內戰持續，邊境有詐騙園區與人口販運。','請先查外交部最新燈號，原則上避免前往。'],
+ LA:['note','金三角經濟特區有詐騙園區與人口販運。','只走正規觀光行程，不接受海外高薪工作邀約。'],
+ TH:['note','南部陸克拉蒂瓦、北大年、也拉府有分離主義暴力事件；泰柬邊境 2025 年曾發生衝突。','一般觀光區（曼谷、清邁、普吉）正常；避開南部三府與邊境地帶。'],
+ PH:['note','民答那峨島部分地區有武裝團體與綁架風險。','馬尼拉、宿霧、長灘島等觀光區正常；避開民答那峨西南部。'],
+ JP:['note','福島第一核電廠周邊仍有管制區。','一般觀光不受影響，不要進入管制區域即可。']
+};
+const LVTXT={red:'紅色警示',orange:'橙色警示',note:'特別注意'};
+
+const COUNTRY={
+ JP:{plug:'A 型雙扁腳，100V（台灣電器多可直接用）',entry:'台灣護照免簽 90 天。出發前填 Visit Japan Web，入境與海關用 QR Code。',tip:'日本不收小費。很多小店只收現金。8–10 月注意颱風。'},
+ KR:{plug:'C/F 型雙圓腳，220V（需轉接頭）',entry:'台灣護照免簽 90 天。K-ETA 對台灣旅客暫時免申請，請確認是否仍在豁免期間；入境前可線上填電子入境卡。',tip:'地圖用 Naver Map 或 Kakao Map。T-money 卡可搭地鐵公車。'},
+ TH:{plug:'A/B/C 型混用，220V',entry:'台灣護照目前可免簽入境，天數規定近年有變動，出發前確認。入境前 3 天內填 TDAC 泰國數位入境卡。',tip:'寺廟需遮肩膝。電子菸在泰國違法，切勿攜帶。'},
+ SG:{plug:'G 型英規三方腳，230V（需轉接頭）',entry:'台灣護照免簽 30 天。抵達前 3 天內填 SG Arrival Card。',tip:'口香糖禁止攜帶販售；捷運內禁止飲食，罰款很重。'},
+ MY:{plug:'G 型英規三方腳，240V（需轉接頭）',entry:'台灣護照免簽 15 天（近年曾放寬至 30 天，出發前確認）。入境前 3 天內填 MDAC 數位入境卡。',tip:'叫車用 Grab。清真餐廳不賣酒、不可自帶豬肉。'},
+ HK:{plug:'G 型英規三方腳，220V（需轉接頭）',entry:'台灣居民需辦「預辦入境登記」（網上免費申請），或持台胞證入境。',tip:'八達通可搭車購物。茶餐廳常收一成服務費。'},
+ VN:{plug:'A/C 型，220V',entry:'台灣護照需簽證，可線上申請電子簽證 e-Visa，約 3–5 個工作天。',tip:'越盾面額大，付錢時多看一眼零的個數。叫車用 Grab。'},
+ FR:{plug:'C/E 型雙圓腳，230V（需轉接頭）',entry:'台灣護照申根區免簽 90 天。歐盟 ETIAS 旅行授權預計上路，出發前確認是否需要申請。',tip:'地鐵與觀光區注意扒手。'},
+ GB:{plug:'G 型英規三方腳，230V（需轉接頭）',entry:'台灣護照免簽 6 個月，但需事先線上申請英國 ETA 電子旅行許可。',tip:'感應信用卡可直接搭地鐵公車。餐廳常加 12.5% 服務費。'},
+ US:{plug:'A/B 型，120V（台灣電器可直接用）',entry:'台灣護照適用免簽計畫，出發前需申請 ESTA。',tip:'餐廳小費約 18–20%，價格標示不含銷售稅。'}
+};
+const TAX={
+ JP:(dep)=>{const nw=!dep||dep>='2026-11-01';return `<h2>日本退稅</h2>
+  <div class="callout red"><b>2026/11/1（日）起新制：</b>改成「先付含稅價，出境時再退稅」。${nw?'你的出發日適用新制。':'你的出發日在新制之前，仍是店內直接免稅；11/1 後購物則適用新制。'}</div>
+  <dl class="rule"><dt>稅率</dt><dd>消費稅 10%（食品等 8%）</dd><dt>門檻</dt><dd>同一店家、同一天，未稅價滿 <span class="mono">¥5,000</span></dd>
+  <dt>上限</dt><dd>取消消耗品 ¥50 萬上限，也不再要求密封包裝</dd><dt>期限</dt><dd>購買後 90 天內帶出境</dd></dl>
+  <h3>新制流程</h3><ol class="steps"><li>事先上退稅公司網站登錄護照，選退款方式（現金、信用卡、銀行帳戶）</li><li>購物時出示護照，以含稅價結帳</li><li>出境當天 <b>托運行李前</b>，到機場自助機掃護照</li><li>綠燈即完成；紅燈要帶商品給海關檢查（退稅品別先托運）</li><li>店家依你選的方式退款</li></ol>
+  <div class="small muted">單件超過 ¥100 萬需登錄序號；金、白金等貴金屬不退；出境前吃掉的消耗品不能退。</div>`},
+ KR:()=>`<h2>韓國退稅</h2><dl class="rule"><dt>稅率</dt><dd>VAT 10%（實退約 5–8%）</dd><dt>門檻</dt><dd>Tax Free 店家單筆含稅滿 <span class="mono">₩15,000</span></dd><dt>即時退稅</dt><dd>多數店家結帳時可直接扣稅（有單筆與總額上限）</dd><dt>機場</dt><dd>仁川、金浦機場退稅自助機</dd><dt>期限</dt><dd>購買後 3 個月內出境</dd></dl>`,
+ TH:()=>`<h2>泰國退稅</h2><dl class="rule"><dt>稅率</dt><dd>VAT 7%（扣手續費後實退較少）</dd><dt>門檻</dt><dd>同店同日滿 <span class="mono">฿2,000</span>，整趟合計滿 <span class="mono">฿5,000</span></dd><dt>單據</dt><dd>結帳時出示護照，索取 P.P.10 退稅單</dd><dt>機場</dt><dd>先到 VAT Refund 櫃檯驗貨蓋章 <b>再辦登機</b>，入關後領退款</dd><dt>期限</dt><dd>購買後 60 天內出境</dd></dl>`,
+ SG:()=>`<h2>新加坡退稅</h2><dl class="rule"><dt>稅率</dt><dd>GST 9%</dd><dt>門檻</dt><dd>同一店家含稅滿 <span class="mono">S$100</span>（最多合併 3 張同店發票）</dd><dt>機場</dt><dd>樟宜機場 eTRS 自助機</dd><dt>期限</dt><dd>購買後 2 個月內出境</dd></dl>`,
+ HK:()=>`<h2>香港退稅</h2><div class="callout">香港沒有銷售稅，標價就是實付價，不用辦退稅。</div>`,
+ MO:()=>`<h2>澳門退稅</h2><div class="callout">澳門沒有銷售稅，不用辦退稅。</div>`,
+ VN:()=>`<h2>越南退稅</h2><dl class="rule"><dt>稅率</dt><dd>VAT 10%（部分品項暫降為 8%）</dd><dt>門檻</dt><dd>指定商店同店同日滿 <span class="mono">₫2,000,000</span></dd><dt>機場</dt><dd>主要國際機場退稅櫃檯</dd><dt>期限</dt><dd>購買後 60 天內出境</dd></dl>`,
+ FR:()=>`<h2>法國退稅</h2><dl class="rule"><dt>稅率</dt><dd>TVA 20%（實退約 12%）</dd><dt>門檻</dt><dd>同一店家 3 天內合計滿 <span class="mono">€100.01</span></dd><dt>機場</dt><dd>PABLO 自助機；最後離開的申根國不是法國就在那國辦</dd><dt>期限</dt><dd>購買後 3 個月內帶出歐盟</dd></dl>`,
+ GB:()=>`<h2>英國退稅</h2><div class="callout">英國 2021 年起取消旅客購物退稅（VAT 20% 不退）。部分店家可寄送海外免稅。</div>`,
+ US:()=>`<h2>美國退稅</h2><div class="callout">美國銷售稅是各州州稅，一般不提供旅客退稅。標價不含稅，結帳會再加 0–10%。</div>`
+};
+const DEFAULT_PACK={'證件':['護照（效期 6 個月以上）','機票／電子登機證','飯店訂房確認','旅遊保險單','信用卡（2 張）','外幣現金','身分證'],'電子':['手機','充電器','行動電源（隨身帶，不可托運）','萬用轉接頭','eSIM／網卡','耳機'],'衣物':['換洗衣物','內衣褲、襪子','睡衣','好走的鞋'],'盥洗保養':['牙刷牙膏','洗面乳','保養品','防曬乳','隱形眼鏡'],'藥品':['常備藥（感冒、腸胃、止痛）','個人處方藥','OK 繃'],'其他':['摺疊購物袋','小包面紙／濕紙巾','原子筆（填入境單）']};
+const TODO_DEFAULT=['確認護照效期','查外交部旅遊警示燈號','登錄外交部「出國登錄」','買旅遊平安險與不便險','換外幣／開通海外刷卡','申請入境卡或電子簽','買 eSIM 或網卡','線上報到、選位','查行李托運重量限制'];
+
+let S;const KEY='trip-v2';
+function load(){try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
+ if(S){if(S.origAp===undefined)S.origAp=S.orig==='TW'?'TPE':'';return}
+ let old=null;try{old=JSON.parse(localStorage.getItem('trip-v1'))}catch(e){}
+ const items={};let id=0;for(const[c,arr]of Object.entries(DEFAULT_PACK))items[c]=arr.map(t=>({id:id++,t,d:false}));
+ S={orig:'TW',origAp:'TPE',dest:'JP',city:'tokyo',cityTxt:'',dep:'2026-11-14',ret:'2026-11-19',example:true,items,nid:id,todo:TODO_DEFAULT.map((t,i)=>({id:i,t,d:false})),memo:'',rates:{},
+  log:{'JPY>TWD':[{d:'2026-09-15',r:0.208,ex:1},{d:'2026-09-29',r:0.206,ex:1},{d:'2026-10-08',r:0.204,ex:1}]},tab:'pack',amt:10000,ai:{}};
+ if(old){if(old.items){S.items=old.items;S.nid=old.nid}if(old.todo)S.todo=old.todo;S.memo=old.memo||'';S.dep=old.dep||S.dep;S.ret=old.ret||S.ret;S.example=old.example;
+  if(old.log)for(const[k,v]of Object.entries(old.log))S.log[k+'>TWD']=v;if(old.rates)for(const[k,v]of Object.entries(old.rates))S.rates[k+'>TWD']=v}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}schedulePush()}
+
+// ---------- 雲端同步與即時資料 ----------
+const CLIENT=Math.random().toString(36).slice(2);let dirty=false;let DB=null,UID=null,pushT=null,syncState='local',live={fx:null,forecast:null,safety:null},liveUnsub=[],liveKey='';
+const hash=s=>{let h=5381;for(const ch of s)h=(h*33+ch.codePointAt(0))>>>0;return h.toString(36)};
+const placeId=()=>`${S.dest}-${city()?S.city:(S.cityTxt?'x'+hash(S.cityTxt):'main')}`;
+const fdt=iso=>{if(!iso)return'';const d=new Date(iso);if(isNaN(d))return String(iso);const t=new Date(d.getTime()+8*36e5);return `${t.getUTCMonth()+1}月${t.getUTCDate()}日（${WD[t.getUTCDay()]}）${String(t.getUTCHours()).padStart(2,'0')}:${String(t.getUTCMinutes()).padStart(2,'0')}`};
+function tripDoc(){const c=city();return{orig:S.orig,dest:S.dest,destName:cname(S.dest),city:S.city||'',cityName:c?c.n:(S.cityTxt||''),dep:S.dep||'',ret:S.ret||'',updatedAt:new Date().toISOString()}}
+function schedulePush(){dirty=true;if(!DB)return;clearTimeout(pushT);pushT=setTimeout(pushNow,700)}
+const myDoc=()=>DB.collection('data/users/'+UID).doc('state');
+let lastWanted='';
+async function pushNow(){if(!DB||!UID||syncState==='readonly')return;clearTimeout(pushT);const{tab,...rest}=S;
+ try{await myDoc().set({s:JSON.parse(JSON.stringify(rest)),savedAt:new Date().toISOString(),by:CLIENT});dirty=false;syncState='cloud'}catch(e){syncState=e?.code==='invalid_argument'?'readonly':'error'}
+ // 告訴每日更新任務：有人要去這個地方（只寫地點與日期，不含個人清單）
+ const w=placeId(),t=tripDoc(),sig=w+t.dep+t.ret;
+ if(syncState==='cloud'&&sig!==lastWanted){try{await DB.doc('wanted/'+w).set({dest:t.dest,destName:t.destName,cityName:t.cityName,dep:t.dep,ret:t.ret,updatedAt:t.updatedAt});lastWanted=sig}catch(e){}}
+ renderLive()}
+function watchLive(){if(!DB)return;const k=placeId();if(k===liveKey)return;liveKey=k;liveUnsub.forEach(u=>{try{u()}catch(e){}});
+ live.forecast=null;live.safety=null;
+ liveUnsub=[DB.doc('live/forecast-'+k).onSnapshot(s=>{live.forecast=s.exists?s.data():null;all()},()=>{}),
+  DB.doc('live/safety-'+S.dest).onSnapshot(s=>{live.safety=s.exists?s.data():null;all()},()=>{})]}
+try{Promise.all([window.claude?.use?.('db'),window.claude?.use?.('user')]).then(async([db,user])=>{if(!db)return;DB=db;
+ db.doc('live/fx').onSnapshot(s=>{live.fx=s.exists?s.data():null;all()},()=>{});watchLive();
+ try{UID=user?await user.id():null}catch(e){UID=null}
+ if(!UID){renderLive();return}
+ myDoc().onSnapshot(snap=>{if(snap.metadata?.hasPendingWrites)return;
+  if(snap.exists){const raw=snap.data()||{},d=raw.s;if(d&&raw.by!==CLIENT&&!dirty){const tab=S.tab;S=Object.assign({},S,d,{tab});try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}all();setTab(tab||'pack')}syncState='cloud'}
+  else pushNow();renderLive()},()=>{syncState='error';renderLive()});
+}).catch(()=>{})}catch(e){}
+function renderLive(){const el=$('liveBar');if(!el)return;const fx=live.fx,fc=live.forecast;
+ el.innerHTML=`<span><b>即時資訊</b>：匯率 ${fx?fdt(fx.fetchedAt):'載入中'}${fc?` · 天氣預報 ${fdt(fc.fetchedAt)}`:''}</span><span class="muted">每次打開網頁自動抓最新資料 · 清單存在這台裝置</span>`}
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1600)}
+function fmt(n,dig){if(!isFinite(n))return '–';return n.toLocaleString('zh-TW',{maximumFractionDigits:dig??(Math.abs(n)<1?4:2)})}
+function days(a,b){return Math.round((new Date(b)-new Date(a))/864e5)}
+function today(){return new Date(Date.now()+8*36e5).toISOString().slice(0,10)}
+const city=()=>CITY[S.dest]?.[S.city]||null;
+const destLabel=()=>cname(S.dest)+(city()?'・'+city().n:(S.cityTxt?'・'+S.cityTxt:''));
+function tripMonths(){if(!S.dep)return[];const a=+S.dep.slice(5,7)-1,b=S.ret?+S.ret.slice(5,7)-1:a;const out=[a];let m=a;while(m!==b&&out.length<12){m=(m+1)%12;out.push(m)}return out}
+const aiKey=()=>[S.orig,S.dest,city()?'':S.cityTxt,tripMonths().join('.')].join('|');
+const AI=()=>S.ai?.[aiKey()]||null;
+
+// ---------- Claude 補充資料 ----------
+let SAMPLE=null,aiBusy=false,aiErr='';
+try{window.claude?.use?.('sample').then(s=>{SAMPLE=s;all()}).catch(()=>{})}catch(e){}
+function aiBox(what){return '';
+ if(AI())return `<div class="small muted">以上「${what}」由 Claude 依訓練資料整理，可能不是最新，出發前請到官方網站查證。<button class="btn ghost small" data-ai="1" style="margin-left:6px">重新查詢</button></div>`;
+ if(!SAMPLE)return `<div class="callout">這個目的地沒有內建的${what}資料，請出發前查詢官方資訊。</div>`;
+ return `<div class="ai"><div><b>這個目的地沒有內建的${what}資料。</b></div><div class="small">可以請 Claude 依你的出發地與日期整理：天氣穿搭、退稅、入境規定、插座、安全提醒，一次補齊。會使用你的 Claude 用量。</div>
+ ${aiBusy?'<div class="small">Claude 整理中，約需 10–60 秒…</div>':`<div><button class="btn" data-ai="1">請 Claude 補上資料</button></div>`}${aiErr?`<div class="small" style="color:var(--stamp)">${esc(aiErr)}</div>`:''}</div>`}
+async function askAI(){if(!SAMPLE||aiBusy)return;aiBusy=true;aiErr='';all();
+ const o=cname(S.orig),d=cname(S.dest),c=city()?city().n:S.cityTxt,ms=tripMonths().map(m=>m+1);
+ const prompt=`你是旅遊資訊助理。旅客持「${o}」護照，從${o}出發，前往「${d}」${c?'的'+c:''}，日期 ${S.dep||'未定'} 到 ${S.ret||'未定'}（涵蓋月份：${ms.join('、')||'未定'}）。
+請用繁體中文（台灣用語）整理，只回覆一個 JSON 物件，不要其他文字：
+{"city":"氣候參考城市","climate":[{"month":11,"hi":20,"lo":12,"rain":1,"wear":"一句穿搭建議"}],"rainNote":"降雨、颱風、颶風或下雪等一句提醒",
+"tax":{"available":true,"tax":"稅名與稅率","threshold":"最低消費門檻","steps":["退稅步驟"],"deadline":"帶出境期限","note":"其他提醒"},
+"entry":"以此護照前往的簽證與入境規定","plug":"插座型式與電壓","tips":["當地生活提醒，最多4條"],
+"safety":{"level":"none|gray|yellow|orange|red","why":"為什麼危險（戰爭、恐攻、治安、政治、天災等），沒有就空字串","watch":["要注意什麼，最多4條"]},
+"customs":"回到${o}入境時的免稅額與禁止攜帶物重點"}
+climate 只列涵蓋的月份，hi/lo 為歷年月平均攝氏溫度整數；rain：0 少雨、1 偶有雨、2 雨季或颱風季。沒有退稅制度時 available 為 false 並在 note 說明。safety 的 level 以台灣外交部旅遊警示燈號為準（若出發地不是台灣，以該國政府旅遊警示為準）。不確定的內容請寫「請出發前查證」。`;
+ try{const r=await SAMPLE.json(prompt,{modelTier:'default'});if(!r||typeof r!=='object')throw{code:'invalid_json'};S.ai=S.ai||{};S.ai[aiKey()]=r;save();toast('資料已補上')}
+ catch(e){aiErr={not_granted:'沒有取得使用 Claude 的許可。',sampling_disabled:'這個帳號無法使用 Claude。',rate_limited:'查詢太頻繁，請稍後再試。',invalid_json:'回覆格式有誤，請再試一次。'}[e?.code]||'查詢失敗，請稍後再試。';if(e?.code==='not_granted'||e?.code==='sampling_disabled')SAMPLE=null}
+ aiBusy=false;all()}
+document.addEventListener('click',e=>{if(e.target.closest('[data-ai]'))askAI()});
+
+// ---------- 行程 ----------
+function fillSelects(){
+ const all=Object.keys(CUR).map(c=>[c,cname(c)]).filter(([c,n])=>n&&n!==c).sort((a,b)=>a[1].localeCompare(b[1],'zh-Hant-TW'));
+ const tag=c=>SAFETY[c]&&SAFETY[c][0]!=='note'?`（${LVTXT[SAFETY[c][0]]}）`:'';
+ const opts=(withTag)=>`<optgroup label="熱門">${POPULAR.map(c=>`<option value="${c}">${esc(cname(c))}${withTag?tag(c):''}</option>`).join('')}</optgroup><optgroup label="全部國家／地區">${all.map(([c,n])=>`<option value="${c}">${esc(n)}${withTag?tag(c):''}</option>`).join('')}</optgroup>`;
+ const apC=new Set(AIRPORTS.map(a=>a[0]));
+ $('orig').innerHTML=AIRPORTS.map(([c,n,list])=>`<optgroup label="${esc(cname(c)||n)}">${list.map(([code,an])=>`<option value="AP:${code}">${esc(an)}（${code}）</option>`).join('')}</optgroup>`).join('')
+  +`<optgroup label="其他國家／地區">${all.filter(([c])=>!apC.has(c)).map(([c,n])=>`<option value="C:${c}">${esc(n)}</option>`).join('')}</optgroup>`;$('dest').innerHTML=opts(true)}
+function renderTrip(){
+ $('orig').value=S.origAp&&APMAP[S.origAp]?'AP:'+S.origAp:'C:'+S.orig;$('dest').value=S.dest;
+ const cs=CITY[S.dest];$('citySelWrap').hidden=!cs;$('cityTxtWrap').hidden=!!cs&&S.city!=='other';
+ if(cs){$('citySel').innerHTML=Object.entries(cs).map(([k,v])=>`<option value="${k}">${v.n}</option>`).join('')+'<option value="other">其他城市</option>';$('citySel').value=cs[S.city]?S.city:'other'}
+ $('cityTxt').value=S.cityTxt;$('dDep').value=S.dep;$('dRet').value=S.ret;$('wDep').textContent=fdateY(S.dep);$('wRet').textContent=fdateY(S.ret);$('exTag').hidden=!S.example;
+ $('origCode').textContent=S.origAp||S.orig;$('destCode').textContent=city()?city().code:S.dest;
+ let line=`${origLabel()} → ${destLabel()}`;
+ if(S.dep&&S.ret){const n=days(S.dep,S.ret);line+=` · ${fdate(S.dep)} – ${fdate(S.ret)} · ${n+1} 天 ${n} 夜`}else if(S.dep)line+=` · ${fdate(S.dep)} 出發`;
+ $('tripLine').textContent=line;
+ const cd=S.dep?days(today(),S.dep):NaN;$('countdown').textContent=isFinite(cd)?(cd<0?'已出發':cd):'–';
+ const sf=safetyOf(S.dest);
+ $('safetyBanner').innerHTML=sf&&sf.lv!=='none'?`<div class="safety ${sf.lv}"><div><span class="lv ${sf.lv}">${sf.label}</span> <b>${esc(cname(S.dest))}</b></div><div class="small">${esc(sf.why)}</div><div class="small"><a href="#" data-tabgo="safe">看要注意什麼 →</a></div></div>`:'';
+}
+const LIVEMAP={red:['red','紅色警示'],orange:['orange','橙色警示'],yellow:['orange','黃色警示'],gray:['note','灰色警示']};
+function safetyOf(c){
+ const L=c===S.dest&&live.safety&&live.safety.dest===c?live.safety:null;
+ if(L){const m=LIVEMAP[L.level];const meta={src:'live',at:L.fetchedAt,url:L.source,confirmed:L.confirmed};
+  if(m)return{lv:m[0],label:m[1],why:L.why||'',watch:L.watch||[],...meta};return{lv:'none',why:L.why||'',watch:L.watch||[],...meta}}
+ const A=ADV?.[c];
+ if(!SAFETY[c]&&A&&A.st>=1){const lv=ADVLV[A.st];return{lv,label:ADVTXT[A.st],why:'國際即時評級（加拿大政府）。台灣外交部燈號請點下方連結確認。',watch:[],src:'ca',at:A.date}}
+ if(!SAFETY[c]&&A&&A.st===0)return{lv:'none',why:'國際即時評級（加拿大政府）：一般注意即可。',watch:[],src:'ca',at:A.date};
+ if(SAFETY[c]){const[lv,why,watch]=SAFETY[c];return{lv,label:LVTXT[lv],why,watch:[watch],src:'built'}}
+ const a=c===S.dest?AI()?.safety:null;
+ if(a&&a.level&&a.level!=='none'){const map={red:'red',orange:'orange',yellow:'orange',gray:'note'};const t={red:'紅色警示',orange:'橙色警示',yellow:'黃色警示',gray:'灰色警示'};return{lv:map[a.level]||'note',label:t[a.level]||'注意',why:a.why||'',watch:a.watch||[],src:'ai'}}
+ if(a)return{lv:'none',why:a.why||'',watch:a.watch||[],src:'ai'};
+ return null}
+function renderSafe(){
+ const sf=safetyOf(S.dest),n=esc(destLabel());let h=`<h2>${n} 安全狀況</h2>`;
+ if(S.orig!=='TW')h+=`<div class="small muted">以下燈號以台灣外交部為準；持其他國家護照請一併查你本國政府的旅遊警示。</div>`;
+ const srcLine=!sf?'':sf.src==='live'?`<div class="small">${sf.confirmed?'已在官方網站確認':'官方頁面未能確認，依新聞判斷'} · 查核於 ${fdt(sf.at)}${sf.url?` · <a href="${esc(sf.url)}" target="_blank" rel="noopener">來源</a>`:''}</div>`:sf.src==='ca'?`<div class="small">加拿大政府旅遊評級，網頁每次打開自動抓取${sf.at?` · 評級日期 ${esc(sf.at)}`:''}</div>`:sf.src==='ai'?`<div class="small muted">Claude 依訓練資料整理，可能過時</div>`:`<div class="small muted">內建資料（2026 年 10 月整理），出發前請到外交部確認最新燈號</div>`;
+ const wl=w=>w&&w.length?`<div><b>要注意：</b></div><ul class="steps">${w.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'';
+ if(sf&&sf.lv!=='none')h+=`<div class="safety ${sf.lv}"><div><span class="lv ${sf.lv}">${sf.label}</span></div>${sf.why?`<div><b>為什麼：</b>${esc(sf.why)}</div>`:''}${wl(sf.watch)}${srcLine}</div>`;
+ else if(sf)h+=`<div class="safety note"><div><span class="lv ok">無特別警示</span></div>${sf.why?`<div class="small">${esc(sf.why)}</div>`:''}${wl(sf.watch)}${srcLine}</div>`;
+ else if(POPULAR.includes(S.dest)||CITY[S.dest])h+=`<div class="safety note"><div><span class="lv ok">無特別警示</span></div><div class="small">目前沒有戰爭或重大安全警示，注意扒手、詐騙等一般治安即可。</div><div class="small muted">內建資料（2026 年 10 月整理）</div></div>`;
+ const A2=ADV?.[S.dest];if(A2&&sf?.src!=='ca')h+=`<div class="small">國際即時評級（加拿大政府）：<b>${ADVTXT[A2.st]}</b>${A2.date?` · ${esc(A2.date)}`:''}</div>`;
+ if(!ADV)h+=`<div class="small muted">國際即時評級載入中，或目前連不上。</div>`;
+ h+=`<div class="small"><a href="https://www.boca.gov.tw/sp-trwa-list-1.html" target="_blank" rel="noopener">查外交部最新燈號 →</a> · <a href="${gsearch('外交部 旅遊警示 '+cname(S.dest))}" target="_blank" rel="noopener">搜尋 ${esc(cname(S.dest))} 最新警示新聞 →</a></div>`;
+ h+=`<div class="small muted">出國前到外交部「出國登錄」登記，發生緊急事件時駐外館處能找到你。旅外急難救助專線：+886-800-085-095。</div>`;
+ $('safeDest').innerHTML=h;
+ const order={red:0,orange:1,note:2};
+ $('riskList').innerHTML=Object.entries(SAFETY).sort((a,b)=>order[a[1][0]]-order[b[1][0]]||cname(a[0]).localeCompare(cname(b[0]),'zh-Hant-TW')).map(([c,[lv,why]])=>`<li><span class="lv ${lv}">${LVTXT[lv]}</span><div><button data-go="${c}">${esc(cname(c))}</button><div class="small muted">${esc(why)}</div></div></li>`).join('');
+}
+
+// ---------- 天氣 ----------
+function clothes(hi,lo){
+ if(lo<=0)return{t:'嚴寒',w:'羽絨外套、發熱衣、毛衣、毛帽、手套、圍巾；可能下雪，鞋子要防滑',items:['羽絨外套','發熱衣','毛帽手套圍巾','暖暖包','防滑鞋']};
+ if(lo<=8)return{t:'冷',w:'厚大衣或輕羽絨＋發熱衣＋毛衣，洋蔥式穿法',items:['大衣／輕羽絨','發熱衣','毛衣','圍巾']};
+ if(lo<=14)return{t:'涼',w:'風衣或薄羽絨＋長袖＋針織衫，早晚溫差大',items:['風衣／薄羽絨','長袖上衣','針織外套']};
+ if(hi<=25)return{t:'舒適',w:'長袖或短袖＋薄外套',items:['薄外套','長袖上衣']};
+ if(hi<=30)return{t:'溫暖',w:'短袖為主，帶件薄外套進冷氣房',items:['短袖上衣','薄外套（冷氣房）','太陽眼鏡']};
+ return{t:'炎熱',w:'透氣短袖短褲、帽子、防曬，室內冷氣很強帶薄外套',items:['透氣短袖','帽子','太陽眼鏡','薄外套（冷氣房）','防蚊液']}}
+const RAIN=[['少雨','可帶輕便折傘備用','r0'],['偶有降雨','建議帶折疊傘','r1'],['雨季／颱風季','一定要帶雨傘或雨衣，鞋子選防水的','r2']];
+function climate(){const ms=tripMonths(),c=city();
+ if(c)return{src:'built',name:c.n,rows:ms.map(m=>({m,hi:c.hi[m],lo:c.lo[m],rain:c.rain[m]}))};
+ if(lastYear?.rows?.length)return{src:'lastyear',name:lastYear.place,rows:lastYear.rows};
+ const a=AI();if(a?.climate?.length)return{src:'ai',name:a.city,note:a.rainNote,rows:a.climate.map(x=>({m:(+x.month||1)-1,hi:+x.hi,lo:+x.lo,rain:Math.max(0,Math.min(2,+x.rain||0)),wear:x.wear}))};
+ return null}
+function renderWx(){const box=$('wxBox'),ms=tripMonths();
+ if(!ms.length){box.innerHTML='<h2>天氣穿搭</h2><p class="muted">先填出發日。</p>';return}
+ const cl=climate();let h=`<h2>${esc(destLabel())} 的天氣穿搭</h2>`+(cl?forecastHtml():'');
+ if(!cl){box.innerHTML=h+forecastHtml()+`<div class="callout">${geoState==='nocity'?'在上方「城市」欄輸入城市名稱，就會顯示天氣預報和去年同期的實際天氣。':geoState==='notfound'?'找不到這個城市，請換個寫法（例如英文名稱）。':geoState==='error'?'目前連不上天氣資料，請檢查網路後重新整理。':'天氣資料載入中…'}</div>`;return}
+ if(cl.src==='lastyear')h+=`<div class="small muted">${esc(cl.name)} 去年同期的實際天氣（Open-Meteo 觀測資料）</div>`;
+ if(cl.src==='ai'&&cl.name)h+=`<div class="small muted">參考城市：${esc(cl.name)}</div>`;
+ for(const w of cl.rows){const c=clothes(w.hi,w.lo),r=RAIN[w.rain];
+  h+=`<h3>${M[w.m]}（${cl.src==='lastyear'?`去年同期${w.n?`，${w.n} 天中 ${w.wet} 天下雨`:''}`:'歷年平均'}）</h3><div class="wx-top"><div class="wx-cell"><span class="label">高溫 / 低溫</span><span class="v">${w.hi}° / ${w.lo}°</span><span class="small muted">體感：${c.t}</span></div>
+  <div class="wx-cell"><span class="label">降雨</span><span><span class="pill ${r[2]}">${r[0]}</span></span><span class="small">${r[1]}</span></div></div><div><b>怎麼穿：</b>${esc(w.wear||c.w)}</div>`}
+ if(cl.note)h+=`<div class="callout">${esc(cl.note)}</div>`;
+ if(cl.src==='built'&&['JP','HK','TW'].includes(S.dest)&&ms.some(m=>m>=7&&m<=9))h+=`<div class="callout">8–10 月是颱風季，出發前幾天留意颱風動態，航班可能延誤或取消。</div>`;
+ if(cl.src==='built')h+=`<div class="chart">${tempChart(city(),ms)}</div>`;
+ h+=`<div class="small muted">平均值僅供打包參考，出發前 3–5 天請再看當地天氣預報。</div>`;box.innerHTML=h}
+function fcDays(){const f=live.forecast;if(!f?.days?.length)return[];const st=S.dep&&S.dep>today()?S.dep:today();return f.days.filter(d=>d.date>=st&&(!S.ret||d.date<=S.ret))}
+function forecastHtml(){const f=live.forecast,ds=fcDays();
+ if(!ds.length){const cd=S.dep?days(today(),S.dep):99;return cd>14?`<div class="small muted">出發前 16 天內會自動顯示實際天氣預報。</div>`:(f?'':`<div class="small muted">實際天氣預報載入中…</div>`)}
+ const anyRain=ds.some(d=>(+d.rainPct||0)>=50);
+ return `<h3>實際天氣預報 <span class="small muted" style="font-weight:400">${esc(f.place||'')} · 更新於 ${fdt(f.fetchedAt)}</span></h3>
+ <div class="chart"><table><thead><tr><th>日期</th><th>天氣</th><th>高 / 低</th><th>降雨</th></tr></thead><tbody>${ds.map(d=>`<tr><td class="mono">${fdate(d.date)}</td><td>${esc(d.desc||'')}</td><td class="mono">${d.hi}° / ${d.lo}°</td><td class="mono">${d.rainPct==null?'–':`<span class="pill ${d.rainPct>=60?'r2':d.rainPct>=30?'r1':'r0'}">${d.rainPct}%</span>`}</td></tr>`).join('')}</tbody></table></div>
+ ${anyRain?'<div class="callout">預報有幾天降雨機率 50% 以上，記得帶傘。</div>':''}${f.source?`<div class="small muted"><a href="${esc(f.source)}" target="_blank" rel="noopener">預報來源</a></div>`:''}<h3 style="margin-top:6px">歷年平均</h3>`}
+function tempChart(d,ms){const W=560,H=200,P={l:30,r:8,t:12,b:26};
+ const min=Math.min(...d.lo)-3,max=Math.max(...d.hi)+3,y=v=>P.t+(max-v)/(max-min)*(H-P.t-P.b),cw=(W-P.l-P.r)/12;
+ let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="全年月均溫">`;
+ const step=max-min>30?10:5;for(let v=Math.ceil(min/step)*step;v<=max;v+=step)s+=`<line x1="${P.l}" x2="${W-P.r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${P.l-4}" y="${y(v)+4}" text-anchor="end" font-size="10" fill="var(--muted)" font-family="IBM Plex Mono,monospace">${v}°</text>`;
+ for(let i=0;i<12;i++){const on=ms.includes(i),x=P.l+i*cw+cw*.25,w=cw*.5;
+  s+=`<rect x="${x}" y="${y(d.hi[i])}" width="${w}" height="${y(d.lo[i])-y(d.hi[i])}" rx="3" fill="${on?'var(--accent)':'var(--line)'}"/>`;
+  if(on)s+=`<text x="${x+w/2}" y="${y(d.hi[i])-3}" text-anchor="middle" font-size="10" fill="var(--ink)" font-family="IBM Plex Mono,monospace">${d.hi[i]}°</text>`;
+  if(d.rain[i]===2)s+=`<circle cx="${x+w/2}" cy="${H-P.b+16}" r="3" fill="var(--stamp)"/>`;
+  s+=`<text x="${x+w/2}" y="${H-P.b+11}" text-anchor="middle" font-size="10" fill="${on?'var(--ink)':'var(--muted)'}">${i+1}月</text>`}
+ return s+`</svg><div class="small muted">長條＝月均低溫到高溫，深色是你的旅行月份；紅點＝雨季。</div>`}
+
+// ---------- 行李 ----------
+function suggestions(){const out=new Set(),cl=climate();const fd=fcDays();if(fd.length){const hi=Math.max(...fd.map(d=>+d.hi)),lo=Math.min(...fd.map(d=>+d.lo));clothes(hi,lo).items.forEach(i=>out.add(i));if(fd.some(d=>(+d.rainPct||0)>=30))out.add('折疊雨傘')}else if(cl)for(const w of cl.rows){clothes(w.hi,w.lo).items.forEach(i=>out.add(i));if(w.rain>=1)out.add('折疊雨傘');if(w.rain===2){out.add('輕便雨衣');out.add('防水鞋')}}
+ const have=new Set(Object.values(S.items).flat().map(i=>i.t));return[...out].filter(i=>!have.has(i))}
+function renderPack(){const all=Object.values(S.items).flat(),done=all.filter(i=>i.d).length;
+ $('packCount').textContent=`${done} / ${all.length}`;$('packBar').style.width=all.length?(done/all.length*100)+'%':'0';
+ const sg=suggestions();$('suggestWrap').hidden=!sg.length;$('suggest').innerHTML=sg.map(t=>`<button class="chip" data-s="${esc(t)}">＋ ${esc(t)}</button>`).join('');
+ $('cats').innerHTML=Object.entries(S.items).map(([c,arr])=>`<div class="box"><div class="cat-head"><h3>${esc(c)}</h3><span class="small muted mono">${arr.filter(i=>i.d).length}/${arr.length}</span></div>
+  <ul class="items">${arr.map(i=>`<li class="${i.d?'done':''}"><input type="checkbox" id="it${i.id}" data-c="${esc(c)}" data-id="${i.id}" ${i.d?'checked':''}><label for="it${i.id}">${esc(i.t)}</label><button class="x" data-del="${i.id}" data-c="${esc(c)}" aria-label="刪除 ${esc(i.t)}">✕</button></li>`).join('')}</ul></div>`).join('');
+ const cur=$('newCat').value;$('newCat').innerHTML=Object.keys(S.items).map(c=>`<option>${esc(c)}</option>`).join('');if(cur)$('newCat').value=cur}
+
+// ---------- 退稅 ----------
+function renderTax(){let h;
+ if(TAX[S.dest])h=TAX[S.dest](S.dep)+`<div class="small muted">各國門檻與流程會調整，購物前看店家或機場公告。</div>`;
+ else{const t=AI()?.tax;h=`<h2>${esc(cname(S.dest))}退稅</h2>`;
+  if(t){h+=t.available===false?`<div class="callout">${esc(t.note||'沒有旅客退稅制度。')}</div>`:`<dl class="rule"><dt>稅率</dt><dd>${esc(t.tax)}</dd><dt>門檻</dt><dd>${esc(t.threshold)}</dd><dt>期限</dt><dd>${esc(t.deadline)}</dd></dl>${t.steps?.length?`<h3>流程</h3><ol class="steps">${t.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>`:''}${t.note?`<div class="small">${esc(t.note)}</div>`:''}`}
+  h+=aiBox('退稅')}
+ h+=`<div class="small"><a href="${gsearch(cname(S.dest)+' 旅客退稅 規定 '+new Date().getFullYear())}" target="_blank" rel="noopener">搜尋 ${esc(cname(S.dest))} 最新退稅規定 →</a></div>`;
+ $('taxBox').innerHTML=h;
+ if(S.orig==='TW')$('customsBox').innerHTML=`<h3>回台灣入境免稅額</h3><dl class="rule"><dt>酒</dt><dd>1 公升（滿 20 歲）</dd><dt>菸</dt><dd>捲菸 200 支，或雪茄 25 支，或菸絲 1 磅</dd><dt>其他物品</dt><dd>完稅價格總值 NT$20,000 以內</dd><dt>禁止攜帶</dt><dd>肉類製品（含肉乾、肉鬆、泡麵肉包）、新鮮水果、動植物</dd></dl><div class="small muted">以財政部關務署公告為準。帶肉製品入境罰款最高可達 NT$100 萬。</div>`;
+ else{const c=AI()?.customs;$('customsBox').innerHTML=`<h3>回${esc(cname(S.orig))}入境免稅額</h3>`+(c?`<div>${esc(c)}</div>`:`<div class="small muted">請查詢${esc(cname(S.orig))}海關規定${SAMPLE?'，或在上方請 Claude 補上資料':''}。</div>`)}}
+
+// ---------- 匯率 ----------
+const oc=()=>CUR[S.orig]||'TWD',dc=()=>CUR[S.dest]||'USD',pair=()=>dc()+'>'+oc();
+const usdOf=c=>+live.fx?.rates?.[c]||USD[c];
+function rate(){const k=pair();if(S.rates[k])return S.rates[k];const a=usdOf(dc()),b=usdOf(oc());return a&&b?+(b/a).toPrecision(4):NaN}
+function nice(x){const p=10**Math.floor(Math.log10(x)),m=x/p;return(m<1.5?1:m<3.5?2:m<7.5?5:10)*p}
+function renderFx(){const d=dc(),o=oc(),r=rate(),same=d===o;
+ $('fxSame').hidden=!same;$('fxMain').hidden=same;$('logBox').hidden=same;if(same){$('fxCur').textContent=d;return}
+ $('fxCur').textContent=`${d} → ${o}`;$('rateUnit').textContent=d;$('rateUnit2').textContent=o;
+ $('amtFLabel').textContent=`${curName(d)} ${d}`;$('amtTLabel').textContent=`${curName(o)} ${o}`;$('qh').textContent=d;$('qh2').textContent=o;
+ if(document.activeElement!==$('rate'))$('rate').value=isFinite(r)?r:'';
+ if(document.activeElement!==$('amtF'))$('amtF').value=S.amt;
+ if(document.activeElement!==$('amtT'))$('amtT').value=isFinite(r)?+(S.amt*r).toFixed(r*S.amt<100?2:0):'';
+ const u=usdOf(d)||(isFinite(r)&&usdOf(o)?usdOf(o)/r:null);
+ const base=u?[10,30,50,100,300].map(v=>nice(v*u)):[10,50,100,500,1000];
+ $('quick').innerHTML=isFinite(r)?base.map(v=>`<tr><td class="mono">${fmt(v,0)} ${d}</td><td class="mono">${fmt(v*r,v*r<100?2:0)} ${o}</td></tr>`).join(''):`<tr><td colspan="2" class="muted">請先在上方輸入匯率。</td></tr>`;
+ $('fxNote').innerHTML=(S.rates[pair()]?`使用你輸入的匯率。<button class="btn ghost small" id="useLive">改回自動匯率</button>`:live.fx&&isFinite(r)?`國際中間匯率，每天更新（${fdt(live.fx.fetchedAt)}）。銀行換匯會有價差，實際以牌告為準。`:isFinite(r)?'預設匯率為大約參考值，換匯前請看銀行牌告並改成實際匯率。':'這個幣別沒有內建參考匯率，請輸入銀行牌告匯率。')+(o==='TWD'?' <a href="https://rate.bot.com.tw/xrt" target="_blank" rel="noopener">台灣銀行牌告匯率</a>':' <a href="https://www.xe.com/currencyconverter/" target="_blank" rel="noopener">XE 匯率查詢</a>');
+ const log=(S.log[pair()]||[]).slice().sort((a,b)=>a.d<b.d?-1:1);
+ if(!$('logDate').value)$('logDate').value=today();
+ $('logBody').innerHTML=log.length?log.map((e,i)=>{const p=i?(e.r-log[i-1].r)/log[i-1].r*100:null;return `<tr><td class="mono">${fdate(e.d)}</td><td class="mono">${e.r}</td><td class="mono ${p>0?'up':p<0?'down':''}">${p==null?'–':(p>0?'▲ ':p<0?'▼ ':'')+Math.abs(p).toFixed(2)+'%'}</td><td><button class="x" data-ldel="${e.d}|${e.r}" aria-label="刪除">✕</button></td></tr>`}).reverse().join(''):`<tr><td colspan="4" class="muted">還沒有紀錄。輸入今天銀行的現金賣出匯率，按「記錄」。</td></tr>`;
+ $('logEx').hidden=!log.some(e=>e.ex);
+ if(log.length>1){const f=log[0].r,l=log[log.length-1].r,p=(l-f)/f*100;$('fxChange').innerHTML=`<span class="mono ${p>0?'up':'down'}">${p>0?'▲':'▼'} ${Math.abs(p).toFixed(2)}%</span> <span class="muted">${p>0?'外幣變貴':'外幣變便宜'}</span>`;$('fxSpark').innerHTML=spark(log)}
+ else{$('fxChange').textContent='';$('fxSpark').innerHTML=''}}
+function spark(log){const W=560,H=120,P={l:8,r:60,t:14,b:20},rs=log.map(e=>e.r),mn=Math.min(...rs),mx=Math.max(...rs),rg=mx-mn||mx*.01;
+ const x=i=>P.l+i/(log.length-1)*(W-P.l-P.r),y=v=>P.t+(mx-v)/rg*(H-P.t-P.b),pts=log.map((e,i)=>`${x(i)},${y(e.r)}`).join(' '),last=log.length-1,T='font-size="10" fill="var(--muted)" font-family="IBM Plex Mono,monospace"';
+ return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="匯率走勢"><line x1="${P.l}" x2="${W-P.r}" y1="${y(mn)}" y2="${y(mn)}" stroke="var(--line)"/><line x1="${P.l}" x2="${W-P.r}" y1="${y(mx)}" y2="${y(mx)}" stroke="var(--line)"/>
+ <polygon points="${x(0)},${H-P.b} ${pts} ${x(last)},${H-P.b}" fill="var(--accent-soft)"/><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="${x(last)}" cy="${y(log[last].r)}" r="4" fill="var(--accent)"/>
+ <text x="${W-P.r+6}" y="${y(mx)+4}" ${T}>${mx}</text><text x="${W-P.r+6}" y="${y(mn)+4}" ${T}>${mn}</text><text x="${P.l}" y="${H-4}" ${T}>${fdate(log[0].d)}</text><text x="${x(last)}" y="${H-4}" text-anchor="end" ${T}>${fdate(log[last].d)}</text></svg>`}
+
+// ---------- 注意事項 ----------
+function renderNotes(){const co=COUNTRY[S.dest],a=AI();
+ const entry=co&&S.orig==='TW'?co.entry:a?.entry,plug=co?.plug||a?.plug,tips=co?.tip?[co.tip]:(a?.tips||[]);
+ let h=`<h2>${esc(destLabel())} 注意事項</h2><dl class="rule">`;
+ h+=`<dt>入境簽證</dt><dd>${entry?esc(entry):`<span class="muted">請查詢持${esc(cname(S.orig))}護照前往的簽證規定。</span>`}</dd>`;
+ h+=`<dt>插座電壓</dt><dd>${plug?esc(plug):'<span class="muted">請查詢當地插座型式與電壓。</span>'}</dd>`;
+ if(tips.length)h+=`<dt>當地提醒</dt><dd>${tips.map(esc).join('<br>')}</dd>`;
+ const sf=safetyOf(S.dest);if(sf&&sf.lv!=='none')h+=`<dt>安全</dt><dd><span class="lv ${sf.lv}">${sf.label}</span> ${esc(sf.why)}</dd>`;
+ h+=`<dt>通用</dt><dd>行動電源、鋰電池只能隨身帶；液體 100ml 以下才能帶上機，裝進 1 公升夾鏈袋。</dd></dl>`;
+ h+=`<div class="small"><a href="https://www.boca.gov.tw" target="_blank" rel="noopener">外交部領事事務局（簽證與入境須知）→</a> · <a href="${gsearch(cname(S.dest)+' 入境 規定 '+cname(S.orig)+' 護照 '+new Date().getFullYear())}" target="_blank" rel="noopener">搜尋最新入境規定 →</a></div>`;
+ $('destNotes').innerHTML=h;
+ $('todo').innerHTML=S.todo.map(i=>`<li class="${i.d?'done':''}"><input type="checkbox" id="td${i.id}" data-td="${i.id}" ${i.d?'checked':''}><label for="td${i.id}">${esc(i.t)}</label><button class="x" data-tdel="${i.id}" aria-label="刪除">✕</button></li>`).join('');
+ if(document.activeElement!==$('memo'))$('memo').value=S.memo}
+
+function setTab(t){S.tab=t;document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));document.querySelectorAll('[role=tabpanel]').forEach(p=>p.hidden=p.id!=='p-'+t);save()}
+function all(){loadWeather();renderLive();renderTrip();renderPack();renderSafe();renderWx();renderTax();renderFx();renderNotes()}
+
+
+// ---------- 獨立網頁版：瀏覽器直接抓公開資料（不使用 Claude） ----------
+const GEO={tokyo:[35.68,139.69],osaka:[34.69,135.5],fukuoka:[33.59,130.4],sapporo:[43.06,141.35],okinawa:[26.21,127.68],seoul:[37.57,126.98],busan:[35.18,129.08],bangkok:[13.75,100.5],singapore:[1.29,103.85],kl:[3.14,101.69],hongkong:[22.32,114.17],hcmc:[10.82,106.63],paris:[48.86,2.35],london:[51.51,-0.13],newyork:[40.71,-74.01]};
+const WCODE={0:'晴',1:'大致晴朗',2:'多雲',3:'陰',45:'霧',48:'霧',51:'毛毛雨',53:'毛毛雨',55:'毛毛雨',56:'凍雨',57:'凍雨',61:'小雨',63:'中雨',65:'大雨',66:'凍雨',67:'凍雨',71:'小雪',73:'中雪',75:'大雪',77:'雪',80:'陣雨',81:'陣雨',82:'大陣雨',85:'陣雪',86:'陣雪',95:'雷雨',96:'雷雨',99:'雷雨'};
+const cacheGet=(k,maxMs)=>{try{const v=JSON.parse(localStorage.getItem('c:'+k));if(v&&Date.now()-v.t<maxMs)return v.d}catch(e){}return null};
+const cacheSet=(k,d)=>{try{localStorage.setItem('c:'+k,JSON.stringify({t:Date.now(),d}))}catch(e){}};
+async function getJSON(url){const r=await fetch(url);if(!r.ok)throw new Error(r.status);return r.json()}
+let lastYear=null,geoState='',fetchKey='';
+async function loadFx(){
+ let d=cacheGet('fx',3*36e5);
+ if(!d){try{const j=await getJSON('https://open.er-api.com/v6/latest/USD');if(j.result==='success'){d={rates:j.rates,fetchedAt:j.time_last_update_utc};cacheSet('fx',d)}}catch(e){}}
+ if(d){live.fx=d;all()}}
+let ADV=null;
+const ADVTXT=['一般注意','提高警覺','避免非必要旅行','避免一切旅行'],ADVLV=['none','note','orange','red'];
+async function loadAdvisory(){let d=cacheGet('adv',12*36e5);
+ if(!d){try{const j=await getJSON('https://data.international.gc.ca/travel-voyage/index-updated.json');const out={};
+  for(const[k,v]of Object.entries(j.data||{})){const st=+v['advisory-state'];if(isNaN(st))continue;out[(v['country-iso']||k).toUpperCase()]={st,text:v.eng?.['advisory-text']||'',date:v['date-published']?.date||''}}
+  if(Object.keys(out).length){d=out;cacheSet('adv',d)}}catch(e){}}
+ if(d){ADV=d;all()}}
+const gsearch=q=>'https://www.google.com/search?q='+encodeURIComponent(q);
+async function placeCoords(){
+ const c=city();if(c&&GEO[S.city])return{lat:GEO[S.city][0],lon:GEO[S.city][1],name:c.n};
+ if(!S.cityTxt)return null;
+ const k='geo:'+S.dest+':'+S.cityTxt;let g=cacheGet(k,30*864e5);
+ if(!g){const j=await getJSON(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(S.cityTxt)}&count=1&language=zh&countryCode=${S.dest}`);const r=j.results?.[0];if(!r)return{missing:true};g={lat:r.latitude,lon:r.longitude,name:r.name};cacheSet(k,g)}
+ return g}
+const shiftY=s=>{const[y,m,d]=s.split('-');return `${+y-1}-${m}-${d==='29'&&m==='02'?'28':d}`};
+async function loadWeather(){
+ const key=placeId()+S.dep+S.ret;if(key===fetchKey)return;fetchKey=key;
+ live.forecast=null;lastYear=null;geoState='';
+ let p;try{p=await placeCoords()}catch(e){geoState='error';all();return}
+ if(!p){geoState='nocity';all();return}if(p.missing){geoState='notfound';all();return}
+ // 實際預報（16 天內）
+ try{const fk='fc:'+p.lat+','+p.lon;let f=cacheGet(fk,3*36e5);
+  if(!f){const j=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${p.lat}&longitude=${p.lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&timezone=auto&forecast_days=16`);
+   f={place:p.name,fetchedAt:new Date().toISOString(),source:'https://open-meteo.com/',days:j.daily.time.map((t,i)=>({date:t,hi:Math.round(j.daily.temperature_2m_max[i]),lo:Math.round(j.daily.temperature_2m_min[i]),rainPct:j.daily.precipitation_probability_max[i],desc:WCODE[j.daily.weather_code[i]]||''}))};cacheSet(fk,f)}
+  if(key===fetchKey)live.forecast=f}catch(e){}
+ // 去年同期實際天氣（任何城市都有）
+ if(S.dep&&!city()){try{let a=shiftY(S.dep),b=shiftY(S.ret||S.dep);if(days(a,b)>31)b=new Date(new Date(a).getTime()+31*864e5).toISOString().slice(0,10);
+  const lk='ly:'+p.lat+','+p.lon+a+b;let L=cacheGet(lk,30*864e5);
+  if(!L){const j=await getJSON(`https://archive-api.open-meteo.com/v1/archive?latitude=${p.lat}&longitude=${p.lon}&start_date=${a}&end_date=${b}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum&timezone=auto`);
+   const by={};j.daily.time.forEach((t,i)=>{const m=+t.slice(5,7)-1;(by[m]=by[m]||[]).push([j.daily.temperature_2m_max[i],j.daily.temperature_2m_min[i],j.daily.precipitation_sum[i]])});
+   L={place:p.name,rows:Object.entries(by).map(([m,arr])=>{const n=arr.length,wet=arr.filter(x=>(x[2]||0)>=1).length;return{m:+m,hi:Math.round(arr.reduce((s,x)=>s+x[0],0)/n),lo:Math.round(arr.reduce((s,x)=>s+x[1],0)/n),rain:wet/n>=.5?2:wet/n>=.2?1:0,wear:'',wet,n}})};cacheSet(lk,L)}
+  if(key===fetchKey)lastYear=L}catch(e){}}
+ all()}
+
+load();fillSelects();
+const touch=()=>{S.example=false};
+function setDest(c){S.dest=c;const cs=CITY[c];S.city=cs?Object.keys(cs)[0]:'other';S.cityTxt='';touch();save();all()}
+$('orig').onchange=e=>{const[t,v]=e.target.value.split(':');if(t==='AP'){S.origAp=v;S.orig=APMAP[v].c}else{S.origAp='';S.orig=v}touch();save();all()};
+$('dest').onchange=e=>setDest(e.target.value);
+$('citySel').onchange=e=>{S.city=e.target.value;touch();save();all();if(S.city==='other')setTimeout(()=>$('cityTxt').focus(),0)};
+$('cityTxt').onchange=e=>{S.cityTxt=e.target.value.trim();touch();save();all()};
+$('dDep').onchange=e=>{S.dep=e.target.value;if(S.ret&&S.ret<S.dep)S.ret=S.dep;touch();save();all()};
+$('dRet').onchange=e=>{S.ret=e.target.value;touch();save();all()};
+document.querySelector('.tabs').onclick=e=>{const b=e.target.closest('.tab');if(b)setTab(b.dataset.tab)};
+document.addEventListener('click',e=>{const g=e.target.closest('[data-tabgo]');if(g){e.preventDefault();setTab(g.dataset.tabgo)}
+ const d=e.target.closest('[data-go]');if(d){setDest(d.dataset.go);window.scrollTo({top:0,behavior:'smooth'});toast('目的地已改為'+cname(d.dataset.go))}});
+$('cats').onchange=e=>{const t=e.target;if(t.dataset.id==null)return;S.items[t.dataset.c].find(i=>i.id==t.dataset.id).d=t.checked;save();renderPack()};
+$('cats').onclick=e=>{const b=e.target.closest('[data-del]');if(!b)return;S.items[b.dataset.c]=S.items[b.dataset.c].filter(i=>i.id!=b.dataset.del);save();renderPack()};
+function addItem(c,t){t=t.trim();if(!t)return;(S.items[c]=S.items[c]||[]).push({id:S.nid++,t,d:false});save();renderPack();toast('已加入：'+t)}
+$('addBtn').onclick=()=>{addItem($('newCat').value,$('newItem').value);$('newItem').value=''};
+$('newItem').onkeydown=e=>{if(e.key==='Enter')$('addBtn').click()};
+$('suggest').onclick=e=>{const b=e.target.closest('[data-s]');if(b)addItem(/傘|雨衣|防水|防蚊|暖暖包|太陽眼鏡/.test(b.dataset.s)?'其他':'衣物',b.dataset.s)};
+$('resetChecks').onclick=()=>{Object.values(S.items).flat().forEach(i=>i.d=false);save();renderPack();toast('已全部取消勾選')};
+$('todo').onchange=e=>{const id=e.target.dataset.td;if(id==null)return;S.todo.find(i=>i.id==id).d=e.target.checked;save();renderNotes()};
+$('todo').onclick=e=>{const b=e.target.closest('[data-tdel]');if(!b)return;S.todo=S.todo.filter(i=>i.id!=b.dataset.tdel);save();renderNotes()};
+$('todoAdd').onclick=()=>{const t=$('newTodo').value.trim();if(!t)return;S.todo.push({id:Date.now(),t,d:false});$('newTodo').value='';save();renderNotes()};
+$('newTodo').onkeydown=e=>{if(e.key==='Enter')$('todoAdd').click()};
+$('memo').oninput=e=>{S.memo=e.target.value;save()};
+$('rate').oninput=e=>{const v=parseFloat(e.target.value);if(v>0){S.rates[pair()]=v;save();renderFx()}};
+$('amtF').oninput=e=>{S.amt=parseFloat(e.target.value)||0;save();renderFx()};
+$('amtT').oninput=e=>{const v=parseFloat(e.target.value)||0,r=rate();if(r>0){S.amt=+(v/r).toFixed(2);save();$('amtF').value=S.amt}};
+$('logAdd').onclick=()=>{const d=$('logDate').value,r=parseFloat($('logRate').value);if(!d||!(r>0)){toast('請填日期和匯率');return}
+ const k=pair();S.log[k]=(S.log[k]||[]).filter(e=>!e.ex&&e.d!==d);S.log[k].push({d,r});S.rates[k]=r;$('logRate').value='';save();renderFx();toast('已記錄，換算也改用這個匯率')};
+$('logBody').onclick=e=>{const b=e.target.closest('[data-ldel]');if(!b)return;const[d,r]=b.dataset.ldel.split('|'),k=pair();S.log[k]=S.log[k].filter(x=>!(x.d===d&&String(x.r)===r));save();renderFx()};
+document.addEventListener('click',e=>{if(e.target.id==='useLive'){delete S.rates[pair()];save();renderFx();toast('已改回自動匯率')}});
+$('clearLog').onclick=()=>{const k=pair();S.log[k]=(S.log[k]||[]).filter(e=>!e.ex);save();renderFx()};
+all();setTab(S.tab||'pack');loadFx();loadAdvisory();
+</script>
+
+</body>
+</html>
