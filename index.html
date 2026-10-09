@@ -201,7 +201,7 @@ textarea.inp{min-height:84px;line-height:1.5;resize:vertical}
 .items input[type=checkbox]:checked{background:var(--accent);border-color:var(--accent)}
 .items input[type=checkbox]:checked::after{content:"";width:7px;height:12px;border:solid var(--paper);border-width:0 2.5px 2.5px 0;transform:translate(0,-1px) rotate(45deg)}
 .items li.done label span{color:var(--muted);text-decoration:line-through}
-.x{min-width:40px;min-height:40px;border-radius:12px;font-size:1rem}
+.x{min-width:44px;min-height:44px;border-radius:12px;font-size:1rem}
 .progress{height:10px}
 .pack-head .big{font-family:var(--f-mono);font-size:var(--t-xl);font-weight:700;color:var(--accent)}
 
@@ -641,7 +641,7 @@ function load(pre){if(pre){S=pre}else{try{S=JSON.parse(localStorage.getItem(KEY)
  if(S&&typeof S==='object'){const raw=S,tab=raw.tab;
   if(raw.origAp===undefined)raw.origAp=raw.orig==='TW'?'TPE':'';
   if(raw.destAp===undefined){const m=(APBY[raw.dest]||[]).find(c=>APMAP[c].clim===raw.city);raw.destAp=m||(raw.city==='other'?'':(APBY[raw.dest]||[''])[0])}
-  S=Object.assign(defaultState(),sanitize(raw));S.tab=tab||(()=>{try{return sessionStorage.getItem('trip-tab')}catch(e){return''}})()||'pack';return}
+  S=Object.assign(defaultState(),sanitize(raw));if(S.dep&&S.ret&&S.ret<S.dep)S.ret=S.dep;S.tab=tab||(()=>{try{return sessionStorage.getItem('trip-tab')}catch(e){return''}})()||'pack';return}
  let old=null;try{old=JSON.parse(localStorage.getItem('trip-v1'))}catch(e){}
  S=defaultState();
  if(old){if(old.items){S.items=old.items;S.nid=old.nid}if(old.todo)S.todo=old.todo;S.memo=old.memo||'';S.dep=old.dep||S.dep;S.ret=old.ret||S.ret;S.example=old.example;
@@ -718,6 +718,7 @@ function toastUndo(m){const t=$('toast');t.innerHTML=`${esc(m)} <button id="undo
  $('undoBtn').onclick=()=>{if(lastDeleted){S.exp.push(lastDeleted);S.exp.sort((x,y)=>x.d<y.d?-1:x.d>y.d?1:x.id-y.id);lastDeleted=null;save();renderMoney();renderTrip();toast('已復原')}};
  t._h=setTimeout(()=>{t.classList.remove('show');t.style.pointerEvents='none'},7000)}
 function toast(m){const t=$('toast');t.style.pointerEvents='none';t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1600)}
+function fmtShort(n){const a=Math.abs(n);if(a>=1e8)return (n/1e8).toFixed(a>=1e9?0:1).replace(/\.0$/,'')+'億';if(a>=1e5)return (n/1e4).toFixed(a>=1e6?0:1).replace(/\.0$/,'')+'萬';return fmt(n,0)}
 function fmt(n,dig){if(!isFinite(n))return '–';return n.toLocaleString('zh-TW',{maximumFractionDigits:dig??(Math.abs(n)<1?4:2)})}
 function days(a,b){return Math.round((new Date(b)-new Date(a))/864e5)}
 function today(){return new Date(Date.now()+8*36e5).toISOString().slice(0,10)}
@@ -740,13 +741,13 @@ function renderGuide(){const el=$('tripGuide');if(!el)return;
  if($('guideGo'))$('guideGo').onclick=()=>{S.collapsed=false;$('tripEdit').hidden=false;$('editToggle').textContent='收合';$('editToggle').setAttribute('aria-expanded','true');$('orig').focus()}}
 function homeStats(){renderGuide();const all=Object.values(S.items).flat(),done=all.filter(i=>i.d).length,pc=all.length?Math.round(done/all.length*100):0;
  $('packPct').textContent=pc+'%';$('packUnit').textContent=`${done} / ${all.length} 項`;
- const tot=(S.exp||[]).reduce((t,e)=>t+(toOrig(e.amt,e.cur)||0),0);$('spentHome').textContent=tot>=1e5?fmt(tot/1e3,0)+'k':fmt(tot,0);$('spentCur').textContent=oc();
+ const tot=(S.exp||[]).reduce((t,e)=>t+(toOrig(e.amt,e.cur)||0),0);$('spentHome').textContent=fmtShort(tot);$('spentCur').textContent=oc();
  renderBackupReminder()}
 function renderTrip(){
  $('orig').value=S.origAp&&APMAP[S.origAp]?'AP:'+S.origAp:'C:'+S.orig;$('dest').value=S.dest;
  const aps=APBY[S.dest];$('citySelWrap').hidden=!aps;$('cityTxtWrap').hidden=!!aps&&!!dAp();
  if(aps){$('citySel').innerHTML=aps.map(c=>`<option value="${c}">${esc(apFull(c))}（${c}）</option>`).join('')+'<option value="other">其他城市（自行輸入）</option>';$('citySel').value=dAp()?S.destAp:'other'}
- $('cityTxt').value=S.cityTxt;$('dDep').value=S.dep;$('dRet').value=S.ret;$('wDep').textContent=fdateY(S.dep);$('wRet').textContent=fdateY(S.ret);$('exTag').hidden=!S.example;
+ $('cityTxt').value=S.cityTxt;$('dDep').value=S.dep;$('dRet').value=S.ret;$('dRet').min=S.dep||'';$('wDep').textContent=fdateY(S.dep);$('wRet').textContent=fdateY(S.ret);$('exTag').hidden=!S.example;
  $('origCode').textContent=S.origAp||S.orig;$('destCode').textContent=dAp()?S.destAp:S.dest;
  let line='';
  if(S.dep&&S.ret){const n=days(S.dep,S.ret);line=`${fdate(S.dep)} – ${fdate(S.ret)} · ${n+1} 天 ${n} 夜`}else if(S.dep)line=`${fdate(S.dep)} 出發`;else line='點「編輯行程」設定日期';
@@ -1024,7 +1025,7 @@ $('dest').onchange=e=>setDest(e.target.value);
 $('citySel').onchange=e=>{const v=e.target.value;S.destAp=v==='other'?'':v;touch();save();all();if(v==='other')setTimeout(()=>$('cityTxt').focus(),0)};
 $('cityTxt').onchange=e=>{S.cityTxt=e.target.value.trim();touch();save();all()};
 $('dDep').onchange=e=>{S.dep=e.target.value;if(S.ret&&S.ret<S.dep)S.ret=S.dep;touch();save();all()};
-$('dRet').onchange=e=>{S.ret=e.target.value;touch();save();all()};
+$('dRet').onchange=e=>{let v=e.target.value;if(v&&S.dep&&v<S.dep){v=S.dep;e.target.value=v;toast('回程日不能早於出發日，已改成同一天')}S.ret=v;touch();save();all()};
 document.querySelector('.tabs').onclick=e=>{const b=e.target.closest('.tab');if(b)setTab(b.dataset.tab)};
 document.addEventListener('click',e=>{const g=e.target.closest('[data-tabgo]');if(g){e.preventDefault();setTab(g.dataset.tabgo)}
  const d=e.target.closest('[data-go]');if(d){setDest(d.dataset.go);window.scrollTo({top:0,behavior:'smooth'});toast('目的地已改為'+cname(d.dataset.go))}});
@@ -1067,7 +1068,7 @@ $('types').onclick=e=>{const b=e.target.closest('[data-type]');if(!b)return;S.ty
 for(const[k,id]of[['out','infoOut'],['back','infoBack'],['hotel','infoHotel']])$(id).oninput=e=>{S.info=S.info||{};S.info[k]=e.target.value;save()};
 $('planDays').oninput=e=>{const d=e.target.dataset?.plan;if(!d)return;S.plan=S.plan||{};S.plan[d]=e.target.value;save()};
 
-$('exAdd').onclick=()=>{const a=parseFloat($('exAmt').value);if(!(a>0)){toast('請輸入金額');return}S.exp=S.exp||[];
+$('exAdd').onclick=()=>{const a=parseFloat($('exAmt').value);if(!(a>0)){toast('請輸入大於 0 的金額');return}if(a>=1e9){toast('金額太大，請確認是否多打了 0');return}S.exp=S.exp||[];
  const d=$('exDate').value||today();S.exp.push({id:Date.now(),amt:Math.round(a*100)/100,cur:exCurSel||dc(),cat:exCatSel,note:$('exNote').value.trim().slice(0,100),d});S.exp.sort((x,y)=>x.d<y.d?-1:x.d>y.d?1:x.id-y.id);
  $('exAmt').value='';$('exNote').value='';$('exDate').value='';save();renderMoney();renderTrip();toast(`已記一筆 ${fmt(a)} ${exCurSel}`)};
 $('exCurSeg').onclick=e=>{const b=e.target.closest('[data-cur]');if(!b)return;exCurSel=b.dataset.cur;renderMoney()};
@@ -1077,7 +1078,7 @@ $('exList').onclick=e=>{const b=e.target.closest('[data-exdel]');if(!b)return;co
  if(gone){lastDeleted=gone;toastUndo('已刪除一筆')}};
 $('destList').innerHTML=Object.keys(CUR).map(c=>cname(c)).filter(Boolean).map(n=>`<option value="${esc(n)}">`).join('');
 $('destSearch').onchange=e=>{const v=e.target.value.trim();if(!v)return;const c=Object.keys(CUR).find(k=>cname(k)===v)||Object.keys(CUR).find(k=>cname(k).includes(v));if(c){setDest(c);toast('目的地改為'+cname(c))}else toast('找不到這個國家');e.target.value=''};
-const isTextField=e=>e&&((e.tagName==='INPUT'&&!['checkbox','radio','button','file'].includes(e.type))||e.tagName==='TEXTAREA'||e.tagName==='SELECT');
+const isTextField=e=>e&&((e.tagName==='INPUT'&&['text','number','search','email','tel','url','password',''].includes(e.type))||e.tagName==='TEXTAREA');
 document.addEventListener('focusin',e=>{if(isTextField(e.target)){document.body.classList.add('kb');setTimeout(()=>{try{e.target.scrollIntoView({block:'center',behavior:'smooth'})}catch(_){}},300)}});
 document.addEventListener('focusout',()=>setTimeout(()=>{if(!isTextField(document.activeElement))document.body.classList.remove('kb')},50));
 $('infoSeg').onclick=e=>{const b=e.target.closest('[data-sec]');if(b)setTab(b.dataset.sec)};
