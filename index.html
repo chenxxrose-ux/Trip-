@@ -121,6 +121,7 @@ th{font-size:.78rem;color:var(--muted);font-weight:500}
 .safety{border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;border:1px solid}
 .safety{background:var(--bg)!important;border-color:var(--line)!important}
 .safety.red{border-left:4px solid var(--stamp)!important}
+.safety.past{border-left:4px solid var(--line)!important}
 .safety.orange{border-left:4px solid var(--warn)!important}
 .safety.note{background:var(--accent-soft);border-color:var(--accent)}
 .lv{display:inline-block;font-weight:700;font-size:.78rem;padding:1px 8px;border-radius:4px;color:var(--paper)}
@@ -233,6 +234,7 @@ textarea.inp{min-height:84px;line-height:1.5;resize:vertical}
 .official small{display:block;font-weight:400;opacity:.85}
 .reminder{display:flex;flex-direction:column;gap:10px;border-radius:var(--r-lg);padding:14px 16px;background:var(--warn-soft);border:1px solid color-mix(in srgb,var(--warn) 40%,transparent)}
 .reminder .row{display:flex;gap:8px}
+.emg{display:grid;gap:8px}.emg-num{display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:10px 16px;border-radius:var(--r-md);background:var(--stamp-soft);color:var(--ink);text-decoration:none;font-weight:600}.emg-num b{font-family:var(--f-mono);font-size:1.6rem;color:var(--stamp)}
 /* accordion cards: summary first, details on demand */
 details.acc{padding:0;gap:0}
 details.acc>summary{list-style:none;display:flex;align-items:center;gap:12px;padding:16px 18px;min-height:64px;cursor:pointer;-webkit-user-select:none;user-select:none}
@@ -316,7 +318,7 @@ body.compact .route-top{display:none!important}
         <div class="field" id="citySelWrap"><label class="label" for="citySel">抵達機場</label><select id="citySel"></select></div>
         <div class="field" id="cityTxtWrap" hidden><label class="label" for="cityTxt">城市（選填）</label><input id="cityTxt" placeholder="例如：雪梨"></div>
         <div class="field"><label class="label" for="dDep">出發日</label><input type="date" id="dDep" lang="zh-Hant-TW"><span class="small muted" id="wDep"></span></div>
-        <div class="field"><label class="label" for="dRet">回程日</label><input type="date" id="dRet" lang="zh-Hant-TW"><span class="small muted" id="wRet"></span></div>
+        <div class="field"><label class="label" for="dRet">回程日</label><input type="date" id="dRet" lang="zh-Hant-TW" aria-describedby="dateErr"><span class="small muted" id="wRet"></span><span class="small" id="dateErr" role="alert" style="color:var(--stamp);font-weight:600"></span></div>
       </div>
       <div class="small muted" id="tripLine"></div>
       
@@ -342,7 +344,7 @@ body.compact .route-top{display:none!important}
     <div class="box">
       <div class="cat-head pack-head"><h2>行李清單</h2><span class="big" id="packCount"></span></div>
       <div class="progress"><i id="packBar" style="width:0"></i></div>
-      <div><div class="small muted">旅行類型（可複選）：</div><div class="chips" id="types"></div></div>
+      <details id="typesBox" class="erow"><summary><span class="acc-txt"><span class="et" style="font-size:var(--t-sm)">旅行類型</span><span class="es" id="typesSum"></span></span><svg class="acc-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10l4 4 4-4"/></svg></summary><div class="eb"><div class="small muted" style="margin-bottom:6px">可複選，會依類型建議物品</div><div class="chips" id="types"></div></div></details>
       <div class="small" id="qtyLine"></div>
       <div id="suggestWrap" hidden>
         <div class="small muted">依目的地天氣建議加入：</div>
@@ -377,7 +379,8 @@ body.compact .route-top{display:none!important}
   <section class="panel" id="p-money" role="tabpanel" hidden>
     <div class="box">
       <label class="label" for="exAmt" style="text-align:center">記一筆花費</label>
-      <input id="exAmt" class="inp amount-input" type="number" step="any" inputmode="decimal" placeholder="0" aria-label="金額">
+      <input id="exAmt" class="inp amount-input" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0" aria-label="金額" aria-describedby="exLimit">
+      <div class="small muted" id="exLimit" style="text-align:center">單筆上限：約新台幣 1,000 萬元（依匯率換算），可記到小數點後 2 位</div>
       <div class="seg" id="exCurSeg" role="group" aria-label="幣別"></div>
       <div class="chips" id="exCatSeg" role="group" aria-label="類別" style="justify-content:center"></div>
       <details id="exMore"><summary class="small muted" style="cursor:pointer;min-height:32px">備註與日期</summary>
@@ -403,11 +406,9 @@ body.compact .route-top{display:none!important}
         <dt><span class="lv" style="background:var(--muted)">灰色</span></dt><dd>局部地區有治安、交通、衛生問題，做好一般防護即可。</dd>
       </dl>
     </div>
-    <div class="box">
-      <div class="cat-head"><h2>高風險地區一覽</h2><span class="small muted">點名稱可直接選為目的地</span></div>
+    <details class="box acc" id="histBox"><summary><span class="acc-txt"><span class="acc-t">過去的警示紀錄</span><span class="acc-s">非目前燈號，僅供參考</span></span><svg class="acc-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10l4 4 4-4"/></svg></summary><div class="acc-body">
       <ul class="risk-list" id="riskList"></ul>
-      <div class="small muted">依外交部旅遊警示與新聞整理（中東部分為 2026 年 3 月報導）。燈號隨時調整，出發前請到 <a href="https://www.boca.gov.tw/sp-trwa-list-1.html" target="_blank" rel="noopener noreferrer">外交部旅遊警示</a> 查最新燈號，並登錄「出國登錄」。</div>
-    </div>
+      <div class="small muted">依外交部旅遊警示與新聞整理（中東部分為 2026 年 3 月報導）。燈號隨時調整，出發前請到 <a href="https://www.boca.gov.tw/sp-trwa-list-1.html" target="_blank" rel="noopener noreferrer">外交部旅遊警示</a> 查最新燈號，並登錄「出國登錄」。</div></div></details>
   </section>
 
   <section class="panel" id="p-info" role="tabpanel" hidden>
@@ -468,6 +469,7 @@ body.compact .route-top{display:none!important}
         <li>沒有 cookie、廣告或任何追蹤分析程式。</li>
         <li>為了顯示即時資訊，會向這些公開服務送出請求：Open-Meteo（目的地城市座標與日期）、ExchangeRate-API 與加拿大政府（不含任何個人資料）。你的清單、航班、記帳絕不會送出。這些服務和 GitHub（網站主機）會看到你的 IP 位址。</li>
         <li>點外部連結時，對方網站不會知道你從這裡過去。</li>
+        <li>目前版本：<b id="appVer"></b></li>
         <li>網頁只會連到上述公開資料服務，不載入任何外部程式，也不能存取手機上的照片、檔案或其他 App。</li>
       </ul>
       <h3>刪除資料</h3>
@@ -477,6 +479,7 @@ body.compact .route-top{display:none!important}
       <div class="small muted">清單只存在這台手機上，而且主畫面版和 Safari 版是分開存的。清除瀏覽紀錄或換手機前，先下載備份。</div>
       <div class="small" id="bkWarn"></div>
       <div class="chips"><button class="btn" id="bkDownload">下載備份檔</button><button class="btn ghost" id="bkCopy">複製備份文字</button></div>
+      <div class="notice warn" id="bkConfirmRow" hidden role="status"><span class="nt" id="bkConfirmMsg"></span><button class="btn small" id="bkSaved">我已保存</button></div>
       <h3 style="margin-top:6px">從備份還原</h3>
       <div><input type="file" id="bkFile" accept=".json,application/json,text/plain" hidden><label for="bkFile" class="btn ghost" style="display:inline-flex;align-items:center" role="button" tabindex="0">選擇備份檔</label></div>
       <textarea id="bkText" class="inp" rows="3" placeholder="或把備份文字貼在這裡"></textarea>
@@ -489,6 +492,7 @@ body.compact .route-top{display:none!important}
 <footer class="small muted" style="max-width:760px;margin:0 auto;padding-inline:16px;padding-block:0 calc(var(--nav-h) + 28px + env(safe-area-inset-bottom,0px));font-size:var(--t-xs);line-height:1.6">匯率：<a href="https://www.exchangerate-api.com" target="_blank" rel="noopener noreferrer">Rates By Exchange Rate API</a> · 天氣：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Weather data by Open-Meteo.com</a>（CC BY 4.0） · 國際參考評級：<a href="https://travel.gc.ca/travelling/advisories" target="_blank" rel="noopener noreferrer">Government of Canada</a> · 台灣燈號、退稅、入境規定為內建整理資料，可能已變動</footer>
 <div class="toast" id="toast" role="status"></div>
 <script>
+const APP_VERSION='v9.1';
 const M=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 const WD=['日','一','二','三','四','五','六'];
 const wd=s=>{if(!s)return'';const[y,m,d]=s.split('-').map(Number);return '（'+WD[new Date(y,m-1,d).getDay()]+'）'};
@@ -641,7 +645,7 @@ function load(pre){if(pre){S=pre}else{try{S=JSON.parse(localStorage.getItem(KEY)
  if(S&&typeof S==='object'){const raw=S,tab=raw.tab;
   if(raw.origAp===undefined)raw.origAp=raw.orig==='TW'?'TPE':'';
   if(raw.destAp===undefined){const m=(APBY[raw.dest]||[]).find(c=>APMAP[c].clim===raw.city);raw.destAp=m||(raw.city==='other'?'':(APBY[raw.dest]||[''])[0])}
-  S=Object.assign(defaultState(),sanitize(raw));if(S.dep&&S.ret&&S.ret<S.dep)S.ret=S.dep;S.tab=tab||(()=>{try{return sessionStorage.getItem('trip-tab')}catch(e){return''}})()||'pack';return}
+  S=Object.assign(defaultState(),sanitize(raw));S.tab=tab||(()=>{try{return sessionStorage.getItem('trip-tab')}catch(e){return''}})()||'pack';return}
  let old=null;try{old=JSON.parse(localStorage.getItem('trip-v1'))}catch(e){}
  S=defaultState();
  if(old){if(old.items){S.items=old.items;S.nid=old.nid}if(old.todo)S.todo=old.todo;S.memo=old.memo||'';S.dep=old.dep||S.dep;S.ret=old.ret||S.ret;S.example=old.example;
@@ -654,15 +658,17 @@ async function deriveKey(pin,salt){const base=await crypto.subtle.importKey('raw
 async function encObj(lock,obj){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},lock.key,new TextEncoder().encode(JSON.stringify(obj)));return{v:1,salt:b64(lock.salt),iv:b64(iv),ct:b64(ct)}}
 async function decObj(key,p){const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(p.iv)},key,ub64(p.ct));return JSON.parse(new TextDecoder().decode(pt))}
 function stateForSave(){const{tab,...rest}=S;return rest}
+let storageOk=true;
+function storeFail(){if(storageOk){storageOk=false;try{renderNotice()}catch(_){}}}
 function save(){S.lastEdit=new Date().toISOString();
  if(LOCK){clearTimeout(encT);encT=setTimeout(async()=>{try{localStorage.setItem(ENC_KEY,JSON.stringify(await encObj(LOCK,stateForSave())));localStorage.removeItem(KEY)}catch(e){}},250);try{sessionStorage.setItem('trip-tab',S.tab||'')}catch(e){}return}
- try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+ try{localStorage.setItem(KEY,JSON.stringify(S));if(localStorage.getItem(KEY)===null)throw 0;if(!storageOk){storageOk=true;try{renderNotice()}catch(_){}}}catch(e){storeFail()}}
 // 只接受已知欄位，避免還原檔夾帶奇怪內容
 const SAFE_KEYS=['infoSec','lastEdit','backupSnooze','closedCats','orig','origAp','dest','destAp','city','cityTxt','dep','ret','example','items','nid','todo','memo','rates','log','amt','lastBackup','types','plan','info','exp','budget','hideHint','collapsed'];
 function sanitize(d){const out={};if(!d||typeof d!=='object')return out;for(const k of SAFE_KEYS)if(Object.prototype.hasOwnProperty.call(d,k))out[k]=d[k];
  if(out.items&&typeof out.items==='object'&&!Array.isArray(out.items)){const it={};for(const[c,arr]of Object.entries(out.items))if(Array.isArray(arr)&&c!=='__proto__')it[String(c).slice(0,40)]=arr.filter(i=>i&&typeof i==='object').map(i=>({id:+i.id||0,t:String(i.t??'').slice(0,200),d:!!i.d}));out.items=it}else delete out.items;
  if(out.todo)out.todo=Array.isArray(out.todo)?out.todo.map(i=>({id:+i.id||0,t:String(i.t??'').slice(0,200),d:!!i.d})):[];
- if(out.exp)out.exp=Array.isArray(out.exp)?out.exp.map(e=>({id:+e.id||0,amt:+e.amt||0,cur:String(e.cur||'').slice(0,3).toUpperCase(),cat:String(e.cat||'其他').slice(0,10),note:String(e.note||'').slice(0,100),d:/^\d{4}-\d\d-\d\d$/.test(e.d)?e.d:''})):[];
+ if(out.exp)out.exp=Array.isArray(out.exp)?out.exp.map(e=>({id:+e.id||0,amt:+e.amt||0,cur:String(e.cur||'').slice(0,3).toUpperCase(),cat:String(e.cat||'其他').slice(0,10),note:String(e.note||'').slice(0,100),d:/^\d{4}-\d\d-\d\d$/.test(e.d)?e.d:'',...(/^[A-Z]{3}$/.test(e.oc)&&Number.isFinite(+e.orig)&&e.orig!==null?{oc:e.oc,orig:+e.orig,rate:Number.isFinite(+e.rate)?+e.rate:null}:{})})):[];
  for(const k of['plan','info','rates','log'])if(out[k]&&(typeof out[k]!=='object'||Array.isArray(out[k])))delete out[k];
  for(const k of['plan','info'])if(out[k]){const o={};for(const[a,b]of Object.entries(out[k]))if(a!=='__proto__')o[a]=String(b??'').slice(0,4000);out[k]=o}
  for(const k of['orig','origAp','dest','destAp'])if(out[k]!=null)out[k]=String(out[k]).replace(/[^A-Z]/g,'').slice(0,3);
@@ -688,7 +694,7 @@ function renderSummaries(){
  const mm=(S.memo||'').trim().split('\n')[0];setSum('sumMemo',mm?esc(mm.slice(0,40)):'尚未填寫');
  setSum('sumPriv',S.lastBackup?`上次備份 ${fdt(S.lastBackup)}`:'<b>還沒有備份過</b>');
  // safety dot on the 安全 tab
- const sf=safetyOf(S.dest),tb=document.querySelector('.tab[data-tab="safe"]');if(tb){tb.querySelector('.dot')?.remove();if(sf&&(sf.lv==='red'||sf.lv==='orange'))tb.insertAdjacentHTML('beforeend',`<span class="dot ${sf.lv}" aria-label="${sf.label}"></span>`)}}
+ const sf=safetyOf(S.dest),tb=document.querySelector('.tab[data-tab="safe"]');if(tb){tb.querySelector('.dot')?.remove();}}
 function renderBackupReminder(){renderNotice()}
 function renderNotice(){const el=$('notice');if(!el)return;
  const sf=safetyOf(S.dest),A=ADV?.[S.dest];
@@ -696,13 +702,14 @@ function renderNotice(){const el=$('notice');if(!el)return;
  const needBk=!S.example&&edited&&!snoozed&&(daysSince===null||daysSince>=7);
  const standalone=window.matchMedia?.('(display-mode: standalone)').matches||navigator.standalone;
  let h='';
- if(sf&&sf.lv==='red')h=`<div class="notice red"><span class="lv red">${sf.label}</span><span class="nt">${esc(sf.why)}</span><a href="#" data-tabgo="safe">詳情</a></div>`;
+ if(!storageOk)h=`<div class="notice red" role="alert"><span class="nt"><b>無法儲存變更</b>：手機瀏覽器拒絕寫入，最近的修改可能會遺失。請立即備份</span><button class="btn small" id="bkNowFail">立即備份</button></div>`;
  else if(needBk)h=`<div class="notice warn" role="status"><span class="nt"><b>${daysSince===null?'還沒有備份':`${daysSince} 天沒備份`}</b>：清單只存在這支手機</span><span class="act"><button class="btn small" id="bkNow">備份</button><button class="btn ghost small" id="bkLater" aria-label="明天再提醒">稍後</button></span></div>`;
- else if(sf&&sf.lv==='orange')h=`<div class="notice orange"><span class="lv orange">${sf.label}</span><span class="nt">${esc(sf.why)}</span><a href="#" data-tabgo="safe">詳情</a></div>`;
- else if(!sf&&A&&A.st>=2)h=`<div class="notice note"><span class="nt">國際參考評級「${ADVTXT[A.st]}」，請查外交部燈號</span><a href="#" data-tabgo="safe">詳情</a></div>`;
+ else if(sf&&(sf.lv==='red'||sf.lv==='orange'))h=`<div class="notice note"><span class="nt">這個目的地有過旅遊警示紀錄，出發前請查外交部最新燈號</span><a href="#" data-tabgo="safe">查看</a></div>`;
+ else if(A&&A.st>=2)h=`<div class="notice note"><span class="nt">國際參考評級「${ADVTXT[A.st]}」，請查外交部燈號</span><a href="#" data-tabgo="safe">詳情</a></div>`;
  else if(!standalone&&!S.hideHint)h=`<div class="notice note"><span class="nt">加到主畫面使用，沒網路也能開。主畫面版和瀏覽器版資料分開存。</span><button class="btn ghost small" id="hideHint">知道了</button></div>`;
  el.innerHTML=h;
  if($('bkNow'))$('bkNow').onclick=()=>$('bkDownload').click();
+ if($('bkNowFail'))$('bkNowFail').onclick=()=>$('bkDownload').click();
  if($('bkLater'))$('bkLater').onclick=()=>{S.backupSnooze=Date.now()+864e5;save();renderNotice()};
  if($('hideHint'))$('hideHint').onclick=()=>{S.hideHint=true;save();renderNotice()}}
 const hash=s=>{let h=5381;for(const ch of s)h=(h*33+ch.codePointAt(0))>>>0;return h.toString(36)};
@@ -713,9 +720,9 @@ function renderLive(){const ob=$('offlineBadge');if(ob)ob.hidden=navigator.onLin
 window.addEventListener('online',()=>{loadFx();loadAdvisory();fetchKey='';all()});window.addEventListener('offline',()=>renderLive());
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let lastDeleted=null;
+let lastDeleted=null,undoFn=null;
 function toastUndo(m){const t=$('toast');t.innerHTML=`${esc(m)} <button id="undoBtn" style="margin-left:8px;background:none;border:0;color:inherit;font-weight:700;text-decoration:underline;cursor:pointer">復原</button>`;t.style.pointerEvents='auto';t.classList.add('show');clearTimeout(t._h);
- $('undoBtn').onclick=()=>{if(lastDeleted){S.exp.push(lastDeleted);S.exp.sort((x,y)=>x.d<y.d?-1:x.d>y.d?1:x.id-y.id);lastDeleted=null;save();renderMoney();renderTrip();toast('已復原')}};
+ $('undoBtn').onclick=()=>{if(undoFn){const f=undoFn;undoFn=null;f();t.classList.remove('show');toast('已復原');return}if(lastDeleted){S.exp.push(lastDeleted);S.exp.sort((x,y)=>x.d<y.d?-1:x.d>y.d?1:x.id-y.id);lastDeleted=null;save();renderMoney();renderTrip();toast('已復原')}};
  t._h=setTimeout(()=>{t.classList.remove('show');t.style.pointerEvents='none'},7000)}
 function toast(m){const t=$('toast');t.style.pointerEvents='none';t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1600)}
 function fmtShort(n){const a=Math.abs(n);if(a>=1e8)return (n/1e8).toFixed(a>=1e9?0:1).replace(/\.0$/,'')+'億';if(a>=1e5)return (n/1e4).toFixed(a>=1e6?0:1).replace(/\.0$/,'')+'萬';return fmt(n,0)}
@@ -741,19 +748,20 @@ function renderGuide(){const el=$('tripGuide');if(!el)return;
  if($('guideGo'))$('guideGo').onclick=()=>{S.collapsed=false;$('tripEdit').hidden=false;$('editToggle').textContent='收合';$('editToggle').setAttribute('aria-expanded','true');$('orig').focus()}}
 function homeStats(){renderGuide();const all=Object.values(S.items).flat(),done=all.filter(i=>i.d).length,pc=all.length?Math.round(done/all.length*100):0;
  $('packPct').textContent=pc+'%';$('packUnit').textContent=`${done} / ${all.length} 項`;
- const tot=(S.exp||[]).reduce((t,e)=>t+(toOrig(e.amt,e.cur)||0),0);$('spentHome').textContent=fmtShort(tot);$('spentCur').textContent=oc();
+ const tot=Math.round((S.exp||[]).reduce((t,e)=>t+(expOrig(e)||0),0)*100)/100;$('spentHome').textContent=fmtShort(tot);$('spentCur').textContent=oc();
  renderBackupReminder()}
 function renderTrip(){
  $('orig').value=S.origAp&&APMAP[S.origAp]?'AP:'+S.origAp:'C:'+S.orig;$('dest').value=S.dest;
  const aps=APBY[S.dest];$('citySelWrap').hidden=!aps;$('cityTxtWrap').hidden=!!aps&&!!dAp();
  if(aps){$('citySel').innerHTML=aps.map(c=>`<option value="${c}">${esc(apFull(c))}（${c}）</option>`).join('')+'<option value="other">其他城市（自行輸入）</option>';$('citySel').value=dAp()?S.destAp:'other'}
- $('cityTxt').value=S.cityTxt;$('dDep').value=S.dep;$('dRet').value=S.ret;$('dRet').min=S.dep||'';$('wDep').textContent=fdateY(S.dep);$('wRet').textContent=fdateY(S.ret);$('exTag').hidden=!S.example;
+ $('cityTxt').value=S.cityTxt;$('dDep').value=S.dep;$('dRet').value=retDraft??S.ret;$('dRet').min=S.dep||'';
+ const bad=retDraft!=null||dateBad();$('dateErr').textContent=bad?'回程日期不能早於出發日期，請重新選擇':'';$('dRet').setAttribute('aria-invalid',String(bad));$('wDep').textContent=fdateY(S.dep);$('wRet').textContent=fdateY(S.ret);$('exTag').hidden=!S.example;
  $('origCode').textContent=S.origAp||S.orig;$('destCode').textContent=dAp()?S.destAp:S.dest;
- let line='';
+ let line='';if(dateBad()){$('tripLine').textContent='回程日期早於出發日期，請點「編輯行程」重新選擇';$('tripLine').style.color='var(--stamp)'}else $('tripLine').style.color='';
  if(S.dep&&S.ret){const n=days(S.dep,S.ret);line=`${fdate(S.dep)} – ${fdate(S.ret)} · ${n+1} 天 ${n} 夜`}else if(S.dep)line=`${fdate(S.dep)} 出發`;else line='點「編輯行程」設定日期';
- $('tripLine').textContent=line;
+ if(!dateBad())$('tripLine').textContent=line;
  $('origPlace').textContent=S.origAp&&APMAP[S.origAp]?APMAP[S.origAp].city:cname(S.orig);$('destPlace').textContent=dAp()?dAp().city:(S.cityTxt||cname(S.dest));
- const cd=S.dep?days(today(),S.dep):NaN,back=S.ret?days(today(),S.ret):NaN,cdl=$('countdown').previousElementSibling,cdu=$('countdown').nextElementSibling;
+ const cd=S.dep&&!dateBad()?days(today(),S.dep):NaN,back=S.ret?days(today(),S.ret):NaN,cdl=$('countdown').previousElementSibling,cdu=$('countdown').nextElementSibling;
  if(isFinite(cd)&&cd<0&&isFinite(back)&&back>=0){cdl.textContent='旅行第';$('countdown').textContent=days(S.dep,today())+1;cdu.textContent='天'}
  else{cdl.textContent='距離出發';$('countdown').textContent=isFinite(cd)?(cd<0?'—':cd):'–';cdu.textContent=isFinite(cd)&&cd<0?'已回國':'天'}
  homeStats();
@@ -761,23 +769,24 @@ function renderTrip(){
 }
 const LIVEMAP={red:['red','紅色警示'],orange:['orange','橙色警示'],yellow:['orange','黃色警示'],gray:['note','灰色警示']};
 const MIDEAST=new Set(['QA','AE','KW','SA','BH','OM','IL','IR','IQ','LB','JO','SY','YE','PS']);
+const SAFEDATE=c=>MIDEAST.has(c)?'2026 年 3 月':['HK','MO'].includes(c)?'2026 年 2 月':c==='CN'?'2024 年':'2026 年年中以前';
 const builtDate=c=>MIDEAST.has(c)?'依 2026 年 3 月新聞整理，之後未查到官方更新':['HK','MO'].includes(c)?'陸委會 2026 年 2 月確認維持橙色':c==='CN'?'依陸委會 2024 年公告整理':'依 2026 年年中以前的資料整理';
 function safetyOf(c){
- if(SAFETY[c]){const[lv,why,watch]=SAFETY[c];return{lv,label:LVTXT[lv],why,watch:[watch],src:'built'}}
+ if(SAFETY[c]){const[lv,why,watch]=SAFETY[c];return{lv,label:LVTXT[lv],why,watch:[watch],src:'built',past:true}}
  return null}
 function renderSafe(){
  const sf=safetyOf(S.dest),n=esc(destLabel()),A=ADV?.[S.dest];let h=`<h2>${n} 安全狀況</h2><a class="official" href="https://www.boca.gov.tw/sp-trwa-list-1.html" target="_blank" rel="noopener noreferrer"><span>查外交部最新燈號<small>官方即時資訊，以這裡為準</small></span><span aria-hidden="true">↗</span></a>`;
  if(S.orig!=='TW')h+=`<div class="small muted">以下燈號以台灣外交部為準；持其他國家護照請一併查你本國政府的旅遊警示。</div>`;
  const wl=w=>w&&w.length?`<div><b>要注意：</b></div><ul class="steps">${w.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'';
- if(sf&&sf.lv!=='none')h+=`<div class="safety ${sf.lv}"><div><span class="lv ${sf.lv}">${sf.label}</span> <span class="small">內建參考</span></div><div><b>為什麼：</b>${esc(sf.why)}</div>${wl(sf.watch)}<div class="small muted">內建資料，${builtDate(S.dest)}，可能已變動</div></div>`;
- else if(POPULAR.includes(S.dest)||APBY[S.dest])h+=`<div class="safety note"><div><span class="lv ok">無特別警示紀錄</span></div><div class="small">內建資料中這裡沒有戰爭或重大警示，注意扒手、詐騙等一般治安即可。${builtDate(S.dest)}，出發前請點下方連結確認。</div></div>`;
+ if(sf&&sf.lv!=='none')h+=`<details class="erow" id="pastRec"><summary><span class="acc-txt"><span class="et">過去紀錄（${SAFEDATE(S.dest)}）</span><span class="es">非目前燈號，點開看當時內容</span></span><svg class="acc-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10l4 4 4-4"/></svg></summary><div class="eb"><div class="safety past"><div class="small"><b>過去紀錄（${SAFEDATE(S.dest)}）</b>：當時為「${sf.label.replace('警示','')}」。這不是目前燈號，請以上方外交部連結為準。</div><div class="small"><b>當時的原因：</b>${esc(sf.why)}</div>${wl(sf.watch)}<div class="small muted">${builtDate(S.dest)}</div></div></div></details>`;
+ else if(POPULAR.includes(S.dest)||APBY[S.dest])h+=`<div class="safety past"><div class="small"><b>無特別警示紀錄</b>：內建資料（${SAFEDATE(S.dest)}）中這裡沒有戰爭或重大警示。這不代表目前狀況，出發前請點上方外交部連結確認。</div></div>`;
  else h+=`<div class="safety note"><div><b>台灣外交部燈號：</b>這個國家沒有內建資料</div><div class="small">請點下方連結查外交部最新燈號。</div></div>`;
  if(A)h+=`<div class="small">國際參考（加拿大政府即時評級）：<b>${ADVTXT[A.st]}</b>${A.date?` · ${esc(A.date)}`:''}<br><span class="muted">各國政府標準不同，台灣人出國以外交部燈號為準。</span></div>`;
  h+=`<div class="small"><a href="${gsearch('外交部 旅遊警示 '+cname(S.dest))}" target="_blank" rel="noopener noreferrer">搜尋${esc(cname(S.dest))}最新警示新聞 →</a></div>`;
  $('safeDest').innerHTML=h;
  renderEmg();
  const order={red:0,orange:1,note:2};
- $('riskList').innerHTML=Object.entries(SAFETY).sort((a,b)=>order[a[1][0]]-order[b[1][0]]||cname(a[0]).localeCompare(cname(b[0]),'zh-Hant-TW')).map(([c,[lv,why]])=>`<li><span class="lv ${lv}">${LVTXT[lv]}</span><div><button data-go="${c}">${esc(cname(c))}</button><div class="small muted">${esc(why)}</div></div></li>`).join('');
+ $('riskList').innerHTML=Object.entries(SAFETY).sort((a,b)=>order[a[1][0]]-order[b[1][0]]||cname(a[0]).localeCompare(cname(b[0]),'zh-Hant-TW')).map(([c,[lv,why]])=>`<li><span class="pill r0">${LVTXT[lv].replace('警示','')}・${SAFEDATE(c)}</span><div><button data-go="${c}">${esc(cname(c))}</button><div class="small muted">${esc(why)}</div></div></li>`).join('');
 }
 
 // ---------- 天氣 ----------
@@ -863,7 +872,8 @@ function renderFx(){const d=dc(),o=oc(),r=rate(),same=d===o;
  if(document.activeElement!==$('rate'))$('rate').value=isFinite(r)?r:'';
  if(document.activeElement!==$('amtF'))$('amtF').value=S.amt;
  const sym=v=>fmt(v,v<100?2:0);
- $('fxHero').innerHTML=isFinite(r)?`<span>${fmt(+S.amt||0)} ${d}</span><span class="muted">≈</span><span class="big">${sym((+S.amt||0)*r)}</span><span>${o}</span>`:'<span class="muted">請在下方輸入匯率</span>';
+ const rateSrc=S.rates[pair()]?`使用你設定的匯率 ${S.rates[pair()]}`:(live.fx?`使用國際中間匯率（${fdt(live.fx.fetchedAt)}）`:'使用內建參考匯率');
+ $('fxHero').innerHTML=isFinite(r)?`<span>${fmt(+S.amt||0)} ${d}</span><span class="muted">≈</span><span class="big">${sym((+S.amt||0)*r)}</span><span>${o}</span><div class="small muted" style="width:100%;text-align:center">${rateSrc}</div>`:'<span class="muted">請在下方輸入匯率</span>';
  if(document.activeElement!==$('amtT'))$('amtT').value=isFinite(r)?+(S.amt*r).toFixed(r*S.amt<100?2:0):'';
  const u=usdOf(d)||(isFinite(r)&&usdOf(o)?usdOf(o)/r:null);
  const base=[...new Set(u?[10,30,50,100,300].map(v=>nice(v*u)):[10,50,100,500,1000])];
@@ -894,7 +904,7 @@ function renderNotes(){const co=COUNTRY[S.dest];
  h+=erow('行動電源與航空安全',POWERBANK.sum,`<ul>${POWERBANK.items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`,POWERBANK.src);
  h+=erow('當地注意事項',tips.length?first(tips[0]):'禮儀、交通、付款習慣',tips.length?`<div>${tips.map(esc).join('<br>')}</div>`:'<div class="muted">沒有內建資料。</div>',null);
  const sf=safetyOf(S.dest),law=LAW[S.dest];
- h+=erow('重要法規',law?first(law):(sf&&sf.lv!=='none'?esc(sf.label):'沒有特別需要注意的內建紀錄'),`${law?`<div>${esc(law)}</div>`:''}${sf&&sf.lv!=='none'?`<div style="margin-top:6px"><span class="lv ${sf.lv}">${sf.label}</span> ${esc(sf.why)}</div>`:''}${!law&&!(sf&&sf.lv!=='none')?'<div class="muted">出發前請查外交部旅遊警示。</div>':''}`,null);
+ h+=erow('重要法規',law?first(law):(sf&&sf.lv!=='none'?`過去曾有${esc(sf.label)}（${SAFEDATE(S.dest)}）`:'沒有特別需要注意的內建紀錄'),`${law?`<div>${esc(law)}</div>`:''}${sf&&sf.lv!=='none'?`<div style="margin-top:6px" class="small">過去紀錄（${SAFEDATE(S.dest)}）：當時為${esc(sf.label)}。${esc(sf.why)} 目前燈號請查外交部。</div>`:''}${!law&&!(sf&&sf.lv!=='none')?'<div class="muted">出發前請查外交部旅遊警示。</div>':''}`,null);
  h+=erow('官方資料來源','外交部、目的地政府網站',`<ul><li><a href="https://www.boca.gov.tw" target="_blank" rel="noopener noreferrer">外交部領事事務局（簽證與入境須知）</a></li><li><a href="https://www.boca.gov.tw/sp-trwa-list-1.html" target="_blank" rel="noopener noreferrer">外交部旅遊警示</a></li>${co?.entrySrc?`<li><a href="${co.entrySrc[1]}" target="_blank" rel="noopener noreferrer">${esc(co.entrySrc[0])}</a></li>`:''}<li><a href="${gsearch(cname(S.dest)+' 入境 規定 '+cname(S.orig)+' 護照 '+new Date().getFullYear())}" target="_blank" rel="noopener noreferrer">搜尋最新入境規定</a></li></ul><div class="src" style="margin-top:6px">規定隨時可能變動，以官方網站為準。</div>`,null);
  $('destNotes').innerHTML=h;
 
@@ -905,7 +915,7 @@ function renderNotes(){const co=COUNTRY[S.dest];
 const EMG={TW:['110','119','119'],JP:['110','119','119'],KR:['112','119','119','觀光諮詢 1330（可說中文）'],TH:['191','1669','199','觀光警察 1155'],SG:['999','995','995'],MY:['999','999','994'],HK:['999','999','999'],MO:['999','999','999'],VN:['113','115','114'],PH:['911','911','911'],ID:['110','118','113','手機也可撥 112'],CN:['110','120','119'],US:['911','911','911'],CA:['911','911','911'],GB:['999','999','999','也可撥 112'],FR:['17','15','18','歐盟通用 112'],DE:['110','112','112'],IT:['112','118','115'],ES:['112','112','112'],CH:['117','144','118'],NL:['112','112','112'],AU:['000','000','000','手機也可撥 112'],NZ:['111','111','111'],AE:['999','998','997'],TR:['112','112','112']};
 const tel=n=>`<a href="tel:${n.replace(/[^+\d]/g,'')}" class="mono">${esc(n)}</a>`;
 function renderEmg(){const e=EMG[S.dest];let h=`<h2>緊急電話・${esc(cname(S.dest))}</h2>`;
- if(e)h+=`<dl class="rule"><dt>報警</dt><dd>${tel(e[0])}</dd><dt>救護車</dt><dd>${tel(e[1])}</dd><dt>消防</dt><dd>${tel(e[2])}</dd>${e[3]?`<dt>其他</dt><dd>${esc(e[3])}</dd>`:''}</dl>`;
+ if(e){const g={};[['報警',e[0]],['救護車',e[1]],['消防',e[2]]].forEach(([k,v])=>(g[v]=g[v]||[]).push(k));h+=`<div class="emg">${Object.entries(g).map(([n,ks])=>`<a class="emg-num" href="tel:${n}"><span>${ks.join('・')}</span><b>${esc(n)}</b></a>`).join('')}</div>${e[3]?`<div class="small">其他：${esc(e[3])}</div>`:''}`}
  else h+=`<div>多數國家用手機撥 <b class="mono">112</b> 可接通緊急服務，請出發前確認當地號碼。</div>`;
  h+=`<h3>台灣外交部急難救助</h3><dl class="rule"><dt>緊急聯絡中心</dt><dd>${tel('+886-800-085-095')}<div class="small muted">24 小時，車禍、搶劫、護照遺失、重大意外都可打</div></dd>
  <dt>全球免付費</dt><dd><span class="mono">800-0885-0885</span><div class="small muted">先撥當地國際冠碼，僅部分國家可用</div></dd>
@@ -914,7 +924,9 @@ function renderEmg(){const e=EMG[S.dest];let h=`<h2>緊急電話・${esc(cname(S
  $('emgBox').innerHTML=h}
 
 // ---------- 每日行程 ----------
-function tripDates(){if(!S.dep)return[];const out=[];let d=S.dep;const end=S.ret||S.dep;while(d<=end&&out.length<30){out.push(d);const t=new Date(d+'T00:00:00Z');t.setUTCDate(t.getUTCDate()+1);d=t.toISOString().slice(0,10)}return out}
+let retDraft=null;
+const dateBad=()=>!!(S.dep&&S.ret&&S.ret<S.dep);
+function tripDates(){if(!S.dep||dateBad())return[];const out=[];let d=S.dep;const end=S.ret||S.dep;while(d<=end&&out.length<30){out.push(d);const t=new Date(d+'T00:00:00Z');t.setUTCDate(t.getUTCDate()+1);d=t.toISOString().slice(0,10)}return out}
 let planEditing=false;
 function renderPlan(){S.plan=S.plan||{};S.info=S.info||{};
  $('planEditBtn').textContent=planEditing?'完成':'編輯';$('infoEdit').hidden=!planEditing;$('infoRead').hidden=planEditing;
@@ -931,6 +943,8 @@ function renderPlan(){S.plan=S.plan||{};S.info=S.info||{};
 
 // ---------- 記帳 ----------
 const CATS=['餐飲','交通','住宿','購物','門票','其他'];
+function expOrig(e){const o=oc();if(e.oc===o&&Number.isFinite(e.orig))return e.orig;return toOrig(e.amt,e.cur)}
+const expFrozen=e=>e.oc===oc()&&Number.isFinite(e.orig);
 function toOrig(amt,cur){const o=oc();if(cur===o)return amt;if(cur===dc()){const r=rate();return isFinite(r)?amt*r:NaN}const a=usdOf(cur),b=usdOf(o);return a&&b?amt/a*b:NaN}
 let exCurSel='',exCatSel='餐飲';
 const CATICON={'餐飲':'食','交通':'行','住宿':'住','購物':'買','門票':'票','其他':'他'};
@@ -938,19 +952,20 @@ function renderMoney(){S.exp=S.exp||[];const o=oc(),d=dc();if(document.activeEle
  const cs=[...new Set([d,o])];if(!cs.includes(exCurSel))exCurSel=d;
  $('exCurSeg').innerHTML=cs.map(c=>`<button type="button" data-cur="${c}" aria-pressed="${c===exCurSel}">${c} ${esc(curName(c))}</button>`).join('');
  $('exCatSeg').innerHTML=CATS.map(c=>`<button type="button" class="chip ${c===exCatSel?'on':''}" data-cat2="${c}" aria-pressed="${c===exCatSel}">${c}</button>`).join('');
- const tot=S.exp.reduce((s,e)=>s+(toOrig(e.amt,e.cur)||0),0),byCat={};S.exp.forEach(e=>byCat[e.cat]=(byCat[e.cat]||0)+(toOrig(e.amt,e.cur)||0));
+ const tot=Math.round(S.exp.reduce((s,e)=>s+(expOrig(e)||0),0)*100)/100,byCat={};S.exp.forEach(e=>byCat[e.cat]=(byCat[e.cat]||0)+(expOrig(e)||0));
  const b=+S.budget||0,left=b-tot,pct=b?Math.min(100,tot/b*100):0,nd=tripDates().length||1;
- $('moneySum').innerHTML=`<div class="money-hero"><span class="label">這趟已花費（${o}）</span><span class="big">${fmt(tot,0)}</span>
+ $('moneySum').innerHTML=`<div class="money-hero"><span class="label">這趟已花費（${o}，依記帳當時匯率）</span><span class="big">${fmt(tot,0)}</span>
   <span class="small ${b&&left<0?'up':'muted'}">${b?(left<0?`超出預算 ${fmt(-left,0)}`:`預算剩 ${fmt(left,0)} · 每天可花 ${fmt(Math.max(0,left)/Math.max(1,nd),0)}`):`平均每天 ${fmt(tot/nd,0)} · 共 ${nd} 天`}</span></div>
  ${b?`<div class="progress"><i style="width:${pct}%;${tot>b?'background:var(--stamp)':''}"></i></div>`:''}
  ${Object.keys(byCat).length?`<div class="chips" style="justify-content:center">${CATS.filter(c=>byCat[c]).map(c=>`<span class="pill r0">${c} ${fmt(byCat[c],0)}</span>`).join('')}</div>`:''}
  <div class="add-row"><input id="budget" class="inp mono" type="number" inputmode="decimal" placeholder="總預算（${o}）" value="${b||''}" aria-label="總預算"><button class="btn ghost" id="budgetSet">${b?'更新':'設定'}</button></div>`;
  $('budgetSet').onclick=()=>{S.budget=parseFloat($('budget').value)||0;save();renderMoney();renderTrip();toast(S.budget?'已設定預算':'已清除預算')};
- $('exList').innerHTML=S.exp.length?S.exp.slice().reverse().map(e=>`<div class="ex-row"><div class="ex-cat" aria-hidden="true">${CATICON[e.cat]||'他'}</div><div class="ex-main"><div>${esc(e.cat)}${e.note?` · ${esc(e.note)}`:''}</div><div class="small muted">${fdate(e.d)}</div></div><div class="ex-amt"><div>${fmt(e.amt)} ${esc(e.cur)}</div>${e.cur!==o?`<div class="small muted">≈ ${fmt(toOrig(e.amt,e.cur),0)} ${o}</div>`:''}</div><button class="x" data-exdel="${e.id}" aria-label="刪除這筆 ${esc(e.cat)} ${fmt(e.amt)} ${esc(e.cur)}">✕</button></div>`).join(''):`<div class="muted small">還沒有記錄。輸入金額、選類別，按「記一筆」。</div>`;homeStats()}
+ $('exList').innerHTML=S.exp.length?S.exp.slice().reverse().map(e=>`<div class="ex-row"><div class="ex-cat" aria-hidden="true">${CATICON[e.cat]||'他'}</div><div class="ex-main"><div>${esc(e.cat)}${e.note?` · ${esc(e.note)}`:''}</div><div class="small muted">${fdate(e.d)}</div></div><div class="ex-amt"><div>${fmt(e.amt)} ${esc(e.cur)}</div>${e.cur!==o?`<div class="small muted">≈ ${fmt(expOrig(e),0)} ${o}${expFrozen(e)?'':' · 依目前匯率估算'}</div>`:''}</div><button class="x" data-exdel="${e.id}" aria-label="刪除這筆 ${esc(e.cat)} ${fmt(e.amt)} ${esc(e.cur)}">✕</button></div>`).join(''):`<div class="muted small">還沒有記錄。輸入金額、選類別，按「記一筆」。</div>`;homeStats()}
 
 // ---------- 旅行類型 ----------
 const TYPES={'城市觀光':['好走的鞋','行動電源（隨身帶，不可托運）'],'海島':['泳衣','防水手機袋','夾腳拖','防曬乳（高係數）','薄長袖罩衫'],'雪地':['雪衣雪褲','防水手套','毛帽','防滑雪靴','護唇膏','暖暖包'],'登山健行':['登山鞋','輕便雨衣','頭燈','水壺','排汗衣'],'出差':['正式服裝','名片','筆電與充電器','簡報轉接頭'],'親子':['兒童常備藥','推車或背帶','兒童零食','兒童證件影本']};
-function renderTypes(){S.types=S.types||[];$('types').innerHTML=Object.keys(TYPES).map(t=>`<button class="chip" data-type="${t}" style="${S.types.includes(t)?'background:var(--accent);color:var(--paper);border-style:solid':''}">${S.types.includes(t)?'✓ ':''}${t}</button>`).join('');
+let typesInit=false;
+function renderTypes(){S.types=S.types||[];$('typesSum').textContent=S.types.length?S.types.join('、'):'尚未選擇，點開設定';if(!typesInit){$('typesBox').open=!S.types.length;typesInit=true}$('types').innerHTML=Object.keys(TYPES).map(t=>`<button class="chip" data-type="${t}" style="${S.types.includes(t)?'background:var(--accent);color:var(--paper);border-style:solid':''}">${S.types.includes(t)?'✓ ':''}${t}</button>`).join('');
  const n=tripDates().length;$('qtyLine').innerHTML=n?`這趟 ${n} 天 ${Math.max(0,n-1)} 夜，衣物建議：上衣 ${n} 件、褲子 ${Math.ceil(n/2)} 件、內衣褲 ${n} 套、襪子 ${n} 雙${n>5?'（住處能洗衣可減半）':''}`:''}
 
 const INFOSECS=['wx','fx','tax','notes','priv'];
@@ -1024,20 +1039,22 @@ $('orig').onchange=e=>{const[t,v]=e.target.value.split(':');if(t==='AP'){S.origA
 $('dest').onchange=e=>setDest(e.target.value);
 $('citySel').onchange=e=>{const v=e.target.value;S.destAp=v==='other'?'':v;touch();save();all();if(v==='other')setTimeout(()=>$('cityTxt').focus(),0)};
 $('cityTxt').onchange=e=>{S.cityTxt=e.target.value.trim();touch();save();all()};
-$('dDep').onchange=e=>{S.dep=e.target.value;if(S.ret&&S.ret<S.dep)S.ret=S.dep;touch();save();all()};
-$('dRet').onchange=e=>{let v=e.target.value;if(v&&S.dep&&v<S.dep){v=S.dep;e.target.value=v;toast('回程日不能早於出發日，已改成同一天')}S.ret=v;touch();save();all()};
+$('dDep').onchange=e=>{S.dep=e.target.value;retDraft=null;touch();save();all();if(dateBad()){S.collapsed=false;applyCollapse()}};
+$('dRet').onchange=e=>{const v=e.target.value;if(v&&S.dep&&v<S.dep){retDraft=v;renderTrip();return}retDraft=null;S.ret=v;touch();save();all()};
 document.querySelector('.tabs').onclick=e=>{const b=e.target.closest('.tab');if(b)setTab(b.dataset.tab)};
 document.addEventListener('click',e=>{const g=e.target.closest('[data-tabgo]');if(g){e.preventDefault();setTab(g.dataset.tabgo)}
  const d=e.target.closest('[data-go]');if(d){setDest(d.dataset.go);window.scrollTo({top:0,behavior:'smooth'});toast('目的地已改為'+cname(d.dataset.go))}});
 $('cats').onchange=e=>{const t=e.target;if(t.dataset.id==null)return;S.items[t.dataset.c].find(i=>i.id==t.dataset.id).d=t.checked;save();renderPack()};
-$('cats').onclick=e=>{const b=e.target.closest('[data-del]');if(!b)return;S.items[b.dataset.c]=S.items[b.dataset.c].filter(i=>i.id!=b.dataset.del);save();renderPack()};
+$('cats').onclick=e=>{const b=e.target.closest('[data-del]');if(!b)return;const c=b.dataset.c,arr=S.items[c],idx=arr.findIndex(i=>i.id==b.dataset.del);if(idx<0)return;const gone=arr[idx];S.items[c]=arr.filter((_,k)=>k!==idx);save();renderPack();
+ undoFn=()=>{S.items[c]=S.items[c]||[];S.items[c].splice(Math.min(idx,S.items[c].length),0,gone);save();renderPack()};lastDeleted=null;toastUndo(`已刪除「${gone.t.slice(0,12)}」`)};
 function addItem(c,t){t=t.trim();if(!t)return;(S.items[c]=S.items[c]||[]).push({id:S.nid++,t,d:false});save();renderPack();toast('已加入：'+t)}
 $('addBtn').onclick=()=>{addItem($('newCat').value,$('newItem').value);$('newItem').value=''};
 $('newItem').onkeydown=e=>{if(e.key==='Enter')$('addBtn').click()};
 $('suggest').onclick=e=>{const b=e.target.closest('[data-s]');if(b)addItem(/傘|雨衣|防水|防蚊|暖暖包|太陽眼鏡/.test(b.dataset.s)?'其他':'衣物',b.dataset.s)};
 $('resetChecks').onclick=()=>{Object.values(S.items).flat().forEach(i=>i.d=false);save();renderPack();toast('已全部取消勾選')};
 $('todo').onchange=e=>{const id=e.target.dataset.td;if(id==null)return;S.todo.find(i=>i.id==id).d=e.target.checked;save();renderNotes();renderSummaries()};
-$('todo').onclick=e=>{const b=e.target.closest('[data-tdel]');if(!b)return;S.todo=S.todo.filter(i=>i.id!=b.dataset.tdel);save();renderNotes()};
+$('todo').onclick=e=>{const b=e.target.closest('[data-tdel]');if(!b)return;const idx=S.todo.findIndex(i=>i.id==b.dataset.tdel);if(idx<0)return;const gone=S.todo[idx];S.todo=S.todo.filter((_,k)=>k!==idx);save();renderNotes();renderSummaries();
+ undoFn=()=>{S.todo.splice(Math.min(idx,S.todo.length),0,gone);save();renderNotes();renderSummaries()};lastDeleted=null;toastUndo(`已刪除「${gone.t.slice(0,12)}」`)};
 $('todoAdd').onclick=()=>{const t=$('newTodo').value.trim();if(!t)return;S.todo.push({id:Date.now(),t,d:false});$('newTodo').value='';save();renderNotes()};
 $('newTodo').onkeydown=e=>{if(e.key==='Enter')$('todoAdd').click()};
 $('memo').oninput=e=>{S.memo=e.target.value;save();renderSummaries()};
@@ -1050,9 +1067,10 @@ $('logBody').onclick=e=>{const b=e.target.closest('[data-ldel]');if(!b)return;co
 document.addEventListener('click',e=>{if(e.target.id==='useLive'){delete S.rates[pair()];save();renderFx();toast('已改回自動匯率')}});
 $('clearLog').onclick=()=>{const k=pair();S.log[k]=(S.log[k]||[]).filter(e=>!e.ex);save();renderFx()};
 async function backupText(){const base={app:'trip-checklist',savedAt:new Date().toISOString()};if(LOCK)return JSON.stringify({...base,v:3,enc:await encObj(LOCK,stateForSave())});return JSON.stringify({...base,v:2,s:stateForSave()})}
+function askSaved(msg){$('bkConfirmMsg').textContent=msg;$('bkConfirmRow').hidden=false;S.tab!=='info'&&setTab('priv');setTimeout(()=>$('bkConfirmRow').scrollIntoView({block:'center',behavior:'smooth'}),80)}
 function markBackup(){save();S.lastBackup=new Date().toISOString();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}renderBackupReminder();renderLive();$('bkLast').textContent='上次備份 '+fdt(S.lastBackup)}
-$('bkDownload').onclick=async()=>{try{const b=new Blob([await backupText()],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`旅遊清單備份-${today()}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);markBackup();toast('已下載備份檔')}catch(e){toast('無法下載，請改用複製備份文字')}};
-$('bkCopy').onclick=async()=>{const t=await backupText();const done=()=>{markBackup();toast('已複製，貼到 LINE 或備忘錄保存')};
+$('bkDownload').onclick=async()=>{try{const b=new Blob([await backupText()],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`旅遊清單備份-${today()}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);askSaved('已開始下載。請確認檔案已存到「檔案」App，再按「我已保存」')}catch(e){toast('無法下載，請改用複製備份文字')}};
+$('bkCopy').onclick=async()=>{const t=await backupText();const done=()=>askSaved('已複製。請貼到備忘錄或傳給自己保存，再按「我已保存」');
  if(navigator.clipboard?.writeText)navigator.clipboard.writeText(t).then(done).catch(()=>{$('bkText').value=t;$('bkText').select();toast('請手動複製下方文字')});else{$('bkText').value=t;$('bkText').select();toast('請手動複製下方文字')}};
 let pendingRestore=null;
 async function parseBackup(t){let j;try{j=JSON.parse(t)}catch(e){return{err:'這不是有效的備份內容'}}if(!j||j.app!=='trip-checklist')return{err:'這不是有效的備份內容'};
@@ -1068,13 +1086,18 @@ $('types').onclick=e=>{const b=e.target.closest('[data-type]');if(!b)return;S.ty
 for(const[k,id]of[['out','infoOut'],['back','infoBack'],['hotel','infoHotel']])$(id).oninput=e=>{S.info=S.info||{};S.info[k]=e.target.value;save()};
 $('planDays').oninput=e=>{const d=e.target.dataset?.plan;if(!d)return;S.plan=S.plan||{};S.plan[d]=e.target.value;save()};
 
-$('exAdd').onclick=()=>{const a=parseFloat($('exAmt').value);if(!(a>0)){toast('請輸入大於 0 的金額');return}if(a>=1e9){toast('金額太大，請確認是否多打了 0');return}S.exp=S.exp||[];
- const d=$('exDate').value||today();S.exp.push({id:Date.now(),amt:Math.round(a*100)/100,cur:exCurSel||dc(),cat:exCatSel,note:$('exNote').value.trim().slice(0,100),d});S.exp.sort((x,y)=>x.d<y.d?-1:x.d>y.d?1:x.id-y.id);
+const LIMIT_TWD=1e7;
+function amountCheck(raw,cur){const t=String(raw).trim();if(!/^\d+(\.\d{1,2})?$/.test(t))return{err:'請輸入正確的金額，最多 2 位小數'};
+ const a=Number(t);if(!(a>0))return{err:'請輸入大於 0 的金額'};if(!Number.isFinite(a)||a>1e12)return{err:'金額超出可記錄範圍'};
+ const u=usdOf(cur),tw=usdOf('TWD');if(u&&tw){const twd=a/u*tw;if(twd>LIMIT_TWD)return{err:`單筆上限約新台幣 1,000 萬元，這筆約 NT$${fmt(Math.round(twd),0)}。請確認金額，或拆成多筆記錄`}}
+ return{a}}
+$('exAdd').onclick=()=>{const chk=amountCheck($('exAmt').value,exCurSel||dc());if(chk.err){toast(chk.err);$('exAmt').focus();return}const a=chk.a;S.exp=S.exp||[];
+ const d=$('exDate').value||today();const cu=exCurSel||dc(),conv=toOrig(Math.round(a*100)/100,cu);S.exp.push({id:Date.now(),amt:Math.round(a*100)/100,cur:cu,cat:exCatSel,note:$('exNote').value.trim().slice(0,100),d,oc:oc(),orig:Number.isFinite(conv)?Math.round(conv*100)/100:null,rate:cu===oc()?1:(Number.isFinite(conv)?conv/a:null)});S.exp.sort((x,y)=>x.d<y.d?-1:x.d>y.d?1:x.id-y.id);
  $('exAmt').value='';$('exNote').value='';$('exDate').value='';save();renderMoney();renderTrip();toast(`已記一筆 ${fmt(a)} ${exCurSel}`)};
 $('exCurSeg').onclick=e=>{const b=e.target.closest('[data-cur]');if(!b)return;exCurSel=b.dataset.cur;renderMoney()};
 $('exCatSeg').onclick=e=>{const b=e.target.closest('[data-cat2]');if(!b)return;exCatSel=b.dataset.cat2;renderMoney()};
 $('exAmt').onkeydown=e=>{if(e.key==='Enter')$('exAdd').click()};
-$('exList').onclick=e=>{const b=e.target.closest('[data-exdel]');if(!b)return;const gone=S.exp.find(x=>x.id==b.dataset.exdel);S.exp=S.exp.filter(x=>x.id!=b.dataset.exdel);save();renderMoney();renderTrip();
+$('exList').onclick=e=>{const b=e.target.closest('[data-exdel]');if(!b)return;undoFn=null;const gone=S.exp.find(x=>x.id==b.dataset.exdel);S.exp=S.exp.filter(x=>x.id!=b.dataset.exdel);save();renderMoney();renderTrip();
  if(gone){lastDeleted=gone;toastUndo('已刪除一筆')}};
 $('destList').innerHTML=Object.keys(CUR).map(c=>cname(c)).filter(Boolean).map(n=>`<option value="${esc(n)}">`).join('');
 $('destSearch').onchange=e=>{const v=e.target.value.trim();if(!v)return;const c=Object.keys(CUR).find(k=>cname(k)===v)||Object.keys(CUR).find(k=>cname(k).includes(v));if(c){setDest(c);toast('目的地改為'+cname(c))}else toast('找不到這個國家');e.target.value=''};
@@ -1086,10 +1109,12 @@ all();setTab(S.tab||'pack');loadFx();loadAdvisory();
 if('serviceWorker' in navigator&&window.isSecureContext)navigator.serviceWorker.register('sw.js').catch(()=>{});
 // 收合行程卡
 const applyCollapse=()=>{const c=!!S.collapsed;$('tripEdit').hidden=c;$('editToggle').textContent=c?'編輯行程':'收合';$('editToggle').setAttribute('aria-expanded',String(!c))};
-if(S.collapsed===undefined)S.collapsed=!S.example;applyCollapse();
+if(S.collapsed===undefined)S.collapsed=!S.example;if(dateBad())S.collapsed=false;applyCollapse();
 $('editToggle').onclick=()=>{S.collapsed=!S.collapsed;save();applyCollapse()};
 
 // 密碼鎖設定
+$('appVer').textContent=APP_VERSION;
+$('bkSaved').onclick=()=>{markBackup();$('bkConfirmRow').hidden=true;toast('已記錄備份時間')};
 $('bkWarn').innerHTML='<b>注意</b>：備份內容包含航班、住宿和花費，請存在自己的手機或雲端硬碟，不要傳給不信任的人。';
 $('wipeBtn').onclick=()=>{$('wipeGo').hidden=false;toast('再按紅色按鈕確認刪除')};
 $('wipeGo').onclick=wipeAll;
