@@ -2,6 +2,8 @@
 <html lang="zh-Hant-TW">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://open.er-api.com https://api.open-meteo.com https://archive-api.open-meteo.com https://geocoding-api.open-meteo.com https://data.international.gc.ca; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>出國旅遊清單</title>
 <link rel="manifest" href="manifest.json">
@@ -128,12 +130,33 @@ th{font-size:.78rem;color:var(--muted);font-weight:500}
 .risk-list button{border:0;background:none;padding:0;font:inherit;color:var(--accent);cursor:pointer;text-align:left}
 .ai{border:1px dashed var(--accent);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--accent-soft)}
 .live{display:flex;flex-direction:column;gap:2px;border-top:1px dashed var(--line);padding-top:8px}
+.lock{position:fixed;inset:0;background:var(--bg);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+.lock-card{max-width:340px;width:100%;display:flex;flex-direction:column;gap:12px;text-align:center}
+.lock-card h1{font-size:1.4rem}
+.lock-card .inp{text-align:center;font-size:1.3rem;letter-spacing:.3em}
+.edit-toggle{margin-left:auto;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:4px 12px;cursor:pointer;font-size:.82rem}
+.privacy li{margin-bottom:4px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
 </head>
 <body>
-<div class="wrap">
+<div id="lockScreen" class="lock" hidden>
+  <div class="lock-card">
+    <h1>旅遊清單已上鎖</h1>
+    <p class="small muted">輸入你設定的密碼。</p>
+    <input id="lockPin" class="inp mono" type="password" inputmode="numeric" autocomplete="current-password" aria-label="密碼" placeholder="密碼">
+    <button class="btn" id="lockGo">解鎖</button>
+    <div class="small" id="lockMsg" role="alert" style="color:var(--stamp)"></div>
+    <button class="btn ghost small" id="lockForgot">忘記密碼</button>
+    <div id="lockReset" hidden class="small">
+      <p>密碼無法找回。只能清除這台裝置上的所有資料重新開始，如果有加密備份檔，之後仍可用原密碼還原。</p>
+      <button class="btn" id="lockWipe" style="background:var(--stamp);border-color:var(--stamp)">清除所有資料</button>
+    </div>
+  </div>
+</div>
+<div class="wrap" id="app">
+  <div class="callout" id="installHint" hidden><b>加到主畫面使用</b>：點 Safari「分享」→「加入主畫面」，沒網路也能打開。注意主畫面版和瀏覽器版的清單是分開的，請固定從同一個地方打開。<button class="btn ghost small" id="hideHint" style="margin-left:6px">知道了</button></div>
   <section class="pass" aria-label="行程">
     <div class="pass-main">
       <div class="route">
@@ -141,11 +164,12 @@ th{font-size:.78rem;color:var(--muted);font-weight:500}
         <div class="arrow" aria-hidden="true">✈ ─────</div>
         <div><div class="label">To</div><div class="code" id="destCode">TYO</div></div>
         <span class="example" id="exTag">範例行程，請改成你的</span>
+        <button class="edit-toggle" id="editToggle" aria-expanded="true" aria-controls="tripEdit">收合</button>
       </div>
-      <div class="fields">
+      <div class="fields" id="tripEdit">
         <div class="field"><label class="label" for="orig">出發機場</label><select id="orig"></select></div>
-        <div class="field"><label class="label" for="dest">目的地國家</label><select id="dest"></select></div>
-        <div class="field" id="citySelWrap"><label class="label" for="citySel">城市</label><select id="citySel"></select></div>
+        <div class="field"><label class="label" for="dest">目的地國家</label><select id="dest"></select><input id="destSearch" class="inp" list="destList" placeholder="或輸入國家名稱搜尋" aria-label="搜尋國家" style="margin-top:6px"><datalist id="destList"></datalist></div>
+        <div class="field" id="citySelWrap"><label class="label" for="citySel">抵達機場</label><select id="citySel"></select></div>
         <div class="field" id="cityTxtWrap" hidden><label class="label" for="cityTxt">城市（選填）</label><input id="cityTxt" placeholder="例如：雪梨"></div>
         <div class="field"><label class="label" for="dDep">出發日</label><input type="date" id="dDep" lang="zh-Hant-TW"><span class="small muted" id="wDep"></span></div>
         <div class="field"><label class="label" for="dRet">回程日</label><input type="date" id="dRet" lang="zh-Hant-TW"><span class="small muted" id="wRet"></span></div>
@@ -162,18 +186,19 @@ th{font-size:.78rem;color:var(--muted);font-weight:500}
   </section>
 
   <nav class="tabs" role="tablist" aria-label="分頁">
-    <button class="tab" role="tab" data-tab="pack" aria-selected="true">行李清單</button>
-    <button class="tab" role="tab" data-tab="safe" aria-selected="false">安全警示</button>
-    <button class="tab" role="tab" data-tab="wx" aria-selected="false">天氣穿搭</button>
-    <button class="tab" role="tab" data-tab="tax" aria-selected="false">退稅</button>
-    <button class="tab" role="tab" data-tab="fx" aria-selected="false">匯率</button>
-    <button class="tab" role="tab" data-tab="notes" aria-selected="false">注意事項</button>
+    <button class="tab" role="tab" data-tab="pack" aria-selected="true">行李</button>
+    <button class="tab" role="tab" data-tab="plan" aria-selected="false">行程</button>
+    <button class="tab" role="tab" data-tab="money" aria-selected="false">記帳</button>
+    <button class="tab" role="tab" data-tab="info" aria-selected="false">資訊</button>
+    <button class="tab" role="tab" data-tab="safe" aria-selected="false">安全</button>
   </nav>
 
   <section class="panel" id="p-pack" role="tabpanel">
     <div class="box">
       <div class="cat-head"><h2>行李清單</h2><span class="mono" id="packCount"></span></div>
       <div class="progress"><i id="packBar" style="width:0"></i></div>
+      <div><div class="small muted">旅行類型（可複選）：</div><div class="chips" id="types"></div></div>
+      <div class="small" id="qtyLine"></div>
       <div id="suggestWrap" hidden>
         <div class="small muted">依目的地天氣建議加入：</div>
         <div class="chips" id="suggest"></div>
@@ -184,14 +209,41 @@ th{font-size:.78rem;color:var(--muted);font-weight:500}
       <h3>新增物品</h3>
       <div class="add-row">
         <select id="newCat" class="inp" style="max-width:9em" aria-label="分類"></select>
-        <input id="newItem" class="inp" placeholder="例如：隱形眼鏡藥水" aria-label="物品名稱">
+        <input id="newItem" class="inp" maxlength="200" placeholder="例如：隱形眼鏡藥水" aria-label="物品名稱">
         <button class="btn" id="addBtn">加入</button>
       </div>
       <div><button class="btn ghost small" id="resetChecks">全部取消勾選</button></div>
     </div>
   </section>
 
+  <section class="panel" id="p-plan" role="tabpanel" hidden>
+    <div class="box">
+      <h2>交通與住宿</h2>
+      <div class="field"><label class="label" for="infoOut">去程航班</label><input id="infoOut" class="inp" placeholder="例如：VJ 941 07:15 起飛，第一航廈"></div>
+      <div class="field"><label class="label" for="infoBack">回程航班</label><input id="infoBack" class="inp" placeholder="例如：VJ 940 12:40 起飛"></div>
+      <div class="field"><label class="label" for="infoHotel">住宿名稱與地址</label><textarea id="infoHotel" class="inp" rows="3" placeholder="給計程車司機看的當地語言地址也可以貼這裡"></textarea></div>
+    </div>
+    <div class="panel" id="planDays"></div>
+  </section>
+
+  <section class="panel" id="p-money" role="tabpanel" hidden>
+    <div class="box" id="moneySum"></div>
+    <div class="box">
+      <h3>新增花費</h3>
+      <div class="fields">
+        <div class="field"><label class="label" for="exAmt">金額</label><input id="exAmt" class="inp mono" type="number" step="any" inputmode="decimal" placeholder="0"></div>
+        <div class="field"><label class="label" for="exCur">幣別</label><select id="exCur" class="inp"></select></div>
+        <div class="field"><label class="label" for="exCat">類別</label><select id="exCat" class="inp"><option>餐飲</option><option>交通</option><option>住宿</option><option>購物</option><option>門票</option><option>其他</option></select></div>
+        <div class="field"><label class="label" for="exNote">備註</label><input id="exNote" class="inp" placeholder="例如：河粉" maxlength="100"></div>
+        <div class="field"><label class="label" for="exDate">日期</label><input id="exDate" class="inp" type="date"></div>
+      </div>
+      <div><button class="btn" id="exAdd">記一筆</button></div>
+    </div>
+    <div class="box"><h3>花費明細</h3><div class="chart"><table><thead><tr><th>日期</th><th>項目</th><th>金額</th><th></th></tr></thead><tbody id="exList"></tbody></table></div></div>
+  </section>
+
   <section class="panel" id="p-safe" role="tabpanel" hidden>
+    <div class="box" id="emgBox"></div>
     <div class="box" id="safeDest"></div>
     <div class="box">
       <h2>燈號代表什麼</h2>
@@ -205,10 +257,13 @@ th{font-size:.78rem;color:var(--muted);font-weight:500}
     <div class="box">
       <div class="cat-head"><h2>高風險地區一覽</h2><span class="small muted">點名稱可直接選為目的地</span></div>
       <ul class="risk-list" id="riskList"></ul>
-      <div class="small muted">依外交部旅遊警示與新聞整理（中東部分為 2026 年 3 月報導）。燈號隨時調整，出發前請到 <a href="https://www.boca.gov.tw/sp-trwa-list-1.html" target="_blank" rel="noopener">外交部旅遊警示</a> 查最新燈號，並登錄「出國登錄」。</div>
+      <div class="small muted">依外交部旅遊警示與新聞整理（中東部分為 2026 年 3 月報導）。燈號隨時調整，出發前請到 <a href="https://www.boca.gov.tw/sp-trwa-list-1.html" target="_blank" rel="noopener noreferrer">外交部旅遊警示</a> 查最新燈號，並登錄「出國登錄」。</div>
     </div>
   </section>
 
+  <section class="panel" id="p-info" role="tabpanel" hidden>
+    <div class="chips" id="infoNav"><button class="chip" data-jump="p-wx">天氣穿搭</button><button class="chip" data-jump="p-fx">匯率</button><button class="chip" data-jump="p-tax">退稅</button><button class="chip" data-jump="p-notes">入境・備忘</button><button class="chip" data-jump="privacyBox">隱私與備份</button></div>
+  </section>
   <section class="panel" id="p-wx" role="tabpanel" hidden><div class="box" id="wxBox"></div></section>
 
   <section class="panel" id="p-tax" role="tabpanel" hidden>
@@ -251,25 +306,50 @@ th{font-size:.78rem;color:var(--muted);font-weight:500}
     <div class="box">
       <h3>出發前待辦</h3>
       <ul class="items" id="todo"></ul>
-      <div class="add-row"><input id="newTodo" class="inp" placeholder="新增待辦" aria-label="新增待辦"><button class="btn" id="todoAdd">加入</button></div>
+      <div class="add-row"><input id="newTodo" class="inp" maxlength="200" placeholder="新增待辦" aria-label="新增待辦"><button class="btn" id="todoAdd">加入</button></div>
     </div>
     <div class="box">
       <h3>我的備註</h3>
       <textarea id="memo" class="inp" rows="5" placeholder="飯店地址、航班編號、訂位代號、緊急聯絡人……"></textarea>
     </div>
+    <div class="box privacy" id="privacyBox">
+      <h2>隱私說明</h2>
+      <ul class="steps small">
+        <li>你的清單、行程、記帳<b>只存在這支手機</b>，不會上傳到任何伺服器，網頁作者也看不到。</li>
+        <li>沒有 cookie、廣告或任何追蹤分析程式。</li>
+        <li>為了顯示即時資訊，會向這些公開服務送出請求：Open-Meteo（目的地城市座標與日期）、ExchangeRate-API 與加拿大政府（不含任何個人資料）。你的清單、航班、記帳絕不會送出。這些服務和 GitHub（網站主機）會看到你的 IP 位址。</li>
+        <li>點外部連結時，對方網站不會知道你從這裡過去。</li>
+        <li>天氣與匯率的暫存資料（目的地座標、預報）不加密，其餘內容開啟密碼鎖後會加密。</li>
+      </ul>
+      <h3>密碼鎖</h3>
+      <div id="lockOff">
+        <div class="small muted">開啟後，清單會以 AES-256 加密存在手機上，每次打開或離開 3 分鐘後需要輸入密碼。<b>忘記密碼無法復原</b>，請先下載備份。</div>
+        <div class="add-row" style="margin-top:6px"><input id="pin1" class="inp mono" type="password" inputmode="numeric" autocomplete="new-password" placeholder="設定密碼（至少 4 碼）" aria-label="設定密碼"><input id="pin2" class="inp mono" type="password" inputmode="numeric" autocomplete="new-password" placeholder="再輸入一次" aria-label="確認密碼"></div>
+        <div style="margin-top:6px"><button class="btn" id="pinSet">開啟密碼鎖</button></div>
+      </div>
+      <div id="lockOn" hidden>
+        <div class="small">密碼鎖<b>已開啟</b>，資料已加密。</div>
+        <div class="chips" style="margin-top:6px"><button class="btn" id="lockNow">立即上鎖</button><button class="btn ghost" id="pinOff">關閉密碼鎖</button></div>
+        <div class="add-row" id="pinOffRow" hidden style="margin-top:6px"><input id="pinOffInput" class="inp mono" type="password" inputmode="numeric" placeholder="輸入目前密碼確認" aria-label="目前密碼"><button class="btn ghost" id="pinOffGo">確認關閉</button></div>
+      </div>
+      <h3>刪除資料</h3>
+      <div class="chips"><button class="btn ghost" id="wipeBtn">刪除這台裝置上的所有資料</button><button class="btn" id="wipeGo" hidden style="background:var(--stamp);border-color:var(--stamp)">確定刪除，無法復原</button></div>
+    </div>
     <div class="box" id="backupBox">
       <div class="cat-head"><h3>備份與還原</h3><span class="small muted" id="bkLast"></span></div>
-      <div class="small muted">清單只存在這台手機的瀏覽器裡。清除瀏覽紀錄或換手機前，先下載備份檔或把備份文字貼到 LINE 給自己。</div>
+      <div class="small muted">清單只存在這台手機上，而且主畫面版和 Safari 版是分開存的。清除瀏覽紀錄或換手機前，先下載備份。</div>
+      <div class="small" id="bkWarn"></div>
       <div class="chips"><button class="btn" id="bkDownload">下載備份檔</button><button class="btn ghost" id="bkCopy">複製備份文字</button></div>
       <h3 style="margin-top:6px">從備份還原</h3>
       <div class="add-row"><input type="file" id="bkFile" accept=".json,application/json,text/plain" class="inp" aria-label="選擇備份檔"></div>
       <textarea id="bkText" class="inp" rows="3" placeholder="或把備份文字貼在這裡"></textarea>
+      <input id="bkPin" class="inp mono" type="password" inputmode="numeric" placeholder="這份備份有加密，請輸入當時的密碼" aria-label="備份密碼" hidden>
       <div class="chips"><button class="btn ghost" id="bkRestore">還原</button><button class="btn" id="bkConfirm" hidden style="background:var(--stamp);border-color:var(--stamp)">確定覆蓋目前的清單</button></div>
     </div>
-    <div class="small muted">勾選和輸入的內容只存在這台裝置的瀏覽器裡。簽證與入境規定常變動，出發前請到 <a href="https://www.boca.gov.tw" target="_blank" rel="noopener">外交部領事事務局</a> 或目的地官方網站確認。</div>
+    <div class="small muted">勾選和輸入的內容只存在這台裝置的瀏覽器裡。簽證與入境規定常變動，出發前請到 <a href="https://www.boca.gov.tw" target="_blank" rel="noopener noreferrer">外交部領事事務局</a> 或目的地官方網站確認。</div>
   </section>
 </div>
-<footer class="small muted" style="max-width:760px;margin:0 auto;padding-inline:16px;padding-block:0 32px">匯率：<a href="https://www.exchangerate-api.com" target="_blank" rel="noopener">Rates By Exchange Rate API</a> · 天氣：<a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a>（CC BY 4.0） · 旅遊評級：<a href="https://travel.gc.ca/travelling/advisories" target="_blank" rel="noopener">Government of Canada</a> · 台灣外交部燈號為內建整理資料</footer>
+<footer class="small muted" style="max-width:760px;margin:0 auto;padding-inline:16px;padding-block:0 32px">匯率：<a href="https://www.exchangerate-api.com" target="_blank" rel="noopener noreferrer">Rates By Exchange Rate API</a> · 天氣：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Weather data by Open-Meteo.com</a>（CC BY 4.0） · 國際參考評級：<a href="https://travel.gc.ca/travelling/advisories" target="_blank" rel="noopener noreferrer">Government of Canada</a> · 台灣燈號、退稅、入境規定為內建整理資料，可能已變動</footer>
 <div class="toast" id="toast" role="status"></div>
 <script>
 const M=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
@@ -303,21 +383,36 @@ const RN=(()=>{try{return new Intl.DisplayNames(['zh-TW'],{type:'region'})}catch
 const CN=(()=>{try{return new Intl.DisplayNames(['zh-TW'],{type:'currency'})}catch(e){return null}})();
 const cname=c=>{try{return RN?RN.of(c):c}catch(e){return c}};
 const curName=c=>{try{return CN?CN.of(c):c}catch(e){return c}};
+// 機場：[代碼, 機場名稱, 城市, 緯度, 經度, 內建氣候代號]
 const AIRPORTS=[
- ['TW','台灣',[['TPE','桃園國際機場（台北）'],['TSA','松山機場（台北）'],['KHH','高雄國際機場'],['RMQ','台中國際機場'],['TNN','台南機場'],['KNH','金門機場']]],
- ['JP','日本',[['NRT','東京成田'],['HND','東京羽田'],['KIX','大阪關西'],['NGO','名古屋中部'],['FUK','福岡'],['CTS','札幌新千歲'],['OKA','沖繩那霸']]],
- ['KR','韓國',[['ICN','首爾仁川'],['GMP','首爾金浦'],['PUS','釜山金海']]],
- ['HK','香港',[['HKG','香港國際機場']]],['MO','澳門',[['MFM','澳門國際機場']]],
- ['CN','中國',[['PVG','上海浦東'],['SHA','上海虹橋'],['PEK','北京首都'],['PKX','北京大興'],['CAN','廣州白雲'],['SZX','深圳寶安'],['XMN','廈門高崎']]],
- ['SG','新加坡',[['SIN','新加坡樟宜']]],['TH','泰國',[['BKK','曼谷蘇凡納布'],['DMK','曼谷廊曼'],['CNX','清邁'],['HKT','普吉']]],
- ['MY','馬來西亞',[['KUL','吉隆坡'],['PEN','檳城']]],['VN','越南',[['SGN','胡志明市新山一'],['HAN','河內內排'],['DAD','峴港']]],
- ['PH','菲律賓',[['MNL','馬尼拉'],['CEB','宿霧']]],['ID','印尼',[['CGK','雅加達'],['DPS','峇里島']]],
- ['US','美國',[['LAX','洛杉磯'],['SFO','舊金山'],['SEA','西雅圖'],['JFK','紐約甘迺迪'],['ORD','芝加哥'],['IAH','休士頓'],['HNL','檀香山']]],
- ['CA','加拿大',[['YVR','溫哥華'],['YYZ','多倫多']]],['GB','英國',[['LHR','倫敦希斯洛']]],['FR','法國',[['CDG','巴黎戴高樂']]],
- ['DE','德國',[['FRA','法蘭克福'],['MUC','慕尼黑']]],['NL','荷蘭',[['AMS','阿姆斯特丹']]],['AU','澳洲',[['SYD','雪梨'],['MEL','墨爾本'],['BNE','布里斯本']]],
- ['NZ','紐西蘭',[['AKL','奧克蘭']]],['AE','阿聯',[['DXB','杜拜']]],['TR','土耳其',[['IST','伊斯坦堡']]]];
-const APMAP={};AIRPORTS.forEach(([c,,list])=>list.forEach(([code,n])=>APMAP[code]={c,n}));
-const origLabel=()=>S.origAp&&APMAP[S.origAp]?`${APMAP[S.origAp].n}（${S.origAp}）`:cname(S.orig);
+ ['TW','台灣',[['TPE','桃園國際機場','台北',25.08,121.23],['TSA','松山機場','台北',25.07,121.55],['KHH','高雄國際機場','高雄',22.58,120.35],['RMQ','台中國際機場','台中',24.26,120.62],['TNN','台南機場','台南',22.95,120.21],['KNH','金門機場','金門',24.43,118.36]]],
+ ['JP','日本',[['NRT','成田機場','東京',35.68,139.69,'tokyo'],['HND','羽田機場','東京',35.68,139.69,'tokyo'],['KIX','關西機場','大阪・京都',34.69,135.5,'osaka'],['ITM','伊丹機場','大阪',34.69,135.5,'osaka'],['NGO','中部機場','名古屋',35.18,136.91],['FUK','福岡機場','福岡',33.59,130.4,'fukuoka'],['CTS','新千歲機場','札幌・北海道',43.06,141.35,'sapporo'],['HKD','函館機場','函館',41.77,140.73],['OKA','那霸機場','沖繩',26.21,127.68,'okinawa'],['ISG','石垣機場','石垣島',24.34,124.16],['SDJ','仙台機場','仙台',38.27,140.87],['AOJ','青森機場','青森',40.82,140.74],['KMQ','小松機場','金澤',36.56,136.65],['OKJ','岡山機場','岡山',34.66,133.92],['HIJ','廣島機場','廣島',34.40,132.46],['TAK','高松機場','高松',34.34,134.05],['KMJ','熊本機場','熊本',32.80,130.71],['KOJ','鹿兒島機場','鹿兒島',31.60,130.56]]],
+ ['KR','韓國',[['ICN','仁川機場','首爾',37.57,126.98,'seoul'],['GMP','金浦機場','首爾',37.57,126.98,'seoul'],['PUS','金海機場','釜山',35.18,129.08,'busan'],['CJU','濟州機場','濟州島',33.50,126.53],['TAE','大邱機場','大邱',35.87,128.60]]],
+ ['HK','香港',[['HKG','香港國際機場','香港',22.32,114.17,'hongkong']]],
+ ['MO','澳門',[['MFM','澳門國際機場','澳門',22.20,113.54]]],
+ ['CN','中國',[['PVG','浦東機場','上海',31.23,121.47],['SHA','虹橋機場','上海',31.23,121.47],['PEK','首都機場','北京',39.90,116.40],['PKX','大興機場','北京',39.90,116.40],['CAN','白雲機場','廣州',23.13,113.26],['SZX','寶安機場','深圳',22.54,114.06],['XMN','高崎機場','廈門',24.48,118.09],['CTU','雙流機場','成都',30.57,104.07],['XIY','咸陽機場','西安',34.34,108.94]]],
+ ['SG','新加坡',[['SIN','樟宜機場','新加坡',1.29,103.85,'singapore']]],
+ ['TH','泰國',[['BKK','蘇凡納布機場','曼谷',13.75,100.5,'bangkok'],['DMK','廊曼機場','曼谷',13.75,100.5,'bangkok'],['CNX','清邁機場','清邁',18.79,98.98],['HKT','普吉機場','普吉島',7.89,98.40],['USM','蘇美島機場','蘇美島',9.51,100.01],['KBV','喀比機場','喀比',8.09,98.91]]],
+ ['MY','馬來西亞',[['KUL','吉隆坡機場','吉隆坡',3.14,101.69,'kl'],['PEN','檳城機場','檳城',5.41,100.33],['BKI','亞庇機場','亞庇（沙巴）',5.98,116.07],['LGK','蘭卡威機場','蘭卡威',6.35,99.80]]],
+ ['VN','越南',[['SGN','新山一機場','胡志明市',10.82,106.63,'hcmc'],['HAN','內排機場','河內',21.03,105.85],['DAD','峴港機場','峴港・會安',16.05,108.22],['CXR','金蘭機場','芽莊',12.24,109.19],['PQC','富國島機場','富國島',10.23,103.97],['DLI','連姜機場','大叻',11.94,108.44],['HUI','富牌機場','順化',16.46,107.59],['HPH','吉碑機場','海防・下龍灣',20.86,106.68],['VCA','芹苴機場','芹苴',10.03,105.78]]],
+ ['PH','菲律賓',[['MNL','馬尼拉機場','馬尼拉',14.60,120.98],['CEB','麥克坦機場','宿霧',10.32,123.89],['MPH','卡提克蘭機場','長灘島',11.92,121.95],['PPS','公主港機場','巴拉望',9.74,118.73],['CRK','克拉克機場','克拉克',15.18,120.56]]],
+ ['ID','印尼',[['DPS','伍拉賴機場','峇里島',-8.65,115.22],['CGK','蘇加諾哈達機場','雅加達',-6.21,106.85]]],
+ ['US','美國',[['LAX','洛杉磯機場','洛杉磯',34.05,-118.24],['SFO','舊金山機場','舊金山',37.77,-122.42],['SEA','西雅圖機場','西雅圖',47.61,-122.33],['JFK','甘迺迪機場','紐約',40.71,-74.01,'newyork'],['EWR','紐華克機場','紐約',40.71,-74.01,'newyork'],['ORD','歐海爾機場','芝加哥',41.88,-87.63],['IAH','休士頓機場','休士頓',29.76,-95.37],['LAS','拉斯維加斯機場','拉斯維加斯',36.17,-115.14],['HNL','檀香山機場','夏威夷',21.31,-157.86]]],
+ ['CA','加拿大',[['YVR','溫哥華機場','溫哥華',49.28,-123.12],['YYZ','皮爾遜機場','多倫多',43.65,-79.38]]],
+ ['GB','英國',[['LHR','希斯洛機場','倫敦',51.51,-0.13,'london'],['LGW','蓋威克機場','倫敦',51.51,-0.13,'london'],['MAN','曼徹斯特機場','曼徹斯特',53.48,-2.24],['EDI','愛丁堡機場','愛丁堡',55.95,-3.19]]],
+ ['FR','法國',[['CDG','戴高樂機場','巴黎',48.86,2.35,'paris'],['ORY','奧利機場','巴黎',48.86,2.35,'paris'],['NCE','尼斯機場','尼斯',43.70,7.27]]],
+ ['DE','德國',[['FRA','法蘭克福機場','法蘭克福',50.11,8.68],['MUC','慕尼黑機場','慕尼黑',48.14,11.58],['BER','柏林機場','柏林',52.52,13.40]]],
+ ['IT','義大利',[['FCO','費米奇諾機場','羅馬',41.90,12.50],['MXP','馬爾彭薩機場','米蘭',45.46,9.19],['VCE','馬可波羅機場','威尼斯',45.44,12.32]]],
+ ['ES','西班牙',[['MAD','巴拉哈斯機場','馬德里',40.42,-3.70],['BCN','巴塞隆納機場','巴塞隆納',41.39,2.17]]],
+ ['CH','瑞士',[['ZRH','蘇黎世機場','蘇黎世',47.38,8.54],['GVA','日內瓦機場','日內瓦',46.20,6.14]]],
+ ['NL','荷蘭',[['AMS','史基浦機場','阿姆斯特丹',52.37,4.90]]],
+ ['AU','澳洲',[['SYD','雪梨機場','雪梨',-33.87,151.21],['MEL','墨爾本機場','墨爾本',-37.81,144.96],['BNE','布里斯本機場','布里斯本',-27.47,153.03],['PER','伯斯機場','伯斯',-31.95,115.86]]],
+ ['NZ','紐西蘭',[['AKL','奧克蘭機場','奧克蘭',-36.85,174.76],['CHC','基督城機場','基督城',-43.53,172.64]]],
+ ['AE','阿聯',[['DXB','杜拜機場','杜拜',25.20,55.27],['AUH','阿布達比機場','阿布達比',24.45,54.38]]],
+ ['TR','土耳其',[['IST','伊斯坦堡機場','伊斯坦堡',41.01,28.98],['AYT','安塔利亞機場','安塔利亞',36.90,30.71]]]];
+const APMAP={},APBY={};AIRPORTS.forEach(([c,,list])=>{APBY[c]=list.map(a=>a[0]);list.forEach(([code,n,city,lat,lon,clim])=>APMAP[code]={c,n,city,lat,lon,clim})});
+const apFull=code=>{const a=APMAP[code];return a?`${a.city}・${a.n}`:code};
+const origLabel=()=>S.origAp&&APMAP[S.origAp]?`${apFull(S.origAp)}（${S.origAp}）`:cname(S.orig);
 const POPULAR=['JP','KR','TH','VN','SG','MY','HK','MO','PH','ID','CN','US','CA','GB','FR','DE','IT','ES','CH','AU','NZ','TR','AE'];
 
 // 內建城市氣候：hi/lo 歷年月平均高/低溫 °C（約略），rain 0 少雨 1 偶有雨 2 雨季/颱風
@@ -402,18 +497,45 @@ const TODO_DEFAULT=['確認護照效期','查外交部旅遊警示燈號','登�
 
 let S;const KEY='trip-v2';
 function plusDays(n){return new Date(Date.now()+8*36e5+n*864e5).toISOString().slice(0,10)}
-function load(){try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
- if(S){if(S.origAp===undefined)S.origAp=S.orig==='TW'?'TPE':'';return}
+function defaultState(){const items={};let id=0;for(const[c,arr]of Object.entries(DEFAULT_PACK))items[c]=arr.map(t=>({id:id++,t,d:false}));
+ return {orig:'TW',origAp:'TPE',dest:'JP',destAp:'NRT',city:'tokyo',cityTxt:'',dep:plusDays(30),ret:plusDays(35),example:true,items,nid:id,todo:TODO_DEFAULT.map((t,i)=>({id:i,t,d:false})),memo:'',rates:{},
+  log:{},tab:'pack',amt:10000}}
+function load(pre){if(pre){S=pre}else{try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}}
+ if(S&&typeof S==='object'){const raw=S,tab=raw.tab;
+  if(raw.origAp===undefined)raw.origAp=raw.orig==='TW'?'TPE':'';
+  if(raw.destAp===undefined){const m=(APBY[raw.dest]||[]).find(c=>APMAP[c].clim===raw.city);raw.destAp=m||(raw.city==='other'?'':(APBY[raw.dest]||[''])[0])}
+  S=Object.assign(defaultState(),sanitize(raw));S.tab=tab||(()=>{try{return sessionStorage.getItem('trip-tab')}catch(e){return''}})()||'pack';return}
  let old=null;try{old=JSON.parse(localStorage.getItem('trip-v1'))}catch(e){}
- const items={};let id=0;for(const[c,arr]of Object.entries(DEFAULT_PACK))items[c]=arr.map(t=>({id:id++,t,d:false}));
- S={orig:'TW',origAp:'TPE',dest:'JP',city:'tokyo',cityTxt:'',dep:plusDays(30),ret:plusDays(35),example:true,items,nid:id,todo:TODO_DEFAULT.map((t,i)=>({id:i,t,d:false})),memo:'',rates:{},
-  log:{},tab:'pack',amt:10000,ai:{}};
+ S=defaultState();
  if(old){if(old.items){S.items=old.items;S.nid=old.nid}if(old.todo)S.todo=old.todo;S.memo=old.memo||'';S.dep=old.dep||S.dep;S.ret=old.ret||S.ret;S.example=old.example;
   if(old.log)for(const[k,v]of Object.entries(old.log))S.log[k+'>TWD']=v;if(old.rates)for(const[k,v]of Object.entries(old.rates))S.rates[k+'>TWD']=v}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+// ---------- 儲存與加密 ----------
+const ENC_KEY='trip-enc';let LOCK=null,encT=null;
+const b64=buf=>{const u=new Uint8Array(buf);let s='';for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s)};
+const ub64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function deriveKey(pin,salt){const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function encObj(lock,obj){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},lock.key,new TextEncoder().encode(JSON.stringify(obj)));return{v:1,salt:b64(lock.salt),iv:b64(iv),ct:b64(ct)}}
+async function decObj(key,p){const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:ub64(p.iv)},key,ub64(p.ct));return JSON.parse(new TextDecoder().decode(pt))}
+function stateForSave(){const{tab,...rest}=S;return rest}
+function save(){
+ if(LOCK){clearTimeout(encT);encT=setTimeout(async()=>{try{localStorage.setItem(ENC_KEY,JSON.stringify(await encObj(LOCK,stateForSave())));localStorage.removeItem(KEY)}catch(e){}},250);try{sessionStorage.setItem('trip-tab',S.tab||'')}catch(e){}return}
+ try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+// 只接受已知欄位，避免還原檔夾帶奇怪內容
+const SAFE_KEYS=['orig','origAp','dest','destAp','city','cityTxt','dep','ret','example','items','nid','todo','memo','rates','log','amt','lastBackup','types','plan','info','exp','budget','hideHint','collapsed'];
+function sanitize(d){const out={};if(!d||typeof d!=='object')return out;for(const k of SAFE_KEYS)if(Object.prototype.hasOwnProperty.call(d,k))out[k]=d[k];
+ if(out.items&&typeof out.items==='object'&&!Array.isArray(out.items)){const it={};for(const[c,arr]of Object.entries(out.items))if(Array.isArray(arr)&&c!=='__proto__')it[String(c).slice(0,40)]=arr.filter(i=>i&&typeof i==='object').map(i=>({id:+i.id||0,t:String(i.t??'').slice(0,200),d:!!i.d}));out.items=it}else delete out.items;
+ if(out.todo)out.todo=Array.isArray(out.todo)?out.todo.map(i=>({id:+i.id||0,t:String(i.t??'').slice(0,200),d:!!i.d})):[];
+ if(out.exp)out.exp=Array.isArray(out.exp)?out.exp.map(e=>({id:+e.id||0,amt:+e.amt||0,cur:String(e.cur||'').slice(0,3).toUpperCase(),cat:String(e.cat||'其他').slice(0,10),note:String(e.note||'').slice(0,100),d:/^\d{4}-\d\d-\d\d$/.test(e.d)?e.d:''})):[];
+ for(const k of['plan','info','rates','log'])if(out[k]&&(typeof out[k]!=='object'||Array.isArray(out[k])))delete out[k];
+ for(const k of['plan','info'])if(out[k]){const o={};for(const[a,b]of Object.entries(out[k]))if(a!=='__proto__')o[a]=String(b??'').slice(0,4000);out[k]=o}
+ for(const k of['orig','origAp','dest','destAp'])if(out[k]!=null)out[k]=String(out[k]).replace(/[^A-Z]/g,'').slice(0,3);
+ for(const k of['dep','ret'])if(out[k]!=null&&!/^\d{4}-\d\d-\d\d$/.test(out[k]))out[k]='';
+ if(out.memo!=null)out.memo=String(out.memo).slice(0,10000);if(out.cityTxt!=null)out.cityTxt=String(out.cityTxt).slice(0,60);
+ if(out.types)out.types=Array.isArray(out.types)?out.types.map(String).slice(0,10):[];
+ return out}
 let live={fx:null,forecast:null,safety:null};
 const hash=s=>{let h=5381;for(const ch of s)h=(h*33+ch.codePointAt(0))>>>0;return h.toString(36)};
-const placeId=()=>`${S.dest}-${city()?S.city:(S.cityTxt?'x'+hash(S.cityTxt):'main')}`;
+const placeId=()=>`${S.dest}-${dAp()?S.destAp:(S.cityTxt?'x'+hash(S.cityTxt):'main')}`;
 const fdt=iso=>{if(!iso)return'';const d=new Date(iso);if(isNaN(d))return String(iso);const t=new Date(d.getTime()+8*36e5);return `${t.getUTCMonth()+1}月${t.getUTCDate()}日（${WD[t.getUTCDay()]}）${String(t.getUTCHours()).padStart(2,'0')}:${String(t.getUTCMinutes()).padStart(2,'0')}`};
 function renderLive(){const el=$('liveBar');if(!el)return;const fx=live.fx,fc=live.forecast,off=navigator.onLine===false;
  el.innerHTML=`<span><b>即時資訊</b>：匯率 ${fx?fdt(fx.fetchedAt):(off?'尚無資料':'載入中')}${fc?` · 天氣預報 ${fdt(fc.fetchedAt)}`:''}</span><span class="muted">${off?'<b style="color:var(--warn)">目前離線</b>，顯示上次抓到的資料 · ':'打開網頁自動抓最新資料 · '}清單存在這台裝置${S.lastBackup?`，上次備份 ${fdt(S.lastBackup)}`:'，<a href="#" data-tabgo="notes">記得備份</a>'}</span>`}
@@ -424,8 +546,9 @@ function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');cle
 function fmt(n,dig){if(!isFinite(n))return '–';return n.toLocaleString('zh-TW',{maximumFractionDigits:dig??(Math.abs(n)<1?4:2)})}
 function days(a,b){return Math.round((new Date(b)-new Date(a))/864e5)}
 function today(){return new Date(Date.now()+8*36e5).toISOString().slice(0,10)}
-const city=()=>CITY[S.dest]?.[S.city]||null;
-const destLabel=()=>cname(S.dest)+(city()?'・'+city().n:(S.cityTxt?'・'+S.cityTxt:''));
+const dAp=()=>APMAP[S.destAp]&&APMAP[S.destAp].c===S.dest?APMAP[S.destAp]:null;
+const city=()=>{const a=dAp();return a&&a.clim?CITY[S.dest]?.[a.clim]||null:null};
+const destLabel=()=>cname(S.dest)+(dAp()?'・'+dAp().city:(S.cityTxt?'・'+S.cityTxt:''));
 function tripMonths(){if(!S.dep)return[];const a=+S.dep.slice(5,7)-1,b=S.ret?+S.ret.slice(5,7)-1:a;const out=[a];let m=a;while(m!==b&&out.length<12){m=(m+1)%12;out.push(m)}return out}
 const SAMPLE=null,AI=()=>null;function aiBox(){return ''}
 
@@ -435,47 +558,39 @@ function fillSelects(){
  const tag=c=>SAFETY[c]&&SAFETY[c][0]!=='note'?`（${LVTXT[SAFETY[c][0]]}）`:'';
  const opts=(withTag)=>`<optgroup label="熱門">${POPULAR.map(c=>`<option value="${c}">${esc(cname(c))}${withTag?tag(c):''}</option>`).join('')}</optgroup><optgroup label="全部國家／地區">${all.map(([c,n])=>`<option value="${c}">${esc(n)}${withTag?tag(c):''}</option>`).join('')}</optgroup>`;
  const apC=new Set(AIRPORTS.map(a=>a[0]));
- $('orig').innerHTML=AIRPORTS.map(([c,n,list])=>`<optgroup label="${esc(cname(c)||n)}">${list.map(([code,an])=>`<option value="AP:${code}">${esc(an)}（${code}）</option>`).join('')}</optgroup>`).join('')
+ $('orig').innerHTML=AIRPORTS.map(([c,n,list])=>`<optgroup label="${esc(cname(c)||n)}">${list.map(([code])=>`<option value="AP:${code}">${esc(apFull(code))}（${code}）</option>`).join('')}</optgroup>`).join('')
   +`<optgroup label="其他國家／地區">${all.filter(([c])=>!apC.has(c)).map(([c,n])=>`<option value="C:${c}">${esc(n)}</option>`).join('')}</optgroup>`;$('dest').innerHTML=opts(true)}
 function renderTrip(){
  $('orig').value=S.origAp&&APMAP[S.origAp]?'AP:'+S.origAp:'C:'+S.orig;$('dest').value=S.dest;
- const cs=CITY[S.dest];$('citySelWrap').hidden=!cs;$('cityTxtWrap').hidden=!!cs&&S.city!=='other';
- if(cs){$('citySel').innerHTML=Object.entries(cs).map(([k,v])=>`<option value="${k}">${v.n}</option>`).join('')+'<option value="other">其他城市</option>';$('citySel').value=cs[S.city]?S.city:'other'}
+ const aps=APBY[S.dest];$('citySelWrap').hidden=!aps;$('cityTxtWrap').hidden=!!aps&&!!dAp();
+ if(aps){$('citySel').innerHTML=aps.map(c=>`<option value="${c}">${esc(apFull(c))}（${c}）</option>`).join('')+'<option value="other">其他城市（自行輸入）</option>';$('citySel').value=dAp()?S.destAp:'other'}
  $('cityTxt').value=S.cityTxt;$('dDep').value=S.dep;$('dRet').value=S.ret;$('wDep').textContent=fdateY(S.dep);$('wRet').textContent=fdateY(S.ret);$('exTag').hidden=!S.example;
- $('origCode').textContent=S.origAp||S.orig;$('destCode').textContent=city()?city().code:S.dest;
- let line=`${origLabel()} → ${destLabel()}`;
+ $('origCode').textContent=S.origAp||S.orig;$('destCode').textContent=dAp()?S.destAp:S.dest;
+ let line=`${origLabel()} → ${destLabel()}${dAp()?`（${S.destAp}）`:''}`;
  if(S.dep&&S.ret){const n=days(S.dep,S.ret);line+=` · ${fdate(S.dep)} – ${fdate(S.ret)} · ${n+1} 天 ${n} 夜`}else if(S.dep)line+=` · ${fdate(S.dep)} 出發`;
  $('tripLine').textContent=line;
  const cd=S.dep?days(today(),S.dep):NaN;$('countdown').textContent=isFinite(cd)?(cd<0?'已出發':cd):'–';
- const sf=safetyOf(S.dest);
- $('safetyBanner').innerHTML=sf&&sf.lv!=='none'?`<div class="safety ${sf.lv}"><div><span class="lv ${sf.lv}">${sf.label}</span> <b>${esc(cname(S.dest))}</b></div><div class="small">${esc(sf.why)}</div><div class="small"><a href="#" data-tabgo="safe">看要注意什麼 →</a></div></div>`:'';
+ const sf=safetyOf(S.dest),A=ADV?.[S.dest];
+ if(!sf&&A&&A.st>=2){$('safetyBanner').innerHTML=`<div class="safety note"><div><b>${esc(cname(S.dest))}</b>：國際參考評級為「${ADVTXT[A.st]}」</div><div class="small">請查外交部最新燈號後再決定。<a href="#" data-tabgo="safe">看詳細 →</a></div></div>`}
+ else $('safetyBanner').innerHTML=sf&&sf.lv!=='none'?`<div class="safety ${sf.lv}"><div><span class="lv ${sf.lv}">${sf.label}</span> <b>${esc(cname(S.dest))}</b></div><div class="small">${esc(sf.why)}</div><div class="small"><a href="#" data-tabgo="safe">看要注意什麼 →</a></div></div>`:'';
 }
 const LIVEMAP={red:['red','紅色警示'],orange:['orange','橙色警示'],yellow:['orange','黃色警示'],gray:['note','灰色警示']};
+const MIDEAST=new Set(['QA','AE','KW','SA','BH','OM','IL','IR','IQ','LB','JO','SY','YE','PS']);
+const builtDate=c=>MIDEAST.has(c)?'依 2026 年 3 月新聞整理':['CN','HK','MO'].includes(c)?'依陸委會 2024 年公告整理':'依 2026 年年中以前的資料整理';
 function safetyOf(c){
- const L=c===S.dest&&live.safety&&live.safety.dest===c?live.safety:null;
- if(L){const m=LIVEMAP[L.level];const meta={src:'live',at:L.fetchedAt,url:L.source,confirmed:L.confirmed};
-  if(m)return{lv:m[0],label:m[1],why:L.why||'',watch:L.watch||[],...meta};return{lv:'none',why:L.why||'',watch:L.watch||[],...meta}}
- const A=ADV?.[c];
- if(!SAFETY[c]&&A&&A.st>=1){const lv=ADVLV[A.st];return{lv,label:ADVTXT[A.st],why:'國際即時評級（加拿大政府）。台灣外交部燈號請點下方連結確認。',watch:[],src:'ca',at:A.date}}
- if(!SAFETY[c]&&A&&A.st===0)return{lv:'none',why:'國際即時評級（加拿大政府）：一般注意即可。',watch:[],src:'ca',at:A.date};
  if(SAFETY[c]){const[lv,why,watch]=SAFETY[c];return{lv,label:LVTXT[lv],why,watch:[watch],src:'built'}}
- const a=c===S.dest?AI()?.safety:null;
- if(a&&a.level&&a.level!=='none'){const map={red:'red',orange:'orange',yellow:'orange',gray:'note'};const t={red:'紅色警示',orange:'橙色警示',yellow:'黃色警示',gray:'灰色警示'};return{lv:map[a.level]||'note',label:t[a.level]||'注意',why:a.why||'',watch:a.watch||[],src:'ai'}}
- if(a)return{lv:'none',why:a.why||'',watch:a.watch||[],src:'ai'};
  return null}
 function renderSafe(){
- const sf=safetyOf(S.dest),n=esc(destLabel());let h=`<h2>${n} 安全狀況</h2>`;
+ const sf=safetyOf(S.dest),n=esc(destLabel()),A=ADV?.[S.dest];let h=`<h2>${n} 安全狀況</h2>`;
  if(S.orig!=='TW')h+=`<div class="small muted">以下燈號以台灣外交部為準；持其他國家護照請一併查你本國政府的旅遊警示。</div>`;
- const srcLine=!sf?'':sf.src==='live'?`<div class="small">${sf.confirmed?'已在官方網站確認':'官方頁面未能確認，依新聞判斷'} · 查核於 ${fdt(sf.at)}${sf.url?` · <a href="${esc(sf.url)}" target="_blank" rel="noopener">來源</a>`:''}</div>`:sf.src==='ca'?`<div class="small">加拿大政府旅遊評級，網頁每次打開自動抓取${sf.at?` · 評級日期 ${esc(sf.at)}`:''}</div>`:sf.src==='ai'?`<div class="small muted">Claude 依訓練資料整理，可能過時</div>`:`<div class="small muted">內建資料（2026 年 10 月整理），出發前請到外交部確認最新燈號</div>`;
  const wl=w=>w&&w.length?`<div><b>要注意：</b></div><ul class="steps">${w.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'';
- if(sf&&sf.lv!=='none')h+=`<div class="safety ${sf.lv}"><div><span class="lv ${sf.lv}">${sf.label}</span></div>${sf.why?`<div><b>為什麼：</b>${esc(sf.why)}</div>`:''}${wl(sf.watch)}${srcLine}</div>`;
- else if(sf)h+=`<div class="safety note"><div><span class="lv ok">無特別警示</span></div>${sf.why?`<div class="small">${esc(sf.why)}</div>`:''}${wl(sf.watch)}${srcLine}</div>`;
- else if(POPULAR.includes(S.dest)||CITY[S.dest])h+=`<div class="safety note"><div><span class="lv ok">無特別警示</span></div><div class="small">目前沒有戰爭或重大安全警示，注意扒手、詐騙等一般治安即可。</div><div class="small muted">內建資料（2026 年 10 月整理）</div></div>`;
- const A2=ADV?.[S.dest];if(A2&&sf?.src!=='ca')h+=`<div class="small">國際即時評級（加拿大政府）：<b>${ADVTXT[A2.st]}</b>${A2.date?` · ${esc(A2.date)}`:''}</div>`;
- if(!ADV)h+=`<div class="small muted">國際即時評級載入中，或目前連不上。</div>`;
- h+=`<div class="small"><a href="https://www.boca.gov.tw/sp-trwa-list-1.html" target="_blank" rel="noopener">查外交部最新燈號 →</a> · <a href="${gsearch('外交部 旅遊警示 '+cname(S.dest))}" target="_blank" rel="noopener">搜尋 ${esc(cname(S.dest))} 最新警示新聞 →</a></div>`;
- h+=`<div class="small muted">出國前到外交部「出國登錄」登記，發生緊急事件時駐外館處能找到你。旅外急難救助專線：+886-800-085-095。</div>`;
+ if(sf&&sf.lv!=='none')h+=`<div class="safety ${sf.lv}"><div><span class="lv ${sf.lv}">${sf.label}</span> <span class="small">台灣外交部／陸委會</span></div><div><b>為什麼：</b>${esc(sf.why)}</div>${wl(sf.watch)}<div class="small muted">內建資料，${builtDate(S.dest)}，可能已變動</div></div>`;
+ else if(POPULAR.includes(S.dest)||APBY[S.dest])h+=`<div class="safety note"><div><span class="lv ok">無特別警示紀錄</span></div><div class="small">內建資料中這裡沒有戰爭或重大警示，注意扒手、詐騙等一般治安即可。${builtDate(S.dest)}，出發前請點下方連結確認。</div></div>`;
+ else h+=`<div class="safety note"><div><b>台灣外交部燈號：</b>這個國家沒有內建資料</div><div class="small">請點下方連結查外交部最新燈號。</div></div>`;
+ if(A)h+=`<div class="small">國際參考（加拿大政府即時評級）：<b>${ADVTXT[A.st]}</b>${A.date?` · ${esc(A.date)}`:''}<br><span class="muted">各國政府標準不同，台灣人出國以外交部燈號為準。</span></div>`;
+ h+=`<div class="small"><a href="https://www.boca.gov.tw/sp-trwa-list-1.html" target="_blank" rel="noopener noreferrer">查外交部最新燈號 →</a> · <a href="${gsearch('外交部 旅遊警示 '+cname(S.dest))}" target="_blank" rel="noopener noreferrer">搜尋最新警示新聞 →</a></div>`;
  $('safeDest').innerHTML=h;
+ renderEmg();
  const order={red:0,orange:1,note:2};
  $('riskList').innerHTML=Object.entries(SAFETY).sort((a,b)=>order[a[1][0]]-order[b[1][0]]||cname(a[0]).localeCompare(cname(b[0]),'zh-Hant-TW')).map(([c,[lv,why]])=>`<li><span class="lv ${lv}">${LVTXT[lv]}</span><div><button data-go="${c}">${esc(cname(c))}</button><div class="small muted">${esc(why)}</div></div></li>`).join('');
 }
@@ -496,7 +611,7 @@ function climate(){const ms=tripMonths(),c=city();
  return null}
 function renderWx(){const box=$('wxBox'),ms=tripMonths();
  if(!ms.length){box.innerHTML='<h2>天氣穿搭</h2><p class="muted">先填出發日。</p>';return}
- const cl=climate();let h=`<h2>${esc(destLabel())} 的天氣穿搭</h2>`+(cl?forecastHtml():'');
+ const cl=climate();let h=`<h2>${esc(destLabel())} 的天氣穿搭</h2>`+(cl?forecastHtml(cl.src==='lastyear'?'去年同期實際天氣':'歷年平均'):'');
  if(!cl){box.innerHTML=h+forecastHtml()+`<div class="callout">${geoState==='nocity'?'在上方「城市」欄輸入城市名稱，就會顯示天氣預報和去年同期的實際天氣。':geoState==='notfound'?'找不到這個城市，請換個寫法（例如英文名稱）。':geoState==='error'?'目前連不上天氣資料，請檢查網路後重新整理。':'天氣資料載入中…'}</div>`;return}
  if(cl.src==='lastyear')h+=`<div class="small muted">${esc(cl.name)} 去年同期的實際天氣（Open-Meteo 觀測資料）</div>`;
  if(cl.src==='ai'&&cl.name)h+=`<div class="small muted">參考城市：${esc(cl.name)}</div>`;
@@ -508,12 +623,12 @@ function renderWx(){const box=$('wxBox'),ms=tripMonths();
  if(cl.src==='built')h+=`<div class="chart">${tempChart(city(),ms)}</div>`;
  h+=`<div class="small muted">平均值僅供打包參考，出發前 3–5 天請再看當地天氣預報。</div>`;box.innerHTML=h}
 function fcDays(){const f=live.forecast;if(!f?.days?.length)return[];const st=S.dep&&S.dep>today()?S.dep:today();return f.days.filter(d=>d.date>=st&&(!S.ret||d.date<=S.ret))}
-function forecastHtml(){const f=live.forecast,ds=fcDays();
+function forecastHtml(lbl){const f=live.forecast,ds=fcDays();
  if(!ds.length){const cd=S.dep?days(today(),S.dep):99;return cd>14?`<div class="small muted">出發前 16 天內會自動顯示實際天氣預報。</div>`:(f?'':`<div class="small muted">實際天氣預報載入中…</div>`)}
  const anyRain=ds.some(d=>(+d.rainPct||0)>=50);
  return `<h3>實際天氣預報 <span class="small muted" style="font-weight:400">${esc(f.place||'')} · 更新於 ${fdt(f.fetchedAt)}</span></h3>
  <div class="chart"><table><thead><tr><th>日期</th><th>天氣</th><th>高 / 低</th><th>降雨</th></tr></thead><tbody>${ds.map(d=>`<tr><td class="mono">${fdate(d.date)}</td><td>${esc(d.desc||'')}</td><td class="mono">${d.hi}° / ${d.lo}°</td><td class="mono">${d.rainPct==null?'–':`<span class="pill ${d.rainPct>=60?'r2':d.rainPct>=30?'r1':'r0'}">${d.rainPct}%</span>`}</td></tr>`).join('')}</tbody></table></div>
- ${anyRain?'<div class="callout">預報有幾天降雨機率 50% 以上，記得帶傘。</div>':''}${f.source?`<div class="small muted"><a href="${esc(f.source)}" target="_blank" rel="noopener">預報來源</a></div>`:''}<h3 style="margin-top:6px">歷年平均</h3>`}
+ ${anyRain?'<div class="callout">預報有幾天降雨機率 50% 以上，記得帶傘。</div>':''}${f.source?`<div class="small muted"><a href="${esc(f.source)}" target="_blank" rel="noopener noreferrer">預報來源</a></div>`:''}${lbl?`<h3 style="margin-top:6px">${lbl}</h3>`:''}`}
 function tempChart(d,ms){const W=560,H=200,P={l:30,r:8,t:12,b:26};
  const min=Math.min(...d.lo)-3,max=Math.max(...d.hi)+3,y=v=>P.t+(max-v)/(max-min)*(H-P.t-P.b),cw=(W-P.l-P.r)/12;
  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="全年月均溫">`;
@@ -526,7 +641,7 @@ function tempChart(d,ms){const W=560,H=200,P={l:30,r:8,t:12,b:26};
  return s+`</svg><div class="small muted">長條＝月均低溫到高溫，深色是你的旅行月份；紅點＝雨季。</div>`}
 
 // ---------- 行李 ----------
-function suggestions(){const out=new Set(),cl=climate();const fd=fcDays();if(fd.length){const hi=Math.max(...fd.map(d=>+d.hi)),lo=Math.min(...fd.map(d=>+d.lo));clothes(hi,lo).items.forEach(i=>out.add(i));if(fd.some(d=>(+d.rainPct||0)>=30))out.add('折疊雨傘')}else if(cl)for(const w of cl.rows){clothes(w.hi,w.lo).items.forEach(i=>out.add(i));if(w.rain>=1)out.add('折疊雨傘');if(w.rain===2){out.add('輕便雨衣');out.add('防水鞋')}}
+function suggestions(){const out=new Set(),cl=climate();(S.types||[]).forEach(t=>(TYPES[t]||[]).forEach(i=>out.add(i)));const fd=fcDays();if(fd.length){const hi=Math.max(...fd.map(d=>+d.hi)),lo=Math.min(...fd.map(d=>+d.lo));clothes(hi,lo).items.forEach(i=>out.add(i));if(fd.some(d=>(+d.rainPct||0)>=30))out.add('折疊雨傘')}else if(cl)for(const w of cl.rows){clothes(w.hi,w.lo).items.forEach(i=>out.add(i));if(w.rain>=1)out.add('折疊雨傘');if(w.rain===2){out.add('輕便雨衣');out.add('防水鞋')}}
  const have=new Set(Object.values(S.items).flat().map(i=>i.t));return[...out].filter(i=>!have.has(i))}
 function renderPack(){const all=Object.values(S.items).flat(),done=all.filter(i=>i.d).length;
  $('packCount').textContent=`${done} / ${all.length}`;$('packBar').style.width=all.length?(done/all.length*100)+'%':'0';
@@ -537,11 +652,11 @@ function renderPack(){const all=Object.values(S.items).flat(),done=all.filter(i=
 
 // ---------- 退稅 ----------
 function renderTax(){let h;
- if(TAX[S.dest])h=TAX[S.dest](S.dep)+`<div class="small muted">各國門檻與流程會調整，購物前看店家或機場公告。</div>`;
+ if(TAX[S.dest])h=TAX[S.dest](S.dep)+`<div class="small muted">內建資料，依 2026 年年中以前的規定整理（日本新制已查證），可能已變動，購物前請看店家或機場公告。</div>`;
  else{const t=AI()?.tax;h=`<h2>${esc(cname(S.dest))}退稅</h2>`;
   if(t){h+=t.available===false?`<div class="callout">${esc(t.note||'沒有旅客退稅制度。')}</div>`:`<dl class="rule"><dt>稅率</dt><dd>${esc(t.tax)}</dd><dt>門檻</dt><dd>${esc(t.threshold)}</dd><dt>期限</dt><dd>${esc(t.deadline)}</dd></dl>${t.steps?.length?`<h3>流程</h3><ol class="steps">${t.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>`:''}${t.note?`<div class="small">${esc(t.note)}</div>`:''}`}
   h+=aiBox('退稅')}
- h+=`<div class="small"><a href="${gsearch(cname(S.dest)+' 旅客退稅 規定 '+new Date().getFullYear())}" target="_blank" rel="noopener">搜尋 ${esc(cname(S.dest))} 最新退稅規定 →</a></div>`;
+ h+=`<div class="small"><a href="${gsearch(cname(S.dest)+' 旅客退稅 規定 '+new Date().getFullYear())}" target="_blank" rel="noopener noreferrer">搜尋 ${esc(cname(S.dest))} 最新退稅規定 →</a></div>`;
  $('taxBox').innerHTML=h;
  if(S.orig==='TW')$('customsBox').innerHTML=`<h3>回台灣入境免稅額</h3><dl class="rule"><dt>酒</dt><dd>1 公升（滿 20 歲）</dd><dt>菸</dt><dd>捲菸 200 支，或雪茄 25 支，或菸絲 1 磅</dd><dt>其他物品</dt><dd>完稅價格總值 NT$20,000 以內</dd><dt>禁止攜帶</dt><dd>肉類製品（含肉乾、肉鬆、泡麵肉包）、新鮮水果、動植物</dd></dl><div class="small muted">以財政部關務署公告為準。帶肉製品入境罰款最高可達 NT$100 萬。</div>`;
  else{const c=AI()?.customs;$('customsBox').innerHTML=`<h3>回${esc(cname(S.orig))}入境免稅額</h3>`+(c?`<div>${esc(c)}</div>`:`<div class="small muted">請查詢${esc(cname(S.orig))}海關規定${SAMPLE?'，或在上方請 Claude 補上資料':''}。</div>`)}}
@@ -559,9 +674,9 @@ function renderFx(){const d=dc(),o=oc(),r=rate(),same=d===o;
  if(document.activeElement!==$('amtF'))$('amtF').value=S.amt;
  if(document.activeElement!==$('amtT'))$('amtT').value=isFinite(r)?+(S.amt*r).toFixed(r*S.amt<100?2:0):'';
  const u=usdOf(d)||(isFinite(r)&&usdOf(o)?usdOf(o)/r:null);
- const base=u?[10,30,50,100,300].map(v=>nice(v*u)):[10,50,100,500,1000];
+ const base=[...new Set(u?[10,30,50,100,300].map(v=>nice(v*u)):[10,50,100,500,1000])];
  $('quick').innerHTML=isFinite(r)?base.map(v=>`<tr><td class="mono">${fmt(v,0)} ${d}</td><td class="mono">${fmt(v*r,v*r<100?2:0)} ${o}</td></tr>`).join(''):`<tr><td colspan="2" class="muted">請先在上方輸入匯率。</td></tr>`;
- $('fxNote').innerHTML=(S.rates[pair()]?`使用你輸入的匯率。<button class="btn ghost small" id="useLive">改回自動匯率</button>`:live.fx&&isFinite(r)?`國際中間匯率，每天更新（${fdt(live.fx.fetchedAt)}）。銀行換匯會有價差，實際以牌告為準。`:isFinite(r)?'預設匯率為大約參考值，換匯前請看銀行牌告並改成實際匯率。':'這個幣別沒有內建參考匯率，請輸入銀行牌告匯率。')+(o==='TWD'?' <a href="https://rate.bot.com.tw/xrt" target="_blank" rel="noopener">台灣銀行牌告匯率</a>':' <a href="https://www.xe.com/currencyconverter/" target="_blank" rel="noopener">XE 匯率查詢</a>');
+ $('fxNote').innerHTML=(S.rates[pair()]?`使用你輸入的匯率。<button class="btn ghost small" id="useLive">改回自動匯率</button>`:live.fx&&isFinite(r)?`國際中間匯率，每天更新（${fdt(live.fx.fetchedAt)}）。銀行換匯會有價差，實際以牌告為準。`:isFinite(r)?'預設匯率為大約參考值，換匯前請看銀行牌告並改成實際匯率。':'這個幣別沒有內建參考匯率，請輸入銀行牌告匯率。')+(o==='TWD'?' <a href="https://rate.bot.com.tw/xrt" target="_blank" rel="noopener noreferrer">台灣銀行牌告匯率</a>':' <a href="https://www.xe.com/currencyconverter/" target="_blank" rel="noopener noreferrer">XE 匯率查詢</a>');
  const log=(S.log[pair()]||[]).slice().sort((a,b)=>a.d<b.d?-1:1);
  if(!$('logDate').value)$('logDate').value=today();
  $('logBody').innerHTML=log.length?log.map((e,i)=>{const p=i?(e.r-log[i-1].r)/log[i-1].r*100:null;return `<tr><td class="mono">${fdate(e.d)}</td><td class="mono">${e.r}</td><td class="mono ${p>0?'up':p<0?'down':''}">${p==null?'–':(p>0?'▲ ':p<0?'▼ ':'')+Math.abs(p).toFixed(2)+'%'}</td><td><button class="x" data-ldel="${e.d}|${e.r}" aria-label="刪除">✕</button></td></tr>`}).reverse().join(''):`<tr><td colspan="4" class="muted">還沒有紀錄。輸入今天銀行的現金賣出匯率，按「記錄」。</td></tr>`;
@@ -582,14 +697,60 @@ function renderNotes(){const co=COUNTRY[S.dest],a=AI();
  h+=`<dt>插座電壓</dt><dd>${plug?esc(plug):'<span class="muted">請查詢當地插座型式與電壓。</span>'}</dd>`;
  if(tips.length)h+=`<dt>當地提醒</dt><dd>${tips.map(esc).join('<br>')}</dd>`;
  const sf=safetyOf(S.dest);if(sf&&sf.lv!=='none')h+=`<dt>安全</dt><dd><span class="lv ${sf.lv}">${sf.label}</span> ${esc(sf.why)}</dd>`;
+ if(co)h+=`<dt>資料日期</dt><dd class="small muted">內建資料，依 2026 年年中以前的規定整理，可能已變動，請點下方連結確認。</dd>`;
  h+=`<dt>通用</dt><dd>行動電源、鋰電池只能隨身帶；液體 100ml 以下才能帶上機，裝進 1 公升夾鏈袋。</dd></dl>`;
- h+=`<div class="small"><a href="https://www.boca.gov.tw" target="_blank" rel="noopener">外交部領事事務局（簽證與入境須知）→</a> · <a href="${gsearch(cname(S.dest)+' 入境 規定 '+cname(S.orig)+' 護照 '+new Date().getFullYear())}" target="_blank" rel="noopener">搜尋最新入境規定 →</a></div>`;
+ h+=`<div class="small"><a href="https://www.boca.gov.tw" target="_blank" rel="noopener noreferrer">外交部領事事務局（簽證與入境須知）→</a> · <a href="${gsearch(cname(S.dest)+' 入境 規定 '+cname(S.orig)+' 護照 '+new Date().getFullYear())}" target="_blank" rel="noopener noreferrer">搜尋最新入境規定 →</a></div>`;
  $('destNotes').innerHTML=h;
  $('todo').innerHTML=S.todo.map(i=>`<li class="${i.d?'done':''}"><input type="checkbox" id="td${i.id}" data-td="${i.id}" ${i.d?'checked':''}><label for="td${i.id}">${esc(i.t)}</label><button class="x" data-tdel="${i.id}" aria-label="刪除">✕</button></li>`).join('');
  if(document.activeElement!==$('memo'))$('memo').value=S.memo}
 
-function setTab(t){S.tab=t;document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));document.querySelectorAll('[role=tabpanel]').forEach(p=>p.hidden=p.id!=='p-'+t);save()}
-function all(){loadWeather();renderLive();renderTrip();renderPack();renderSafe();renderWx();renderTax();renderFx();renderNotes()}
+// ---------- 緊急電話 ----------
+const EMG={TW:['110','119','119'],JP:['110','119','119'],KR:['112','119','119','觀光諮詢 1330（可說中文）'],TH:['191','1669','199','觀光警察 1155'],SG:['999','995','995'],MY:['999','999','994'],HK:['999','999','999'],MO:['999','999','999'],VN:['113','115','114'],PH:['911','911','911'],ID:['110','118','113','手機也可撥 112'],CN:['110','120','119'],US:['911','911','911'],CA:['911','911','911'],GB:['999','999','999','也可撥 112'],FR:['17','15','18','歐盟通用 112'],DE:['110','112','112'],IT:['112','118','115'],ES:['112','112','112'],CH:['117','144','118'],NL:['112','112','112'],AU:['000','000','000','手機也可撥 112'],NZ:['111','111','111'],AE:['999','998','997'],TR:['112','112','112']};
+const tel=n=>`<a href="tel:${n.replace(/[^+\d]/g,'')}" class="mono">${esc(n)}</a>`;
+function renderEmg(){const e=EMG[S.dest];let h=`<h2>緊急電話・${esc(cname(S.dest))}</h2>`;
+ if(e)h+=`<dl class="rule"><dt>報警</dt><dd>${tel(e[0])}</dd><dt>救護車</dt><dd>${tel(e[1])}</dd><dt>消防</dt><dd>${tel(e[2])}</dd>${e[3]?`<dt>其他</dt><dd>${esc(e[3])}</dd>`:''}</dl>`;
+ else h+=`<div>多數國家用手機撥 <b class="mono">112</b> 可接通緊急服務，請出發前確認當地號碼。</div>`;
+ h+=`<h3>台灣外交部急難救助</h3><dl class="rule"><dt>緊急聯絡中心</dt><dd>${tel('+886-800-085-095')}<div class="small muted">24 小時，車禍、搶劫、護照遺失、重大意外都可打</div></dd>
+ <dt>全球免付費</dt><dd><span class="mono">800-0885-0885</span><div class="small muted">先撥當地國際冠碼，僅部分國家可用</div></dd>
+ <dt>駐外館處</dt><dd><a href="${gsearch('駐'+cname(S.dest)+' 台北 代表處 急難救助 電話')}" target="_blank" rel="noopener noreferrer">查詢${esc(cname(S.dest))}的駐外館處電話 →</a></dd></dl>
+ <div class="small muted">號碼為內建資料，出發前請再確認。點號碼可直接撥打。</div>`;
+ $('emgBox').innerHTML=h}
+
+// ---------- 每日行程 ----------
+function tripDates(){if(!S.dep)return[];const out=[];let d=S.dep;const end=S.ret||S.dep;while(d<=end&&out.length<30){out.push(d);const t=new Date(d+'T00:00:00Z');t.setUTCDate(t.getUTCDate()+1);d=t.toISOString().slice(0,10)}return out}
+function renderPlan(){S.plan=S.plan||{};S.info=S.info||{};
+ for(const[k,id]of[['out','infoOut'],['back','infoBack'],['hotel','infoHotel']])if(document.activeElement!==$(id))$(id).value=S.info[k]||'';
+ const ds=tripDates();
+ if(!ds.length){$('planDays').innerHTML='<div class="box muted">先在上方填出發日和回程日。</div>';return}
+ if(document.activeElement?.dataset?.plan)return;
+ $('planDays').innerHTML=ds.map((d,i)=>`<div class="box"><div class="cat-head"><h3>第 ${i+1} 天</h3><span class="small muted">${fdate(d)}${i===0?' · 出發':i===ds.length-1?' · 回程':''}</span></div><textarea class="inp" rows="3" data-plan="${d}" id="plan-${d}" placeholder="${i===0?'例如：抵達後搭計程車到飯店，晚上逛夜市':'景點、餐廳、預約時間…'}">${esc(S.plan[d]||'')}</textarea></div>`).join('')}
+
+// ---------- 記帳 ----------
+const CATS=['餐飲','交通','住宿','購物','門票','其他'];
+function toOrig(amt,cur){const o=oc();if(cur===o)return amt;if(cur===dc()){const r=rate();return isFinite(r)?amt*r:NaN}const a=usdOf(cur),b=usdOf(o);return a&&b?amt/a*b:NaN}
+function renderMoney(){S.exp=S.exp||[];const o=oc(),d=dc();if(document.activeElement&&document.activeElement.id==='budget')return;
+ const cs=[...new Set([d,o])];const cur=$('exCur').value;$('exCur').innerHTML=cs.map(c=>`<option value="${c}">${c} ${esc(curName(c))}</option>`).join('');$('exCur').value=cs.includes(cur)?cur:d;
+ const tot=S.exp.reduce((s,e)=>s+(toOrig(e.amt,e.cur)||0),0),byCat={};S.exp.forEach(e=>byCat[e.cat]=(byCat[e.cat]||0)+(toOrig(e.amt,e.cur)||0));
+ const b=+S.budget||0,left=b-tot,pct=b?Math.min(100,tot/b*100):0,nd=tripDates().length||1;
+ $('moneySum').innerHTML=`<div class="cat-head"><h2>花費記帳</h2><span class="small muted">以 ${o} 計算</span></div>
+ <div class="wx-top"><div class="wx-cell"><span class="label">已花費</span><span class="v">${fmt(tot,0)}</span><span class="small muted">${o}</span></div>
+ <div class="wx-cell"><span class="label">${b?'預算剩餘':'每天平均'}</span><span class="v ${b&&left<0?'up':''}">${b?fmt(left,0):fmt(tot/nd,0)}</span><span class="small muted">${b?(left<0?'已超支':`每天還可花 ${fmt(Math.max(0,left)/Math.max(1,nd),0)}`):`共 ${nd} 天`}</span></div></div>
+ ${b?`<div class="progress"><i style="width:${pct}%;${tot>b?'background:var(--stamp)':''}"></i></div>`:''}
+ <div class="add-row"><input id="budget" class="inp mono" type="number" inputmode="decimal" placeholder="設定總預算（${o}）" value="${b||''}"><button class="btn ghost" id="budgetSet">設定預算</button></div>
+ ${Object.keys(byCat).length?`<div class="chips">${CATS.filter(c=>byCat[c]).map(c=>`<span class="pill r0">${c} ${fmt(byCat[c],0)}</span>`).join('')}</div>`:''}`;
+ $('budgetSet').onclick=()=>{S.budget=parseFloat($('budget').value)||0;save();renderMoney();toast(S.budget?'已設定預算':'已清除預算')};
+ $('exList').innerHTML=S.exp.length?S.exp.slice().reverse().map(e=>`<tr><td class="mono">${fdate(e.d)}</td><td>${esc(e.cat)}${e.note?` · ${esc(e.note)}`:''}</td><td class="mono">${fmt(e.amt)} ${e.cur}${e.cur!==o?`<div class="small muted">≈ ${fmt(toOrig(e.amt,e.cur),0)} ${o}</div>`:''}</td><td><button class="x" data-exdel="${e.id}" aria-label="刪除">✕</button></td></tr>`).join(''):`<tr><td colspan="4" class="muted">還沒有記錄。在上方輸入金額，按「記一筆」。</td></tr>`}
+
+// ---------- 旅行類型 ----------
+const TYPES={'城市觀光':['好走的鞋','行動電源（隨身帶，不可托運）'],'海島':['泳衣','防水手機袋','夾腳拖','防曬乳（高係數）','薄長袖罩衫'],'雪地':['雪衣雪褲','防水手套','毛帽','防滑雪靴','護唇膏','暖暖包'],'登山健行':['登山鞋','輕便雨衣','頭燈','水壺','排汗衣'],'出差':['正式服裝','名片','筆電與充電器','簡報轉接頭'],'親子':['兒童常備藥','推車或背帶','兒童零食','兒童證件影本']};
+function renderTypes(){S.types=S.types||[];$('types').innerHTML=Object.keys(TYPES).map(t=>`<button class="chip" data-type="${t}" style="${S.types.includes(t)?'background:var(--accent);color:var(--paper);border-style:solid':''}">${S.types.includes(t)?'✓ ':''}${t}</button>`).join('');
+ const n=tripDates().length;$('qtyLine').innerHTML=n?`這趟 ${n} 天 ${Math.max(0,n-1)} 夜，衣物建議：上衣 ${n} 件、褲子 ${Math.ceil(n/2)} 件、內衣褲 ${n} 套、襪子 ${n} 雙${n>5?'（住處能洗衣可減半）':''}`:''}
+
+const TABGROUP={info:['info','wx','fx','tax','notes']};
+function setTab(t,jump){if(['wx','fx','tax','notes'].includes(t)){jump=jump||'p-'+t;t='info'}if(!document.querySelector(`.tab[data-tab="${t}"]`))t='pack';S.tab=t;const show=TABGROUP[t]||[t];
+ document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));document.querySelectorAll('[role=tabpanel]').forEach(p=>p.hidden=!show.includes(p.id.slice(2)));save();
+ if(jump)setTimeout(()=>$(jump)?.scrollIntoView({behavior:'smooth',block:'start'}),50)}
+function all(){loadWeather();renderLive();renderTrip();renderTypes();renderPack();renderPlan();renderMoney();renderSafe();renderWx();renderTax();renderFx();renderNotes()}
 
 
 // ---------- 獨立網頁版：瀏覽器直接抓公開資料（不使用 Claude） ----------
@@ -612,7 +773,7 @@ async function loadAdvisory(){let d=cacheGet('adv',12*36e5);
  if(!d)d=cacheGet('adv',1e15);if(d){ADV=d;all()}}
 const gsearch=q=>'https://www.google.com/search?q='+encodeURIComponent(q);
 async function placeCoords(){
- const c=city();if(c&&GEO[S.city])return{lat:GEO[S.city][0],lon:GEO[S.city][1],name:c.n};
+ const a=dAp();if(a)return{lat:a.lat,lon:a.lon,name:a.city};
  if(!S.cityTxt)return null;
  const k='geo:'+S.dest+':'+S.cityTxt;let g=cacheGet(k,1e15);
  if(!g){const j=await getJSON(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(S.cityTxt)}&count=1&language=zh&countryCode=${S.dest}`);const r=j.results?.[0];if(!r)return{missing:true};g={lat:r.latitude,lon:r.longitude,name:r.name};cacheSet(k,g)}
@@ -638,12 +799,13 @@ async function loadWeather(){
   if(key===fetchKey)lastYear=L}catch(e){}}
  all()}
 
-load();fillSelects();
+function start(pre){
+load(pre);fillSelects();
 const touch=()=>{S.example=false};
-function setDest(c){S.dest=c;const cs=CITY[c];S.city=cs?Object.keys(cs)[0]:'other';S.cityTxt='';touch();save();all()}
+function setDest(c){S.dest=c;S.destAp=APBY[c]?APBY[c][0]:'';S.cityTxt='';touch();save();all()}
 $('orig').onchange=e=>{const[t,v]=e.target.value.split(':');if(t==='AP'){S.origAp=v;S.orig=APMAP[v].c}else{S.origAp='';S.orig=v}touch();save();all()};
 $('dest').onchange=e=>setDest(e.target.value);
-$('citySel').onchange=e=>{S.city=e.target.value;touch();save();all();if(S.city==='other')setTimeout(()=>$('cityTxt').focus(),0)};
+$('citySel').onchange=e=>{const v=e.target.value;S.destAp=v==='other'?'':v;touch();save();all();if(v==='other')setTimeout(()=>$('cityTxt').focus(),0)};
 $('cityTxt').onchange=e=>{S.cityTxt=e.target.value.trim();touch();save();all()};
 $('dDep').onchange=e=>{S.dep=e.target.value;if(S.ret&&S.ret<S.dep)S.ret=S.dep;touch();save();all()};
 $('dRet').onchange=e=>{S.ret=e.target.value;touch();save();all()};
@@ -670,19 +832,66 @@ $('logAdd').onclick=()=>{const d=$('logDate').value,r=parseFloat($('logRate').va
 $('logBody').onclick=e=>{const b=e.target.closest('[data-ldel]');if(!b)return;const[d,r]=b.dataset.ldel.split('|'),k=pair();S.log[k]=S.log[k].filter(x=>!(x.d===d&&String(x.r)===r));save();renderFx()};
 document.addEventListener('click',e=>{if(e.target.id==='useLive'){delete S.rates[pair()];save();renderFx();toast('已改回自動匯率')}});
 $('clearLog').onclick=()=>{const k=pair();S.log[k]=(S.log[k]||[]).filter(e=>!e.ex);save();renderFx()};
-function backupText(){const{tab,...rest}=S;return JSON.stringify({app:'trip-checklist',v:2,savedAt:new Date().toISOString(),s:rest})}
+async function backupText(){const base={app:'trip-checklist',savedAt:new Date().toISOString()};if(LOCK)return JSON.stringify({...base,v:3,enc:await encObj(LOCK,stateForSave())});return JSON.stringify({...base,v:2,s:stateForSave()})}
 function markBackup(){S.lastBackup=new Date().toISOString();save();renderLive();$('bkLast').textContent='上次備份 '+fdt(S.lastBackup)}
-$('bkDownload').onclick=()=>{try{const b=new Blob([backupText()],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`旅遊清單備份-${today()}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);markBackup();toast('已下載備份檔')}catch(e){toast('無法下載，請改用複製備份文字')}};
-$('bkCopy').onclick=()=>{const t=backupText();const done=()=>{markBackup();toast('已複製，貼到 LINE 或備忘錄保存')};
+$('bkDownload').onclick=async()=>{try{const b=new Blob([await backupText()],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`旅遊清單備份-${today()}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);markBackup();toast('已下載備份檔')}catch(e){toast('無法下載，請改用複製備份文字')}};
+$('bkCopy').onclick=async()=>{const t=await backupText();const done=()=>{markBackup();toast('已複製，貼到 LINE 或備忘錄保存')};
  if(navigator.clipboard?.writeText)navigator.clipboard.writeText(t).then(done).catch(()=>{$('bkText').value=t;$('bkText').select();toast('請手動複製下方文字')});else{$('bkText').value=t;$('bkText').select();toast('請手動複製下方文字')}};
 let pendingRestore=null;
-function parseBackup(t){try{const j=JSON.parse(t);if(j&&j.app==='trip-checklist'&&j.s&&j.s.items)return j.s}catch(e){}return null}
+async function parseBackup(t){let j;try{j=JSON.parse(t)}catch(e){return{err:'這不是有效的備份內容'}}if(!j||j.app!=='trip-checklist')return{err:'這不是有效的備份內容'};
+ if(j.enc){const pin=$('bkPin').value;$('bkPin').hidden=false;if(!pin)return{err:'這份備份有加密，請輸入當時設定的密碼'};try{const k=await deriveKey(pin,ub64(j.enc.salt));return{s:sanitize(await decObj(k,j.enc))}}catch(e){return{err:'密碼不對，無法解開這份備份'}}}
+ if(j.s&&j.s.items)return{s:sanitize(j.s)};return{err:'這不是有效的備份內容'}}
 $('bkFile').onchange=e=>{const f=e.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{$('bkText').value=String(r.result||'');$('bkRestore').click()};r.readAsText(f)};
-$('bkRestore').onclick=()=>{const d=parseBackup($('bkText').value.trim());if(!d){toast('這不是有效的備份內容');return}pendingRestore=d;$('bkConfirm').hidden=false;toast('按紅色按鈕確認還原')};
-$('bkConfirm').onclick=()=>{if(!pendingRestore)return;const tab=S.tab;S=Object.assign({},S,pendingRestore,{tab,example:false});pendingRestore=null;$('bkConfirm').hidden=true;$('bkText').value='';save();fetchKey='';all();toast('已還原備份')};
+$('bkRestore').onclick=async()=>{const r=await parseBackup($('bkText').value.trim());if(r.err){toast(r.err);return}const d=r.s;pendingRestore=d;$('bkConfirm').hidden=false;toast('按紅色按鈕確認還原')};
+$('bkConfirm').onclick=()=>{if(!pendingRestore)return;const tab=S.tab;S=Object.assign(defaultState(),pendingRestore,{tab,example:false});pendingRestore=null;$('bkConfirm').hidden=true;$('bkText').value='';$('bkPin').value='';$('bkPin').hidden=true;save();fetchKey='';all();toast('已還原備份')};
 if(S.lastBackup)$('bkLast').textContent='上次備份 '+fdt(S.lastBackup);
+$('types').onclick=e=>{const b=e.target.closest('[data-type]');if(!b)return;S.types=S.types||[];const t=b.dataset.type;S.types=S.types.includes(t)?S.types.filter(x=>x!==t):[...S.types,t];save();renderTypes();renderPack()};
+for(const[k,id]of[['out','infoOut'],['back','infoBack'],['hotel','infoHotel']])$(id).oninput=e=>{S.info=S.info||{};S.info[k]=e.target.value;save()};
+$('planDays').oninput=e=>{const d=e.target.dataset?.plan;if(!d)return;S.plan=S.plan||{};S.plan[d]=e.target.value;save()};
+$('planDays').addEventListener('focusout',()=>setTimeout(renderPlan,0));
+$('exAdd').onclick=()=>{const a=parseFloat($('exAmt').value);if(!(a>0)){toast('請輸入金額');return}S.exp=S.exp||[];
+ const d=$('exDate').value||today();S.exp.push({id:Date.now(),amt:a,cur:$('exCur').value,cat:$('exCat').value,note:$('exNote').value.trim().slice(0,100),d});S.exp.sort((x,y)=>x.d<y.d?-1:x.d>y.d?1:x.id-y.id);
+ $('exAmt').value='';$('exNote').value='';save();renderMoney();toast('已記一筆')};
+$('exList').onclick=e=>{const b=e.target.closest('[data-exdel]');if(!b)return;S.exp=S.exp.filter(x=>x.id!=b.dataset.exdel);save();renderMoney()};
+$('destList').innerHTML=Object.keys(CUR).map(c=>cname(c)).filter(Boolean).map(n=>`<option value="${esc(n)}">`).join('');
+$('destSearch').onchange=e=>{const v=e.target.value.trim();if(!v)return;const c=Object.keys(CUR).find(k=>cname(k)===v)||Object.keys(CUR).find(k=>cname(k).includes(v));if(c){setDest(c);toast('目的地改為'+cname(c))}else toast('找不到這個國家');e.target.value=''};
+const standalone=window.matchMedia?.('(display-mode: standalone)').matches||navigator.standalone;
+$('installHint').hidden=!!(standalone||S.hideHint);$('hideHint').onclick=()=>{S.hideHint=true;save();$('installHint').hidden=true};
 all();setTab(S.tab||'pack');loadFx();loadAdvisory();
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+// 收合行程卡
+const applyCollapse=()=>{const c=!!S.collapsed;$('tripEdit').hidden=c;$('editToggle').textContent=c?'編輯行程':'收合';$('editToggle').setAttribute('aria-expanded',String(!c))};
+if(S.collapsed===undefined)S.collapsed=!S.example;applyCollapse();
+$('editToggle').onclick=()=>{S.collapsed=!S.collapsed;save();applyCollapse()};
+$('infoNav').onclick=e=>{const b=e.target.closest('[data-jump]');if(!b)return;const id=b.dataset.jump;if(id==='privacyBox')setTab('info','privacyBox');else setTab('info',id)};
+// 密碼鎖設定
+const renderLockUI=()=>{$('lockOff').hidden=!!LOCK;$('lockOn').hidden=!LOCK;$('bkWarn').innerHTML=LOCK?'密碼鎖已開啟：備份檔也會加密，還原時需要同一組密碼。':'<b>注意</b>：備份內容包含航班、住宿和花費，目前沒有加密。開啟密碼鎖後，備份也會加密。'};
+renderLockUI();
+$('pinSet').onclick=async()=>{const a=$('pin1').value,b=$('pin2').value;if(a.length<4){toast('密碼至少 4 碼');return}if(a!==b){toast('兩次輸入的密碼不一樣');return}
+ if(!window.crypto?.subtle){toast('這個瀏覽器不支援加密');return}
+ const salt=crypto.getRandomValues(new Uint8Array(16));LOCK={key:await deriveKey(a,salt),salt};$('pin1').value='';$('pin2').value='';
+ localStorage.setItem(ENC_KEY,JSON.stringify(await encObj(LOCK,stateForSave())));localStorage.removeItem(KEY);renderLockUI();toast('密碼鎖已開啟，資料已加密')};
+$('lockNow').onclick=()=>{location.reload()};
+$('pinOff').onclick=()=>{$('pinOffRow').hidden=false;$('pinOffInput').focus()};
+$('pinOffGo').onclick=async()=>{try{const p=JSON.parse(localStorage.getItem(ENC_KEY));const k=await deriveKey($('pinOffInput').value,ub64(p.salt));await decObj(k,p)}catch(e){toast('密碼不對');return}
+ LOCK=null;localStorage.removeItem(ENC_KEY);save();$('pinOffInput').value='';$('pinOffRow').hidden=true;renderLockUI();toast('已關閉密碼鎖，資料改為未加密')};
+$('wipeBtn').onclick=()=>{$('wipeGo').hidden=false;toast('再按紅色按鈕確認刪除')};
+$('wipeGo').onclick=wipeAll;
+// 離開超過 3 分鐘自動上鎖
+let hiddenAt=0;document.addEventListener('visibilitychange',()=>{if(document.hidden)hiddenAt=Date.now();else if(LOCK&&hiddenAt&&Date.now()-hiddenAt>180000)location.reload()});
+}
+function wipeAll(){try{Object.keys(localStorage).forEach(k=>{if(k===KEY||k===ENC_KEY||k==='trip-v1'||k.startsWith('c:'))localStorage.removeItem(k)});sessionStorage.clear()}catch(e){}
+ try{caches?.keys().then(ks=>ks.forEach(k=>caches.delete(k)))}catch(e){}setTimeout(()=>location.reload(),150)}
+// 啟動：有加密資料就先顯示鎖定畫面
+(function boot(){let enc=null;try{enc=JSON.parse(localStorage.getItem(ENC_KEY))}catch(e){}
+ if(!enc||!enc.ct){start();return}
+ $('lockScreen').hidden=false;$('app').hidden=true;setTimeout(()=>$('lockPin').focus(),50);
+ const tryUnlock=async()=>{const pin=$('lockPin').value;if(!pin)return;$('lockGo').disabled=true;$('lockMsg').textContent='解鎖中…';
+  try{const salt=ub64(enc.salt),key=await deriveKey(pin,salt);const data=await decObj(key,enc);LOCK={key,salt};$('lockPin').value='';$('lockScreen').hidden=true;$('app').hidden=false;$('lockMsg').textContent='';start(data)}
+  catch(e){$('lockMsg').textContent='密碼不對，請再試一次';$('lockPin').select()}$('lockGo').disabled=false};
+ $('lockGo').onclick=tryUnlock;$('lockPin').onkeydown=e=>{if(e.key==='Enter')tryUnlock()};
+ $('lockForgot').onclick=()=>{$('lockReset').hidden=false};$('lockWipe').onclick=wipeAll})();
+
 </script>
 
 </body>
