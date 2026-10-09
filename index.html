@@ -21,19 +21,19 @@ html{color-scheme:light}body{margin:0;font-size:14px}img{max-width:100%}[hidden]
 :root{
   --bg:#f3f5f7; --paper:#ffffff; --ink:#14212b; --muted:#5d6b76; --line:#d9e0e5;
   --accent:#0e6e78; --accent-soft:#dcefef; --stamp:#b3263e; --stamp-soft:#f7e3e6;
-  --ok:#2f7d4a; --warn:#a36a00; --warn-soft:#fbefd6;
-  --f-display:"Songti TC","Noto Serif TC","PMingLiU",serif;
+  --ok:#2f7d4a; --warn:#a36a00; --warn-soft:#fbefd6; --aux:#e8eef1;
+  --f-display:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
   --f-body:-apple-system,"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif;
   --f-mono:ui-monospace,"SF Mono",Menlo,"Roboto Mono",monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0f171d; --paper:#17222a; --ink:#e6edf1; --muted:#9aa8b2; --line:#2a3842;
-  --accent:#4fb7c1; --accent-soft:#163a3f; --stamp:#ef7a8d; --stamp-soft:#3a1d24;
-  --ok:#6cc58a; --warn:#e3ad4a; --warn-soft:#3a2e15; color-scheme:dark}}
+  --bg:#101820; --paper:#1A252E; --ink:#F4F6F7; --muted:#A9B6BE; --line:#23343D;
+  --accent:#68BAC2; --accent-soft:#1d3a40; --stamp:#EF8A98; --stamp-soft:#3a2229;
+  --ok:#7CCB97; --warn:#E5BD68; --warn-soft:#3a3120; --aux:#23343D; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0f171d; --paper:#17222a; --ink:#e6edf1; --muted:#9aa8b2; --line:#2a3842;
-  --accent:#4fb7c1; --accent-soft:#163a3f; --stamp:#ef7a8d; --stamp-soft:#3a1d24;
-  --ok:#6cc58a; --warn:#e3ad4a; --warn-soft:#3a2e15; color-scheme:dark}
+  --bg:#101820; --paper:#1A252E; --ink:#F4F6F7; --muted:#A9B6BE; --line:#23343D;
+  --accent:#68BAC2; --accent-soft:#1d3a40; --stamp:#EF8A98; --stamp-soft:#3a2229;
+  --ok:#7CCB97; --warn:#E5BD68; --warn-soft:#3a3120; --aux:#23343D; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
 .wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:16px 48px;display:flex;flex-direction:column;gap:16px}
@@ -119,8 +119,9 @@ th{font-size:.78rem;color:var(--muted);font-weight:500}
 .toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:.88rem;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.show{opacity:1}
 .safety{border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;border:1px solid}
-.safety.red{background:var(--stamp-soft);border-color:var(--stamp)}
-.safety.orange{background:var(--warn-soft);border-color:var(--warn)}
+.safety{background:var(--bg)!important;border-color:var(--line)!important}
+.safety.red{border-left:4px solid var(--stamp)!important}
+.safety.orange{border-left:4px solid var(--warn)!important}
 .safety.note{background:var(--accent-soft);border-color:var(--accent)}
 .lv{display:inline-block;font-weight:700;font-size:.78rem;padding:1px 8px;border-radius:4px;color:var(--paper)}
 .lv.red{background:var(--stamp)} .lv.orange{background:var(--warn)} .lv.note{background:var(--accent)} .lv.ok{background:var(--ok)}
@@ -138,14 +139,14 @@ th{font-size:.78rem;color:var(--muted);font-weight:500}
 .privacy li{margin-bottom:4px}
 /* ===== 2.0 design system: boutique boarding pass × minimal app ===== */
 :root{--r-sm:10px;--r-md:14px;--r-lg:20px;--sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;
- --t-xs:.75rem;--t-sm:.875rem;--t-md:1rem;--t-lg:1.2rem;--t-xl:1.6rem;--t-xxl:2.6rem;--nav-h:64px;
+ --t-xs:.8125rem;--t-sm:.875rem;--t-md:1rem;--t-lg:1.2rem;--t-xl:1.6rem;--t-xxl:2.6rem;--nav-h:64px;
  --shadow:0 1px 2px rgba(20,33,43,.06),0 8px 24px -12px rgba(20,33,43,.18);--glass:rgba(243,245,247,.86)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--shadow:0 1px 0 rgba(255,255,255,.03);--glass:rgba(15,23,29,.86)}}
 :root[data-theme="dark"]{--shadow:0 1px 0 rgba(255,255,255,.03);--glass:rgba(15,23,29,.86)}
 html{-webkit-text-size-adjust:100%}
 body{font-size:var(--t-md);line-height:1.55;-webkit-tap-highlight-color:transparent}
 .wrap{gap:var(--sp-4);padding-block:var(--sp-3) 20px}
-h2{font-size:var(--t-lg);letter-spacing:.01em} h3{font-size:var(--t-md)}
+h1,h2,h3{font-weight:700} h2{font-size:1.25rem;letter-spacing:.01em} h3{font-size:var(--t-md)}
 .small{font-size:var(--t-sm)} .label{font-size:var(--t-xs)}
 .box{border-radius:var(--r-lg);padding:var(--sp-4) 18px;gap:var(--sp-3);border-color:transparent;box-shadow:var(--shadow)}
 .inp,.field input,.field select,textarea.inp{font-size:16px;min-height:46px;border-radius:var(--r-md);padding:10px 12px;background:var(--bg);border:1px solid var(--line);transition:border-color .15s}
@@ -161,13 +162,13 @@ textarea.inp{min-height:84px;line-height:1.5;resize:vertical}
 
 /* boarding pass hero */
 .pass{border:0;border-radius:24px;box-shadow:var(--shadow);grid-template-columns:1fr}
-.pass-main{padding:20px 20px 16px;gap:14px}
+.pass-main{padding:16px 18px 14px;gap:10px}
 .route{align-items:flex-end;gap:12px;flex-wrap:nowrap}
-.route .code{font-size:var(--t-xxl);line-height:1;letter-spacing:.02em}
+.route .code{font-size:2.3rem;line-height:1;letter-spacing:.02em}
 .route .arrow{flex:1;min-width:24px;text-align:center;font-size:var(--t-sm);padding-bottom:10px;letter-spacing:-.05em;overflow:hidden;white-space:nowrap}
 .route .place{font-size:var(--t-xs);color:var(--muted);margin-top:4px;max-width:7.5em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .route-top{display:flex;align-items:center;gap:8px}
-.pass-stub{border-left:0;border-top:2px dashed var(--line);display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding:14px 8px;min-width:0;background:var(--accent-soft)}
+.pass-stub{border-left:0;border-top:2px dashed var(--line);display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding:10px 8px;min-width:0;background:var(--accent-soft)}
 .stat{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
 .stat+.stat{border-left:1px solid color-mix(in srgb,var(--accent) 25%,transparent)}
 .stat .big{font-family:var(--f-mono);font-size:var(--t-xl);font-weight:700;color:var(--accent);line-height:1.1}
@@ -232,6 +233,53 @@ textarea.inp{min-height:84px;line-height:1.5;resize:vertical}
 .official small{display:block;font-weight:400;opacity:.85}
 .reminder{display:flex;flex-direction:column;gap:10px;border-radius:var(--r-lg);padding:14px 16px;background:var(--warn-soft);border:1px solid color-mix(in srgb,var(--warn) 40%,transparent)}
 .reminder .row{display:flex;gap:8px}
+/* accordion cards: summary first, details on demand */
+details.acc{padding:0;gap:0}
+details.acc>summary{list-style:none;display:flex;align-items:center;gap:12px;padding:16px 18px;min-height:64px;cursor:pointer;-webkit-user-select:none;user-select:none}
+details.acc>summary::-webkit-details-marker{display:none}
+.acc-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.acc-t{font-weight:700;font-size:var(--t-md)}
+.acc-s{color:var(--muted);font-size:var(--t-sm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acc-s b{color:var(--ink);font-weight:600}
+.acc-chev{width:22px;height:22px;flex:0 0 auto;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+details.acc[open] .acc-chev{transform:rotate(180deg)}
+details.acc[open]>summary{padding-bottom:8px}
+.acc-body{padding:0 18px 18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.acc-body>h2:first-child,.acc-body>div>h2:first-child{display:none}
+#accWx h2,#accTax h2,#accCustoms h3{margin-bottom:4px}
+.acc-body .box{box-shadow:none;padding:0;border:0}
+details.sub>summary{cursor:pointer;color:var(--accent);font-size:var(--t-sm);min-height:40px;display:flex;align-items:center;font-weight:600}
+.wx-cell{border:0;background:var(--bg)}
+.fx-hero{display:flex;align-items:baseline;justify-content:center;gap:8px;flex-wrap:wrap;padding:6px 0 2px;font-family:var(--f-mono)}
+.fx-hero .big{font-size:var(--t-xl);font-weight:700;color:var(--accent)}
+.segbar{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 4px;margin-inline:-2px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.segbar::-webkit-scrollbar{display:none}
+.segpill{flex:0 0 auto;scroll-snap-align:start;min-height:44px;padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--paper);color:var(--muted);font-weight:600;cursor:pointer;white-space:nowrap}
+.segpill[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.erow{border-top:1px solid var(--line)} .erow:first-of-type{border-top:0}
+.erow>summary{list-style:none;display:flex;align-items:center;gap:12px;min-height:56px;padding:10px 0;cursor:pointer}
+.erow>summary::-webkit-details-marker{display:none}
+.erow .et{font-weight:700;font-size:var(--t-md)} .erow .es{color:var(--muted);font-size:var(--t-sm);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.erow[open] .acc-chev{transform:rotate(180deg)}
+.erow .eb{padding:0 0 14px;font-size:var(--t-md);line-height:1.6}
+.erow .eb ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+.src{font-size:var(--t-xs);color:var(--muted)} .src a{color:var(--accent)}
+body.kb .tabs{display:none}
+.cat-done .cat-toggle h3{color:var(--muted)} .cat-done{box-shadow:none}
+/* compact pass on non-home tabs */
+body.compact .pass-stub,body.compact #notice,body.compact #tripGuide,body.compact .route .place,body.compact .route-top .label,body.compact #tripEdit,body.compact .route .label{display:none!important}
+body.compact .pass-main{padding:10px 16px;gap:4px}
+body.compact .route .code{font-size:1.5rem}
+body.compact .route .arrow{padding-bottom:2px}
+body.compact .route-top{display:none!important}
+/* one notice slot on the pass */
+.notice{display:flex;align-items:center;gap:10px;border-radius:var(--r-md);padding:10px 12px;font-size:var(--t-sm);line-height:1.4}
+.notice.red{background:var(--stamp-soft)} .notice.orange{background:var(--warn-soft)} .notice.note{background:var(--accent-soft)} .notice.warn{background:var(--warn-soft)}
+.notice .nt{flex:1;min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.notice .act{display:flex;gap:6px;flex:0 0 auto}
+.notice a{font-weight:600;white-space:nowrap}
+.tab .dot{position:absolute;top:6px;left:calc(50% + 8px);width:8px;height:8px;border-radius:50%;background:var(--warn);box-shadow:0 0 0 2px var(--glass)}
+.tab .dot.red{background:var(--stamp)}
 .add-row{flex-wrap:wrap}.add-row>.inp,.add-row>input{flex:1 1 150px;min-width:0}.add-row>select{flex:1 1 110px}.add-row>.btn{flex:0 0 auto}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -253,10 +301,9 @@ textarea.inp{min-height:84px;line-height:1.5;resize:vertical}
   </div>
 </div>
 <div class="wrap" id="app">
-  <div class="callout" id="installHint" hidden><b>加到主畫面使用</b>：點 Safari「分享」→「加入主畫面」，沒網路也能打開。注意主畫面版和瀏覽器版的清單是分開的，請固定從同一個地方打開。<button class="btn ghost small" id="hideHint" style="margin-left:6px">知道了</button></div>
   <section class="pass" aria-label="行程">
     <div class="pass-main">
-      <div class="route-top"><span class="label">Boarding Pass</span><span class="example" id="exTag">範例行程</span>
+      <div class="route-top"><span class="label">Boarding Pass</span><span class="pill r1" id="offlineBadge" hidden>離線中</span><span class="example" id="exTag">範例行程</span>
         <button class="edit-toggle" id="editToggle" aria-expanded="true" aria-controls="tripEdit">收合</button></div>
       <div class="route">
         <div><div class="label">From</div><div class="code" id="origCode">TW</div><div class="place" id="origPlace"></div></div>
@@ -272,9 +319,9 @@ textarea.inp{min-height:84px;line-height:1.5;resize:vertical}
         <div class="field"><label class="label" for="dRet">回程日</label><input type="date" id="dRet" lang="zh-Hant-TW"><span class="small muted" id="wRet"></span></div>
       </div>
       <div class="small muted" id="tripLine"></div>
-      <div class="small live" id="liveBar"></div>
-      <div id="safetyBanner"></div>
-      <div id="backupReminder"></div>
+      
+      <div id="tripGuide"></div>
+      <div id="notice"></div>
     </div>
     <div class="pass-stub">
       <div class="stat"><span class="label">距離出發</span><span class="big" id="countdown">–</span><span class="unit">天</span></div>
@@ -350,7 +397,7 @@ textarea.inp{min-height:84px;line-height:1.5;resize:vertical}
     <div class="box">
       <h2>燈號代表什麼</h2>
       <dl class="rule">
-        <dt><span class="lv red">紅色</span></dt><dd>戰爭、暴動、已撤僑或嚴重恐攻威脅。<b>不要前往</b>。保險理賠和行程退費依保單與契約條款而定，出發前請向保險公司、旅行社確認。</dd>
+        <dt><span class="lv red">紅色</span></dt><dd>戰爭、暴動、已撤僑或嚴重恐攻威脅。<b>不要前往</b>。實際承保範圍、除外責任及限制，請向保險公司確認。</dd>
         <dt><span class="lv orange">橙色</span></dt><dd>政局極不穩、有恐攻威脅或重大疫情天災。<b>避免非必要旅行</b>。</dd>
         <dt><span class="lv" style="background:var(--warn)">黃色</span></dt><dd>政局不穩或治安、衛生變差。提高警覺，評估是否前往。</dd>
         <dt><span class="lv" style="background:var(--muted)">灰色</span></dt><dd>局部地區有治安、交通、衛生問題，做好一般防護即可。</dd>
@@ -364,34 +411,37 @@ textarea.inp{min-height:84px;line-height:1.5;resize:vertical}
   </section>
 
   <section class="panel" id="p-info" role="tabpanel" hidden>
-    <div class="chips" id="infoNav"><button class="chip" data-jump="p-wx">天氣穿搭</button><button class="chip" data-jump="p-fx">匯率</button><button class="chip" data-jump="p-tax">退稅</button><button class="chip" data-jump="p-notes">入境・備忘</button><button class="chip" data-jump="privacyBox">隱私與備份</button></div>
+    <div class="segbar" id="infoSeg" role="tablist" aria-label="資訊分類">
+      <button class="segpill" data-sec="wx" role="tab">天氣穿搭</button><button class="segpill" data-sec="fx" role="tab">匯率</button><button class="segpill" data-sec="tax" role="tab">退稅</button><button class="segpill" data-sec="notes" role="tab">入境備忘</button><button class="segpill" data-sec="priv" role="tab">隱私與備份</button>
+    </div>
   </section>
-  <section class="panel" id="p-wx" role="tabpanel" hidden><div class="box" id="wxBox"></div></section>
+  <section class="panel" id="p-wx" role="tabpanel" hidden><div class="box" id="accWx"><span class="acc-s" id="sumWx" hidden></span><div id="wxBox"></div></div></section>
 
   <section class="panel" id="p-tax" role="tabpanel" hidden>
-    <div class="box" id="taxBox"></div>
-    <div class="box" id="customsBox"></div>
+    <div class="box" id="accTax"><span class="acc-s" id="sumTax" hidden></span><div id="taxBox"></div></div>
+    <div class="box" id="accCustoms"><span class="acc-s" id="sumCustoms" hidden></span><div id="customsBox"></div></div>
   </section>
 
   <section class="panel" id="p-fx" role="tabpanel" hidden>
-    <div class="box">
+    <div class="box" id="fxBox">
       <div class="cat-head"><h2>匯率換算</h2><span class="small muted mono" id="fxCur"></span></div>
       <div id="fxSame" class="callout" hidden>出發地和目的地用同一種貨幣，不用換匯。</div>
       <div id="fxMain">
-        <div class="field"><label class="label" for="rate">1 <span id="rateUnit">JPY</span> = ? <span id="rateUnit2">TWD</span></label>
-          <input id="rate" class="inp mono" type="number" step="any" inputmode="decimal" placeholder="請輸入匯率"></div>
-        <div class="fx-row" style="margin-top:10px">
+        <div class="fx-row">
           <div class="field"><label class="label" for="amtF" id="amtFLabel">外幣</label><input id="amtF" class="inp mono fx-big" type="number" step="any" inputmode="decimal" value="10000"></div>
           <div class="swap" aria-hidden="true">⇄</div>
           <div class="field"><label class="label" for="amtT" id="amtTLabel">本國</label><input id="amtT" class="inp mono fx-big" type="number" step="any" inputmode="decimal"></div>
         </div>
-        <div class="chart" style="margin-top:10px"><table><thead><tr><th id="qh">外幣</th><th id="qh2">本國</th></tr></thead><tbody id="quick"></tbody></table></div>
-        <div class="small muted" id="fxNote"></div>
+        <div class="fx-hero" id="fxHero"></div>
+        <details class="sub"><summary>常用金額對照與匯率來源</summary>
+        <div class="chart"><table><thead><tr><th id="qh">外幣</th><th id="qh2">本國</th></tr></thead><tbody id="quick"></tbody></table></div>
+        <div class="small muted" id="fxNote" style="margin-top:8px"></div>
+        <div class="field" style="margin-top:8px"><label class="label" for="rate">自訂匯率：1 <span id="rateUnit">JPY</span> = ? <span id="rateUnit2">TWD</span></label>
+          <input id="rate" class="inp mono" type="number" step="any" inputmode="decimal" placeholder="請輸入匯率"></div></details>
       </div>
     </div>
-    <div class="box" id="logBox">
-      <div class="cat-head"><h2>匯率變動紀錄</h2><span class="small" id="fxChange"></span></div>
-      <div class="small muted">每次看到銀行匯率就記一筆，觀察漲跌，挑低點換匯。</div>
+    <details class="box acc" id="logBox"><summary><span class="acc-txt"><span class="acc-t">匯率變動紀錄</span><span class="acc-s" id="sumLog"></span></span><svg class="acc-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10l4 4 4-4"/></svg></summary><div class="acc-body"><div class="small" id="fxChange"></div>
+      <div class="small muted">每次看到銀行匯率就記一筆（建議記「現金賣出」），觀察漲跌再換匯。</div>
       <div class="add-row">
         <input type="date" id="logDate" class="inp" style="max-width:11em" aria-label="日期">
         <input type="number" step="any" id="logRate" class="inp mono" placeholder="匯率" aria-label="匯率">
@@ -399,23 +449,20 @@ textarea.inp{min-height:84px;line-height:1.5;resize:vertical}
       </div>
       <div class="chart" id="fxSpark"></div>
       <div class="chart"><table><thead><tr><th>日期</th><th>匯率</th><th>與上次比</th><th></th></tr></thead><tbody id="logBody"></tbody></table></div>
-      <div id="logEx" class="small" hidden><span class="example">範例資料</span> <button class="btn ghost small" id="clearLog">清除範例</button></div>
-    </div>
+      <div id="logEx" class="small" hidden><span class="example">範例資料</span> <button class="btn ghost small" id="clearLog">清除範例</button></div></div></details>
   </section>
 
   <section class="panel" id="p-notes" role="tabpanel" hidden>
-    <div class="box" id="destNotes"></div>
-    <div class="box">
-      <h3>出發前待辦</h3>
+    <div class="box" id="accNotes"><span class="acc-s" id="sumNotes" hidden></span><div id="destNotes"></div></div>
+    <details class="box acc" id="accTodo"><summary><span class="acc-txt"><span class="acc-t">出發前待辦</span><span class="acc-s" id="sumTodo"></span></span><svg class="acc-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10l4 4 4-4"/></svg></summary><div class="acc-body">
       <ul class="items" id="todo"></ul>
       <div class="add-row"><input id="newTodo" class="inp" maxlength="200" placeholder="新增待辦" aria-label="新增待辦"><button class="btn" id="todoAdd">加入</button></div>
-    </div>
-    <div class="box">
-      <h3>我的備註</h3>
-      <textarea id="memo" class="inp" rows="5" placeholder="飯店地址、航班編號、訂位代號、緊急聯絡人……"></textarea>
-    </div>
-    <div class="box privacy" id="privacyBox">
-      <h2>隱私說明</h2>
+    </div></details>
+    <details class="box acc" id="accMemo"><summary><span class="acc-txt"><span class="acc-t">我的備註</span><span class="acc-s" id="sumMemo"></span></span><svg class="acc-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10l4 4 4-4"/></svg></summary><div class="acc-body"><textarea id="memo" class="inp" rows="5" aria-label="我的備註" placeholder="訂位代號、緊急聯絡人、想買的東西……"></textarea></div></details>
+  </section>
+  <section class="panel" id="p-priv" role="tabpanel" hidden>
+    <div class="box privacy" id="privacyBox"><span class="acc-s" id="sumPriv" hidden></span><div class="acc-body privacy" style="padding:0">
+      <h3>隱私說明</h3>
       <ul class="steps small">
         <li>你的清單、行程、記帳<b>只存在這支手機</b>，不會上傳到任何伺服器，網頁作者也看不到。</li>
         <li>沒有 cookie、廣告或任何追蹤分析程式。</li>
@@ -425,8 +472,7 @@ textarea.inp{min-height:84px;line-height:1.5;resize:vertical}
       </ul>
       <h3>刪除資料</h3>
       <div class="chips"><button class="btn ghost" id="wipeBtn">刪除這台裝置上的所有資料</button><button class="btn" id="wipeGo" hidden style="background:var(--stamp);border-color:var(--stamp)">確定刪除，無法復原</button></div>
-    </div>
-    <div class="box" id="backupBox">
+    <div id="backupBox" style="display:flex;flex-direction:column;gap:10px">
       <div class="cat-head"><h3>備份與還原</h3><span class="small muted" id="bkLast"></span></div>
       <div class="small muted">清單只存在這台手機上，而且主畫面版和 Safari 版是分開存的。清除瀏覽紀錄或換手機前，先下載備份。</div>
       <div class="small" id="bkWarn"></div>
@@ -436,7 +482,7 @@ textarea.inp{min-height:84px;line-height:1.5;resize:vertical}
       <textarea id="bkText" class="inp" rows="3" placeholder="或把備份文字貼在這裡"></textarea>
       <input id="bkPin" class="inp mono" type="password" inputmode="numeric" placeholder="這份備份有加密，請輸入當時的密碼" aria-label="備份密碼" hidden>
       <div class="chips"><button class="btn ghost" id="bkRestore">還原</button><button class="btn" id="bkConfirm" hidden style="background:var(--stamp);border-color:var(--stamp)">確定覆蓋目前的清單</button></div>
-    </div>
+    </div></div></div>
     <div class="small muted">勾選和輸入的內容只存在這台裝置的瀏覽器裡。簽證與入境規定常變動，出發前請到 <a href="https://www.boca.gov.tw" target="_blank" rel="noopener noreferrer">外交部領事事務局</a> 或目的地官方網站確認。</div>
   </section>
 </div>
@@ -543,8 +589,8 @@ const SAFETY={
  KW:['orange','2026 年 3 月起因中東戰火升溫調為橙色。','避免非必要旅行。'],SA:['orange','2026 年 3 月起因中東戰火升溫調為橙色。','避免非必要旅行。'],
  BH:['orange','2026 年 3 月起因中東戰火升溫調為橙色。','避免非必要旅行。'],OM:['orange','2026 年 3 月起因中東戰火升溫調為橙色。','避免非必要旅行。'],
  CN:['orange','陸委會 2024 年起調為橙色。對台灣人有政治言論、手機檢查、被留置的風險，「懲戒台獨」等規定可能被任意適用。','避免非必要旅行；不帶敏感書刊與資料，手機少存政治內容；行前上陸委會網站登錄行程。'],
- HK:['orange','陸委會 2024 年起調為橙色。《國安法》與《基本法 23 條》立法後，言論與攜帶物品都可能觸法，台灣人有被留置風險。','避免非必要旅行；不參與政治活動、不發表敏感言論，手機與行李避免敏感內容。'],
- MO:['orange','陸委會 2024 年起調為橙色，維護國家安全相關法律適用範圍廣。','避免非必要旅行；言行注意同香港。'],
+ HK:['orange','陸委會 2026 年 2 月確認維持橙色。《國安法》與《基本法 23 條》下，言論、手機內容和攜帶物品都可能觸法，台灣人有被留置風險。','避免非必要旅行；不參與政治活動、不發表敏感言論，手機與行李避免敏感內容。'],
+ MO:['orange','陸委會 2026 年 2 月確認維持橙色，維護國家安全相關法律適用範圍廣。','避免非必要旅行；言行注意同香港。'],
  KH:['note','詐騙園區與人口販運案件多，常以「高薪工作」誘騙台灣人，2025 年泰柬邊境也曾爆發衝突。','只走觀光行程，不接受網路上的海外工作邀約；不要把護照交給他人保管。'],
  MM:['note','軍事政變後內戰持續，邊境有詐騙園區與人口販運。','請先查外交部最新燈號，原則上避免前往。'],
  LA:['note','金三角經濟特區有詐騙園區與人口販運。','只走正規觀光行程，不接受海外高薪工作邀約。'],
@@ -560,7 +606,7 @@ const COUNTRY={
  TH:{plug:'A/B/C 型混用，220V',entry:'台灣護照目前可免簽入境，天數規定近年有變動，出發前確認。入境前 3 天內填 TDAC 泰國數位入境卡。',tip:'寺廟需遮肩膝。電子菸在泰國違法，切勿攜帶。'},
  SG:{plug:'G 型英規三方腳，230V（需轉接頭）',entry:'台灣護照免簽 30 天。抵達前 3 天內填 SG Arrival Card。',tip:'口香糖禁止攜帶販售；捷運內禁止飲食，罰款很重。'},
  MY:{plug:'G 型英規三方腳，240V（需轉接頭）',entry:'台灣護照免簽 15 天（近年曾放寬至 30 天，出發前確認）。入境前 3 天內填 MDAC 數位入境卡。',tip:'叫車用 Grab。清真餐廳不賣酒、不可自帶豬肉。'},
- HK:{plug:'G 型英規三方腳，220V（需轉接頭）',entry:'台灣居民需辦「預辦入境登記」（網上免費申請），或持台胞證入境。',tip:'八達通可搭車購物。茶餐廳常收一成服務費。'},
+ HK:{plug:'G 型英規三方腳，220V（需轉接頭）',entry:'台灣居民可網上免費辦「預辦入境登記」：有效 2 個月、可入境 2 次、每次最多停留 30 天；護照效期需 6 個月以上。也可持台胞證入境。',entrySrc:['香港入境事務處：台灣居民預辦入境登記','https://www.immd.gov.hk/hkt/services/visas/pre-arrival_registration_for_taiwan_residents.html','2026 年 10 月查證'],tip:'八達通可搭車購物。茶餐廳常收一成服務費。'},
  VN:{plug:'A/C 型，220V',entry:'台灣護照需簽證，可線上申請電子簽證 e-Visa，約 3–5 個工作天。',tip:'越盾面額大，付錢時多看一眼零的個數。叫車用 Grab。'},
  FR:{plug:'C/E 型雙圓腳，230V（需轉接頭）',entry:'台灣護照申根區免簽 90 天。歐盟 ETIAS 旅行授權預計上路，出發前確認是否需要申請。',tip:'地鐵與觀光區注意扒手。'},
  GB:{plug:'G 型英規三方腳，230V（需轉接頭）',entry:'台灣護照免簽 6 個月，但需事先線上申請英國 ETA 電子旅行許可。',tip:'感應信用卡可直接搭地鐵公車。餐廳常加 12.5% 服務費。'},
@@ -612,7 +658,7 @@ function save(){S.lastEdit=new Date().toISOString();
  if(LOCK){clearTimeout(encT);encT=setTimeout(async()=>{try{localStorage.setItem(ENC_KEY,JSON.stringify(await encObj(LOCK,stateForSave())));localStorage.removeItem(KEY)}catch(e){}},250);try{sessionStorage.setItem('trip-tab',S.tab||'')}catch(e){}return}
  try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 // 只接受已知欄位，避免還原檔夾帶奇怪內容
-const SAFE_KEYS=['lastEdit','backupSnooze','closedCats','orig','origAp','dest','destAp','city','cityTxt','dep','ret','example','items','nid','todo','memo','rates','log','amt','lastBackup','types','plan','info','exp','budget','hideHint','collapsed'];
+const SAFE_KEYS=['infoSec','lastEdit','backupSnooze','closedCats','orig','origAp','dest','destAp','city','cityTxt','dep','ret','example','items','nid','todo','memo','rates','log','amt','lastBackup','types','plan','info','exp','budget','hideHint','collapsed'];
 function sanitize(d){const out={};if(!d||typeof d!=='object')return out;for(const k of SAFE_KEYS)if(Object.prototype.hasOwnProperty.call(d,k))out[k]=d[k];
  if(out.items&&typeof out.items==='object'&&!Array.isArray(out.items)){const it={};for(const[c,arr]of Object.entries(out.items))if(Array.isArray(arr)&&c!=='__proto__')it[String(c).slice(0,40)]=arr.filter(i=>i&&typeof i==='object').map(i=>({id:+i.id||0,t:String(i.t??'').slice(0,200),d:!!i.d}));out.items=it}else delete out.items;
  if(out.todo)out.todo=Array.isArray(out.todo)?out.todo.map(i=>({id:+i.id||0,t:String(i.t??'').slice(0,200),d:!!i.d})):[];
@@ -625,30 +671,59 @@ function sanitize(d){const out={};if(!d||typeof d!=='object')return out;for(cons
  if(out.types)out.types=Array.isArray(out.types)?out.types.map(String).slice(0,10):[];
  return out}
 let live={fx:null,forecast:null,safety:null};
-function renderBackupReminder(){const el=$('backupReminder');if(!el)return;
+const TAXSRC={JP:['日本觀光廳免稅店資訊（JNTO）','https://tax-freeshop.jnto.go.jp/'],KR:['韓國觀光公社','https://korean.visitkorea.or.kr/'],TH:['泰國稅務局（VAT Refund for Tourists）','https://www.rd.go.th/'],SG:['新加坡稅務局 IRAS','https://www.iras.gov.sg/'],VN:['越南稅務總局','https://www.gdt.gov.vn/'],FR:['法國海關','https://www.douane.gouv.fr/'],GB:['英國政府：購物退稅','https://www.gov.uk/tax-on-shopping'],HK:['香港特區政府','https://www.gov.hk/'],MO:['澳門特區政府','https://www.gov.mo/'],US:['美國稅務局 IRS','https://www.irs.gov/']};
+const TAXSUM={JP:'未稅滿 ¥5,000 可退 10%（11/1 起先付後退）',KR:'單筆滿 ₩15,000 可退稅',TH:'同店滿 ฿2,000 可退 7%',SG:'同店滿 S$100 可退 9%',HK:'沒有銷售稅，不用退稅',MO:'沒有銷售稅，不用退稅',VN:'同店滿 ₫200 萬可退稅',FR:'同店滿 €100.01 可退稅',GB:'2021 年起取消旅客退稅',US:'銷售稅一般不退'};
+const setSum=(id,html)=>{const e=$(id);if(e)e.innerHTML=html};
+function renderSummaries(){
+ const fd=fcDays();let w='';
+ if(fd.length){const hi=Math.max(...fd.map(d=>+d.hi)),lo=Math.min(...fd.map(d=>+d.lo)),rp=Math.max(...fd.map(d=>+d.rainPct||0));w=`實際預報 <b>${lo}–${hi}°</b> · 降雨最高 ${rp}%${rp>=50?' · <b>帶傘</b>':''}`}
+ else{const cl=climate();if(cl&&cl.rows.length){const r=cl.rows[0];w=`${M[r.m]} <b>${r.hi}° / ${r.lo}°</b> · ${RAIN[r.rain][0]}${r.rain>=1?' · <b>帶傘</b>':''} · ${clothes(r.hi,r.lo).t}`}
+  else w=dAp()||S.cityTxt?'天氣資料載入中…':'選抵達機場或輸入城市即可查看'}
+ setSum('sumWx',w);
+ setSum('sumTax',esc(TAXSUM[S.dest]||'點開查詢這個國家的退稅方式'));
+ setSum('sumCustoms',S.orig==='TW'?'物品 NT$35,000 · 酒 1.5 公升 · 菸 200 支 · <b>禁帶肉品</b>':'點開查看回國免稅規定');
+ const lg=(S.log[pair()]||[]);setSum('sumLog',lg.length?`已記 ${lg.length} 筆${lg.length>1?` · 最新 ${lg.slice().sort((a,b)=>a.d<b.d?-1:1).pop().r}`:''}`:'記下每次看到的銀行匯率');
+ const co=COUNTRY[S.dest];const ent=co&&S.orig==='TW'?co.entry.split('。')[0]:'';setSum('sumNotes',ent?esc(ent):'簽證、插座、當地提醒');
+ const td=S.todo||[];setSum('sumTodo',`${td.filter(i=>i.d).length} / ${td.length} 完成`);
+ const mm=(S.memo||'').trim().split('\n')[0];setSum('sumMemo',mm?esc(mm.slice(0,40)):'尚未填寫');
+ setSum('sumPriv',S.lastBackup?`上次備份 ${fdt(S.lastBackup)}`:'<b>還沒有備份過</b>');
+ // safety dot on the 安全 tab
+ const sf=safetyOf(S.dest),tb=document.querySelector('.tab[data-tab="safe"]');if(tb){tb.querySelector('.dot')?.remove();if(sf&&(sf.lv==='red'||sf.lv==='orange'))tb.insertAdjacentHTML('beforeend',`<span class="dot ${sf.lv}" aria-label="${sf.label}"></span>`)}}
+function renderBackupReminder(){renderNotice()}
+function renderNotice(){const el=$('notice');if(!el)return;
+ const sf=safetyOf(S.dest),A=ADV?.[S.dest];
  const edited=S.lastEdit&&(!S.lastBackup||S.lastEdit>S.lastBackup),daysSince=S.lastBackup?Math.floor((Date.now()-new Date(S.lastBackup))/864e5):null,snoozed=S.backupSnooze&&Date.now()<S.backupSnooze;
- if(S.example||!edited||snoozed||(daysSince!==null&&daysSince<7)){el.innerHTML='';return}
- el.innerHTML=`<div class="reminder" role="status"><div><b>${daysSince===null?'還沒有備份過':`已經 ${daysSince} 天沒備份`}</b><div class="small">清單只存在這支手機，換手機或清除瀏覽資料就會不見。</div></div><div class="row"><button class="btn small" id="bkNow">立即備份</button><button class="btn ghost small" id="bkLater">明天再說</button></div></div>`;
- $('bkNow').onclick=()=>$('bkDownload').click();$('bkLater').onclick=()=>{S.backupSnooze=Date.now()+864e5;save();renderBackupReminder()}}
+ const needBk=!S.example&&edited&&!snoozed&&(daysSince===null||daysSince>=7);
+ const standalone=window.matchMedia?.('(display-mode: standalone)').matches||navigator.standalone;
+ let h='';
+ if(sf&&sf.lv==='red')h=`<div class="notice red"><span class="lv red">${sf.label}</span><span class="nt">${esc(sf.why)}</span><a href="#" data-tabgo="safe">詳情</a></div>`;
+ else if(needBk)h=`<div class="notice warn" role="status"><span class="nt"><b>${daysSince===null?'還沒有備份':`${daysSince} 天沒備份`}</b>：清單只存在這支手機</span><span class="act"><button class="btn small" id="bkNow">備份</button><button class="btn ghost small" id="bkLater" aria-label="明天再提醒">稍後</button></span></div>`;
+ else if(sf&&sf.lv==='orange')h=`<div class="notice orange"><span class="lv orange">${sf.label}</span><span class="nt">${esc(sf.why)}</span><a href="#" data-tabgo="safe">詳情</a></div>`;
+ else if(!sf&&A&&A.st>=2)h=`<div class="notice note"><span class="nt">國際參考評級「${ADVTXT[A.st]}」，請查外交部燈號</span><a href="#" data-tabgo="safe">詳情</a></div>`;
+ else if(!standalone&&!S.hideHint)h=`<div class="notice note"><span class="nt">加到主畫面使用，沒網路也能開。主畫面版和瀏覽器版資料分開存。</span><button class="btn ghost small" id="hideHint">知道了</button></div>`;
+ el.innerHTML=h;
+ if($('bkNow'))$('bkNow').onclick=()=>$('bkDownload').click();
+ if($('bkLater'))$('bkLater').onclick=()=>{S.backupSnooze=Date.now()+864e5;save();renderNotice()};
+ if($('hideHint'))$('hideHint').onclick=()=>{S.hideHint=true;save();renderNotice()}}
 const hash=s=>{let h=5381;for(const ch of s)h=(h*33+ch.codePointAt(0))>>>0;return h.toString(36)};
 const placeId=()=>`${S.dest}-${dAp()?S.destAp:(S.cityTxt?'x'+hash(S.cityTxt):'main')}`;
 const fdt=iso=>{if(!iso)return'';const d=new Date(iso);if(isNaN(d))return String(iso);const t=new Date(d.getTime()+8*36e5);return `${t.getUTCMonth()+1}月${t.getUTCDate()}日（${WD[t.getUTCDay()]}）${String(t.getUTCHours()).padStart(2,'0')}:${String(t.getUTCMinutes()).padStart(2,'0')}`};
-function renderLive(){const el=$('liveBar');if(!el)return;const fx=live.fx,fc=live.forecast,off=navigator.onLine===false;
- el.innerHTML=`<span><b>即時資訊</b>：匯率 ${fx?fdt(fx.fetchedAt):(off?'尚無資料':'載入中')}${fc?` · 天氣預報 ${fdt(fc.fetchedAt)}`:''}</span><span class="muted">${off?'<b style="color:var(--warn)">目前離線</b>，顯示上次抓到的資料 · ':'打開網頁自動抓最新資料 · '}清單存在這台裝置${S.lastBackup?`，上次備份 ${fdt(S.lastBackup)}`:'，<a href="#" data-tabgo="notes">記得備份</a>'}</span>`}
+function renderLive(){const ob=$('offlineBadge');if(ob)ob.hidden=navigator.onLine!==false;const el=$('liveBar');if(!el)return;const fx=live.fx,fc=live.forecast,off=navigator.onLine===false;
+ el.innerHTML=off?`<span><b style="color:var(--warn)">離線中</b> · 顯示上次的匯率與天氣</span>`:`<span class="muted">${fx?`匯率 ${fdt(fx.fetchedAt)} 更新${fc?` · 天氣 ${fdt(fc.fetchedAt).replace(/^.*）/,'')} 更新`:''}`:'正在取得最新匯率與天氣…'}</span>`}
 window.addEventListener('online',()=>{loadFx();loadAdvisory();fetchKey='';all()});window.addEventListener('offline',()=>renderLive());
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let lastDeleted=null;
 function toastUndo(m){const t=$('toast');t.innerHTML=`${esc(m)} <button id="undoBtn" style="margin-left:8px;background:none;border:0;color:inherit;font-weight:700;text-decoration:underline;cursor:pointer">復原</button>`;t.style.pointerEvents='auto';t.classList.add('show');clearTimeout(t._h);
  $('undoBtn').onclick=()=>{if(lastDeleted){S.exp.push(lastDeleted);S.exp.sort((x,y)=>x.d<y.d?-1:x.d>y.d?1:x.id-y.id);lastDeleted=null;save();renderMoney();renderTrip();toast('已復原')}};
- t._h=setTimeout(()=>{t.classList.remove('show');t.style.pointerEvents='none'},4000)}
+ t._h=setTimeout(()=>{t.classList.remove('show');t.style.pointerEvents='none'},7000)}
 function toast(m){const t=$('toast');t.style.pointerEvents='none';t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1600)}
 function fmt(n,dig){if(!isFinite(n))return '–';return n.toLocaleString('zh-TW',{maximumFractionDigits:dig??(Math.abs(n)<1?4:2)})}
 function days(a,b){return Math.round((new Date(b)-new Date(a))/864e5)}
 function today(){return new Date(Date.now()+8*36e5).toISOString().slice(0,10)}
 const dAp=()=>APMAP[S.destAp]&&APMAP[S.destAp].c===S.dest?APMAP[S.destAp]:null;
 const city=()=>{const a=dAp();return a&&a.clim?CITY[S.dest]?.[a.clim]||null:null};
-const destLabel=()=>cname(S.dest)+(dAp()?'・'+dAp().city:(S.cityTxt?'・'+S.cityTxt:''));
+const destLabel=()=>{const c=dAp()?dAp().city:S.cityTxt,n=cname(S.dest);return c&&c!==n?n+'・'+c:n};
 function tripMonths(){if(!S.dep)return[];const a=+S.dep.slice(5,7)-1,b=S.ret?+S.ret.slice(5,7)-1:a;const out=[a];let m=a;while(m!==b&&out.length<12){m=(m+1)%12;out.push(m)}return out}
 const SAMPLE=null,AI=()=>null;function aiBox(){return ''}
 
@@ -660,7 +735,10 @@ function fillSelects(){
  const apC=new Set(AIRPORTS.map(a=>a[0]));
  $('orig').innerHTML=AIRPORTS.map(([c,n,list])=>`<optgroup label="${esc(cname(c)||n)}">${list.map(([code])=>`<option value="AP:${code}">${esc(apFull(code))}（${code}）</option>`).join('')}</optgroup>`).join('')
   +`<optgroup label="其他國家／地區">${all.filter(([c])=>!apC.has(c)).map(([c,n])=>`<option value="C:${c}">${esc(n)}</option>`).join('')}</optgroup>`;$('dest').innerHTML=opts(true)}
-function homeStats(){const all=Object.values(S.items).flat(),done=all.filter(i=>i.d).length,pc=all.length?Math.round(done/all.length*100):0;
+function renderGuide(){const el=$('tripGuide');if(!el)return;
+ el.innerHTML=S.example?`<div class="notice note"><span class="nt"><b>建立你的旅程</b>：目前是範例，設定出發機場、目的地和日期</span><button class="btn small" id="guideGo">開始設定</button></div>`:'';
+ if($('guideGo'))$('guideGo').onclick=()=>{S.collapsed=false;$('tripEdit').hidden=false;$('editToggle').textContent='收合';$('editToggle').setAttribute('aria-expanded','true');$('orig').focus()}}
+function homeStats(){renderGuide();const all=Object.values(S.items).flat(),done=all.filter(i=>i.d).length,pc=all.length?Math.round(done/all.length*100):0;
  $('packPct').textContent=pc+'%';$('packUnit').textContent=`${done} / ${all.length} 項`;
  const tot=(S.exp||[]).reduce((t,e)=>t+(toOrig(e.amt,e.cur)||0),0);$('spentHome').textContent=tot>=1e5?fmt(tot/1e3,0)+'k':fmt(tot,0);$('spentCur').textContent=oc();
  renderBackupReminder()}
@@ -670,21 +748,19 @@ function renderTrip(){
  if(aps){$('citySel').innerHTML=aps.map(c=>`<option value="${c}">${esc(apFull(c))}（${c}）</option>`).join('')+'<option value="other">其他城市（自行輸入）</option>';$('citySel').value=dAp()?S.destAp:'other'}
  $('cityTxt').value=S.cityTxt;$('dDep').value=S.dep;$('dRet').value=S.ret;$('wDep').textContent=fdateY(S.dep);$('wRet').textContent=fdateY(S.ret);$('exTag').hidden=!S.example;
  $('origCode').textContent=S.origAp||S.orig;$('destCode').textContent=dAp()?S.destAp:S.dest;
- let line=`${origLabel()} → ${destLabel()}${dAp()?`（${S.destAp}）`:''}`;
- if(S.dep&&S.ret){const n=days(S.dep,S.ret);line+=` · ${fdate(S.dep)} – ${fdate(S.ret)} · ${n+1} 天 ${n} 夜`}else if(S.dep)line+=` · ${fdate(S.dep)} 出發`;
+ let line='';
+ if(S.dep&&S.ret){const n=days(S.dep,S.ret);line=`${fdate(S.dep)} – ${fdate(S.ret)} · ${n+1} 天 ${n} 夜`}else if(S.dep)line=`${fdate(S.dep)} 出發`;else line='點「編輯行程」設定日期';
  $('tripLine').textContent=line;
  $('origPlace').textContent=S.origAp&&APMAP[S.origAp]?APMAP[S.origAp].city:cname(S.orig);$('destPlace').textContent=dAp()?dAp().city:(S.cityTxt||cname(S.dest));
  const cd=S.dep?days(today(),S.dep):NaN,back=S.ret?days(today(),S.ret):NaN,cdl=$('countdown').previousElementSibling,cdu=$('countdown').nextElementSibling;
  if(isFinite(cd)&&cd<0&&isFinite(back)&&back>=0){cdl.textContent='旅行第';$('countdown').textContent=days(S.dep,today())+1;cdu.textContent='天'}
  else{cdl.textContent='距離出發';$('countdown').textContent=isFinite(cd)?(cd<0?'—':cd):'–';cdu.textContent=isFinite(cd)&&cd<0?'已回國':'天'}
  homeStats();
- const sf=safetyOf(S.dest),A=ADV?.[S.dest];
- if(!sf&&A&&A.st>=2){$('safetyBanner').innerHTML=`<div class="safety note"><div><b>${esc(cname(S.dest))}</b>：國際參考評級為「${ADVTXT[A.st]}」</div><div class="small">請查外交部最新燈號後再決定。<a href="#" data-tabgo="safe">看詳細 →</a></div></div>`}
- else $('safetyBanner').innerHTML=sf&&sf.lv!=='none'?`<div class="safety ${sf.lv}"><div><span class="lv ${sf.lv}">${sf.label}</span> <b>${esc(cname(S.dest))}</b></div><div class="small">${esc(sf.why)}</div><div class="small"><a href="#" data-tabgo="safe">看要注意什麼 →</a></div></div>`:'';
+
 }
 const LIVEMAP={red:['red','紅色警示'],orange:['orange','橙色警示'],yellow:['orange','黃色警示'],gray:['note','灰色警示']};
 const MIDEAST=new Set(['QA','AE','KW','SA','BH','OM','IL','IR','IQ','LB','JO','SY','YE','PS']);
-const builtDate=c=>MIDEAST.has(c)?'依 2026 年 3 月新聞整理':['CN','HK','MO'].includes(c)?'依陸委會 2024 年公告整理':'依 2026 年年中以前的資料整理';
+const builtDate=c=>MIDEAST.has(c)?'依 2026 年 3 月新聞整理，之後未查到官方更新':['HK','MO'].includes(c)?'陸委會 2026 年 2 月確認維持橙色':c==='CN'?'依陸委會 2024 年公告整理':'依 2026 年年中以前的資料整理';
 function safetyOf(c){
  if(SAFETY[c]){const[lv,why,watch]=SAFETY[c];return{lv,label:LVTXT[lv],why,watch:[watch],src:'built'}}
  return null}
@@ -756,7 +832,7 @@ function renderPack(){const all=Object.values(S.items).flat(),done=all.filter(i=
  const sg=suggestions();$('suggestWrap').hidden=!sg.length;$('suggest').innerHTML=sg.map(t=>`<button class="chip" data-s="${esc(t)}">＋ ${esc(t)}</button>`).join('');
  S.closedCats=S.closedCats||{};
  $('cats').innerHTML=Object.entries(S.items).map(([c,arr],ci)=>{const dn=arr.filter(i=>i.d).length,open=!S.closedCats[c],full=dn===arr.length&&arr.length>0;
-  return `<div class="box"><button class="cat-toggle" data-cat="${esc(c)}" aria-expanded="${open}" aria-controls="cat${ci}"><h3>${esc(c)}</h3><span class="cat-meter ${full?'full':''}">${full?'✓ ':''}${dn}/${arr.length}<span class="chev" aria-hidden="true">▾</span></span></button>
+  return `<div class="box ${full?'cat-done':''}"><button class="cat-toggle" data-cat="${esc(c)}" aria-expanded="${open}" aria-controls="cat${ci}"><h3>${esc(c)}</h3><span class="cat-meter ${full?'full':''}">${full?'✓ ':''}${dn}/${arr.length}<span class="chev" aria-hidden="true">▾</span></span></button>
   <ul class="items" id="cat${ci}" ${open?'':'hidden'}>${arr.map(i=>`<li class="${i.d?'done':''}"><label for="it${i.id}" style="flex:1;min-width:0"><input type="checkbox" id="it${i.id}" data-c="${esc(c)}" data-id="${i.id}" ${i.d?'checked':''}><span>${esc(i.t)}</span></label><button class="x" data-del="${i.id}" data-c="${esc(c)}" aria-label="刪除 ${esc(i.t)}">✕</button></li>`).join('')}</ul></div>`}).join('');
  const cur=$('newCat').value;$('newCat').innerHTML=Object.keys(S.items).map(c=>`<option>${esc(c)}</option>`).join('');if(cur)$('newCat').value=cur;homeStats()}
 
@@ -766,9 +842,12 @@ function renderTax(){let h;
  else{const t=AI()?.tax;h=`<h2>${esc(cname(S.dest))}退稅</h2>`;
   if(t){h+=t.available===false?`<div class="callout">${esc(t.note||'沒有旅客退稅制度。')}</div>`:`<dl class="rule"><dt>稅率</dt><dd>${esc(t.tax)}</dd><dt>門檻</dt><dd>${esc(t.threshold)}</dd><dt>期限</dt><dd>${esc(t.deadline)}</dd></dl>${t.steps?.length?`<h3>流程</h3><ol class="steps">${t.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>`:''}${t.note?`<div class="small">${esc(t.note)}</div>`:''}`}
   h+=aiBox('退稅')}
+ if(TAXSRC[S.dest])h+=`<div class="src">官方來源：<a href="${TAXSRC[S.dest][1]}" target="_blank" rel="noopener noreferrer">${esc(TAXSRC[S.dest][0])}</a>${S.dest==='JP'?' · 新制內容 2026 年 10 月依公視報導查證':' · 細節未逐條核對，以官方為準'}</div>`;
  h+=`<div class="small"><a href="${gsearch(cname(S.dest)+' 旅客退稅 規定 '+new Date().getFullYear())}" target="_blank" rel="noopener noreferrer">搜尋 ${esc(cname(S.dest))} 最新退稅規定 →</a></div>`;
  $('taxBox').innerHTML=h;
- if(S.orig==='TW')$('customsBox').innerHTML=`<h3>回台灣入境免稅額</h3><dl class="rule"><dt>酒</dt><dd>1 公升（滿 20 歲）</dd><dt>菸</dt><dd>捲菸 200 支，或雪茄 25 支，或菸絲 1 磅</dd><dt>其他物品</dt><dd>完稅價格總值 NT$20,000 以內</dd><dt>禁止攜帶</dt><dd>肉類製品（含肉乾、肉鬆、泡麵肉包）、新鮮水果、動植物</dd></dl><div class="small muted">以財政部關務署公告為準。帶肉製品入境罰款最高可達 NT$100 萬。</div>`;
+ if(S.orig==='TW')$('customsBox').innerHTML=`<h3>回台灣入境免稅額</h3><dl class="rule"><dt>行李物品</dt><dd>完稅價格總值 <b>NT$35,000</b> 以內免稅</dd><dt>酒</dt><dd><b>1.5 公升</b>（滿 18 歲）</dd><dt>菸</dt><dd>捲菸 200 支，或雪茄 25 支，或菸絲 1 磅（滿 20 歲）</dd><dt>禁止攜帶</dt><dd>肉類製品（含肉乾、肉鬆、泡麵肉包）、新鮮水果、動植物</dd></dl>
+ <div class="src">來源：<a href="https://www.mof.gov.tw/singlehtml/384fb3077bb349ea973e7fc6f13b6974?cntId=fb5a6a086d0340389afb0f8e0e59d72c" target="_blank" rel="noopener noreferrer">財政部：免稅額調高至 3 萬 5 千元（2024/6/26 起）</a> · <a href="https://web.customs.gov.tw/taichung/singlehtml/62f659940021491b93b2ab37406f6ed7" target="_blank" rel="noopener noreferrer">關務署：菸酒免稅範圍</a> · 2026 年 10 月查證</div>
+ <div class="small muted">超過免稅範圍請走紅線申報。帶肉製品入境罰款最高可達 NT$100 萬。</div>`;
  else{const c=AI()?.customs;$('customsBox').innerHTML=`<h3>回${esc(cname(S.orig))}入境免稅額</h3>`+(c?`<div>${esc(c)}</div>`:`<div class="small muted">請查詢${esc(cname(S.orig))}海關規定${SAMPLE?'，或在上方請 Claude 補上資料':''}。</div>`)}}
 
 // ---------- 匯率 ----------
@@ -782,6 +861,8 @@ function renderFx(){const d=dc(),o=oc(),r=rate(),same=d===o;
  $('amtFLabel').textContent=`${curName(d)} ${d}`;$('amtTLabel').textContent=`${curName(o)} ${o}`;$('qh').textContent=d;$('qh2').textContent=o;
  if(document.activeElement!==$('rate'))$('rate').value=isFinite(r)?r:'';
  if(document.activeElement!==$('amtF'))$('amtF').value=S.amt;
+ const sym=v=>fmt(v,v<100?2:0);
+ $('fxHero').innerHTML=isFinite(r)?`<span>${fmt(+S.amt||0)} ${d}</span><span class="muted">≈</span><span class="big">${sym((+S.amt||0)*r)}</span><span>${o}</span>`:'<span class="muted">請在下方輸入匯率</span>';
  if(document.activeElement!==$('amtT'))$('amtT').value=isFinite(r)?+(S.amt*r).toFixed(r*S.amt<100?2:0):'';
  const u=usdOf(d)||(isFinite(r)&&usdOf(o)?usdOf(o)/r:null);
  const base=[...new Set(u?[10,30,50,100,300].map(v=>nice(v*u)):[10,50,100,500,1000])];
@@ -800,17 +881,22 @@ function spark(log){const W=560,H=120,P={l:8,r:60,t:14,b:20},rs=log.map(e=>e.r),
  <text x="${W-P.r+6}" y="${y(mx)+4}" ${T}>${mx}</text><text x="${W-P.r+6}" y="${y(mn)+4}" ${T}>${mn}</text><text x="${P.l}" y="${H-4}" ${T}>${fdate(log[0].d)}</text><text x="${x(last)}" y="${H-4}" text-anchor="end" ${T}>${fdate(log[last].d)}</text></svg>`}
 
 // ---------- 注意事項 ----------
-function renderNotes(){const co=COUNTRY[S.dest],a=AI();
- const entry=co&&S.orig==='TW'?co.entry:a?.entry,plug=co?.plug||a?.plug,tips=co?.tip?[co.tip]:(a?.tips||[]);
- let h=`<h2>${esc(destLabel())} 注意事項</h2><dl class="rule">`;
- h+=`<dt>入境簽證</dt><dd>${entry?esc(entry):`<span class="muted">請查詢持${esc(cname(S.orig))}護照前往的簽證規定。</span>`}</dd>`;
- h+=`<dt>插座電壓</dt><dd>${plug?esc(plug):'<span class="muted">請查詢當地插座型式與電壓。</span>'}</dd>`;
- if(tips.length)h+=`<dt>當地提醒</dt><dd>${tips.map(esc).join('<br>')}</dd>`;
- const sf=safetyOf(S.dest);if(sf&&sf.lv!=='none')h+=`<dt>安全</dt><dd><span class="lv ${sf.lv}">${sf.label}</span> ${esc(sf.why)}</dd>`;
- if(co)h+=`<dt>資料日期</dt><dd class="small muted">內建資料，依 2026 年年中以前的規定整理，可能已變動，請點下方連結確認。</dd>`;
- h+=`<dt>通用</dt><dd>行動電源、鋰電池只能隨身帶；液體 100ml 以下才能帶上機，裝進 1 公升夾鏈袋。</dd></dl>`;
- h+=`<div class="small"><a href="https://www.boca.gov.tw" target="_blank" rel="noopener noreferrer">外交部領事事務局（簽證與入境須知）→</a> · <a href="${gsearch(cname(S.dest)+' 入境 規定 '+cname(S.orig)+' 護照 '+new Date().getFullYear())}" target="_blank" rel="noopener noreferrer">搜尋最新入境規定 →</a></div>`;
+const POWERBANK={sum:'最多 2 個、只能隨身、機上禁止使用和充電',items:['每人最多帶 2 個行動電源，只能隨身帶，不可托運。','飛行中禁止使用行動電源，也不能幫行動電源充電。','100Wh 以下可直接攜帶；100–160Wh 需航空公司同意；超過 160Wh 不可攜帶。','違反規定最高可罰 10 萬元（台灣民航局，2026 年 4 月 8 日起）。','液體每瓶 100ml 以下，裝進 1 公升透明夾鏈袋。'],src:['聯合報：民航局行動電源新制','https://udn.com/news/story/7266/9428049','2026 年 4 月報導，瓦時規定依國際航空慣例']};
+const LAW={HK:'《國安法》與《基本法 23 條》適用範圍廣，言論、標語、手機內容都可能觸法。陸委會建議出發前把可能被搜查的內容先備份再刪除。',MO:'維護國家安全相關法律適用範圍廣，言行請特別注意。',CN:'可能有手機檢查、言論審查，「懲戒台獨」相關規定可能被任意適用。',SG:'口香糖禁止攜帶販售，嚴禁毒品（刑罰極重）。',TH:'電子菸在泰國違法，攜帶可能被罰款或拘留。',JP:'部分感冒藥、止痛藥含管制成分，處方藥建議帶英文處方或說明。'};
+function erow(t,sum,body,src){return `<details class="erow"><summary><span class="acc-txt"><span class="et">${t}</span><span class="es">${sum}</span></span>${'<svg class="acc-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 10l4 4 4-4"/></svg>'}</summary><div class="eb">${body}${src?`<div class="src" style="margin-top:8px">來源：<a href="${src[1]}" target="_blank" rel="noopener noreferrer">${esc(src[0])}</a>${src[2]?` · ${esc(src[2])}`:''}</div>`:''}</div></details>`}
+function renderNotes(){const co=COUNTRY[S.dest];
+ const entry=co&&S.orig==='TW'?co.entry:'',plug=co?.plug||'',tips=co?.tip?[co.tip]:[];
+ const first=x=>esc(String(x).split('。')[0]);
+ let h=`<h2>${esc(destLabel())} 入境備忘</h2>`;
+ h+=erow('入境證件',entry?first(entry):`請查詢持${esc(cname(S.orig))}護照前往的簽證規定`,entry?`<div>${esc(entry)}</div>`:`<div class="muted">沒有內建資料，請到外交部領事事務局查詢。</div>`,co?.entrySrc||(entry?['依 2026 年年中以前的資料整理','https://www.boca.gov.tw','未逐條核對官方來源']:null));
+ h+=erow('插座與電壓',plug?esc(plug):'請查詢當地插座型式',plug?`<div>${esc(plug)}</div>`:'<div class="muted">沒有內建資料。</div>',null);
+ h+=erow('行動電源與航空安全',POWERBANK.sum,`<ul>${POWERBANK.items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`,POWERBANK.src);
+ h+=erow('當地注意事項',tips.length?first(tips[0]):'禮儀、交通、付款習慣',tips.length?`<div>${tips.map(esc).join('<br>')}</div>`:'<div class="muted">沒有內建資料。</div>',null);
+ const sf=safetyOf(S.dest),law=LAW[S.dest];
+ h+=erow('重要法規',law?first(law):(sf&&sf.lv!=='none'?esc(sf.label):'沒有特別需要注意的內建紀錄'),`${law?`<div>${esc(law)}</div>`:''}${sf&&sf.lv!=='none'?`<div style="margin-top:6px"><span class="lv ${sf.lv}">${sf.label}</span> ${esc(sf.why)}</div>`:''}${!law&&!(sf&&sf.lv!=='none')?'<div class="muted">出發前請查外交部旅遊警示。</div>':''}`,null);
+ h+=erow('官方資料來源','外交部、目的地政府網站',`<ul><li><a href="https://www.boca.gov.tw" target="_blank" rel="noopener noreferrer">外交部領事事務局（簽證與入境須知）</a></li><li><a href="https://www.boca.gov.tw/sp-trwa-list-1.html" target="_blank" rel="noopener noreferrer">外交部旅遊警示</a></li>${co?.entrySrc?`<li><a href="${co.entrySrc[1]}" target="_blank" rel="noopener noreferrer">${esc(co.entrySrc[0])}</a></li>`:''}<li><a href="${gsearch(cname(S.dest)+' 入境 規定 '+cname(S.orig)+' 護照 '+new Date().getFullYear())}" target="_blank" rel="noopener noreferrer">搜尋最新入境規定</a></li></ul><div class="src" style="margin-top:6px">規定隨時可能變動，以官方網站為準。</div>`,null);
  $('destNotes').innerHTML=h;
+
  $('todo').innerHTML=S.todo.map(i=>`<li class="${i.d?'done':''}"><input type="checkbox" id="td${i.id}" data-td="${i.id}" ${i.d?'checked':''}><label for="td${i.id}">${esc(i.t)}</label><button class="x" data-tdel="${i.id}" aria-label="刪除">✕</button></li>`).join('');
  if(document.activeElement!==$('memo'))$('memo').value=S.memo}
 
@@ -866,11 +952,21 @@ const TYPES={'城市觀光':['好走的鞋','行動電源（隨身帶，不可�
 function renderTypes(){S.types=S.types||[];$('types').innerHTML=Object.keys(TYPES).map(t=>`<button class="chip" data-type="${t}" style="${S.types.includes(t)?'background:var(--accent);color:var(--paper);border-style:solid':''}">${S.types.includes(t)?'✓ ':''}${t}</button>`).join('');
  const n=tripDates().length;$('qtyLine').innerHTML=n?`這趟 ${n} 天 ${Math.max(0,n-1)} 夜，衣物建議：上衣 ${n} 件、褲子 ${Math.ceil(n/2)} 件、內衣褲 ${n} 套、襪子 ${n} 雙${n>5?'（住處能洗衣可減半）':''}`:''}
 
-const TABGROUP={info:['info','wx','fx','tax','notes']};
-function setTab(t,jump){if(['wx','fx','tax','notes'].includes(t)){jump=jump||'p-'+t;t='info'}if(!document.querySelector(`.tab[data-tab="${t}"]`))t='pack';S.tab=t;const show=TABGROUP[t]||[t];
- document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));document.querySelectorAll('[role=tabpanel]').forEach(p=>p.hidden=!show.includes(p.id.slice(2)));save();
- if(jump)setTimeout(()=>$(jump)?.scrollIntoView({behavior:'smooth',block:'start'}),50)}
-function all(){loadWeather();renderLive();renderTrip();renderTypes();renderPack();renderPlan();renderMoney();renderSafe();renderWx();renderTax();renderFx();renderNotes()}
+const INFOSECS=['wx','fx','tax','notes','priv'];
+const TABGROUP={info:null};
+const openAcc=id=>{const d=$(id);if(d&&d.tagName==='DETAILS')d.open=true};
+function setTab(t,jump){
+ if(INFOSECS.includes(t)){S.infoSec=t;t='info'}
+ if(jump==='privacyBox'){S.infoSec='priv';jump=null}
+ if(!document.querySelector(`.tab[data-tab="${t}"]`))t='pack';S.tab=t;
+ const sec=INFOSECS.includes(S.infoSec)?S.infoSec:'wx',show=t==='info'?['info',sec]:[t];
+ document.body.classList.toggle('compact',t!=='pack');
+ document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===t));
+ document.querySelectorAll('[role=tabpanel]').forEach(p=>p.hidden=!show.includes(p.id.slice(2)));
+ document.querySelectorAll('.segpill').forEach(b=>{const on=b.dataset.sec===sec;b.setAttribute('aria-selected',on);if(on&&t==='info')b.scrollIntoView({block:'nearest',inline:'nearest'})});
+ save();if(jump){openAcc(jump);setTimeout(()=>$(jump)?.scrollIntoView({behavior:'smooth',block:'start'}),50)}}
+
+function all(){loadWeather();renderLive();renderTrip();renderNotice();renderTypes();renderPack();renderPlan();renderMoney();renderSafe();renderWx();renderTax();renderFx();renderNotes();renderSummaries()}
 
 
 // ---------- 獨立網頁版：瀏覽器直接抓公開資料（不使用 Claude） ----------
@@ -939,11 +1035,11 @@ $('addBtn').onclick=()=>{addItem($('newCat').value,$('newItem').value);$('newIte
 $('newItem').onkeydown=e=>{if(e.key==='Enter')$('addBtn').click()};
 $('suggest').onclick=e=>{const b=e.target.closest('[data-s]');if(b)addItem(/傘|雨衣|防水|防蚊|暖暖包|太陽眼鏡/.test(b.dataset.s)?'其他':'衣物',b.dataset.s)};
 $('resetChecks').onclick=()=>{Object.values(S.items).flat().forEach(i=>i.d=false);save();renderPack();toast('已全部取消勾選')};
-$('todo').onchange=e=>{const id=e.target.dataset.td;if(id==null)return;S.todo.find(i=>i.id==id).d=e.target.checked;save();renderNotes()};
+$('todo').onchange=e=>{const id=e.target.dataset.td;if(id==null)return;S.todo.find(i=>i.id==id).d=e.target.checked;save();renderNotes();renderSummaries()};
 $('todo').onclick=e=>{const b=e.target.closest('[data-tdel]');if(!b)return;S.todo=S.todo.filter(i=>i.id!=b.dataset.tdel);save();renderNotes()};
 $('todoAdd').onclick=()=>{const t=$('newTodo').value.trim();if(!t)return;S.todo.push({id:Date.now(),t,d:false});$('newTodo').value='';save();renderNotes()};
 $('newTodo').onkeydown=e=>{if(e.key==='Enter')$('todoAdd').click()};
-$('memo').oninput=e=>{S.memo=e.target.value;save()};
+$('memo').oninput=e=>{S.memo=e.target.value;save();renderSummaries()};
 $('rate').oninput=e=>{const v=parseFloat(e.target.value);if(v>0){S.rates[pair()]=v;save();renderFx()}};
 $('amtF').oninput=e=>{S.amt=parseFloat(e.target.value)||0;save();renderFx()};
 $('amtT').oninput=e=>{const v=parseFloat(e.target.value)||0,r=rate();if(r>0){S.amt=+(v/r).toFixed(2);save();$('amtF').value=S.amt}};
@@ -981,15 +1077,17 @@ $('exList').onclick=e=>{const b=e.target.closest('[data-exdel]');if(!b)return;co
  if(gone){lastDeleted=gone;toastUndo('已刪除一筆')}};
 $('destList').innerHTML=Object.keys(CUR).map(c=>cname(c)).filter(Boolean).map(n=>`<option value="${esc(n)}">`).join('');
 $('destSearch').onchange=e=>{const v=e.target.value.trim();if(!v)return;const c=Object.keys(CUR).find(k=>cname(k)===v)||Object.keys(CUR).find(k=>cname(k).includes(v));if(c){setDest(c);toast('目的地改為'+cname(c))}else toast('找不到這個國家');e.target.value=''};
-const standalone=window.matchMedia?.('(display-mode: standalone)').matches||navigator.standalone;
-$('installHint').hidden=!!(standalone||S.hideHint);$('hideHint').onclick=()=>{S.hideHint=true;save();$('installHint').hidden=true};
+const isTextField=e=>e&&((e.tagName==='INPUT'&&!['checkbox','radio','button','file'].includes(e.type))||e.tagName==='TEXTAREA'||e.tagName==='SELECT');
+document.addEventListener('focusin',e=>{if(isTextField(e.target)){document.body.classList.add('kb');setTimeout(()=>{try{e.target.scrollIntoView({block:'center',behavior:'smooth'})}catch(_){}},300)}});
+document.addEventListener('focusout',()=>setTimeout(()=>{if(!isTextField(document.activeElement))document.body.classList.remove('kb')},50));
+$('infoSeg').onclick=e=>{const b=e.target.closest('[data-sec]');if(b)setTab(b.dataset.sec)};
 all();setTab(S.tab||'pack');loadFx();loadAdvisory();
 if('serviceWorker' in navigator&&window.isSecureContext)navigator.serviceWorker.register('sw.js').catch(()=>{});
 // 收合行程卡
 const applyCollapse=()=>{const c=!!S.collapsed;$('tripEdit').hidden=c;$('editToggle').textContent=c?'編輯行程':'收合';$('editToggle').setAttribute('aria-expanded',String(!c))};
 if(S.collapsed===undefined)S.collapsed=!S.example;applyCollapse();
 $('editToggle').onclick=()=>{S.collapsed=!S.collapsed;save();applyCollapse()};
-$('infoNav').onclick=e=>{const b=e.target.closest('[data-jump]');if(!b)return;const id=b.dataset.jump;if(id==='privacyBox')setTab('info','privacyBox');else setTab('info',id)};
+
 // 密碼鎖設定
 $('bkWarn').innerHTML='<b>注意</b>：備份內容包含航班、住宿和花費，請存在自己的手機或雲端硬碟，不要傳給不信任的人。';
 $('wipeBtn').onclick=()=>{$('wipeGo').hidden=false;toast('再按紅色按鈕確認刪除')};
