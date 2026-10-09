@@ -182,7 +182,7 @@ textarea.inp{min-height:84px;line-height:1.5;resize:vertical}
 @media (max-width:480px){.pass-stub{flex-direction:unset}}
 
 /* bottom tab bar */
-.tabs{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:30;display:grid;grid-template-columns:repeat(5,1fr);gap:0;padding:6px max(8px,env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-right));background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(18px);backdrop-filter:saturate(180%) blur(18px);border-top:1px solid var(--line);overflow:visible}
+.tabs{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:30;display:grid;grid-template-columns:repeat(6,1fr);gap:0;padding:6px max(8px,env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-right));background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(18px);backdrop-filter:saturate(180%) blur(18px);border-top:1px solid var(--line);overflow:visible}
 .tab{border:0;background:none;border-radius:var(--r-md);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:52px;padding:4px 2px;color:var(--muted);font-size:.7rem;font-weight:600;position:relative}
 .tab svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .tab[aria-selected="true"]{background:none;color:var(--accent)}
@@ -336,6 +336,7 @@ body.compact .route-top{display:none!important}
     <button class="tab" role="tab" data-tab="pack" aria-selected="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="7" width="16" height="13" rx="2.5"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M9 11v5M15 11v5"/></svg>行李</button>
     <button class="tab" role="tab" data-tab="plan" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4M8 14h3M8 17h6"/></svg>行程</button>
     <button class="tab" role="tab" data-tab="money" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6H18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6.5A2.5 2.5 0 0 1 4 17.5z"/><path d="M4 8.5A2.5 2.5 0 0 0 6.5 11H20M16 15.5h.01"/></svg>記帳</button>
+    <button class="tab" role="tab" data-tab="fx" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h12l-3-3M19 16H7l3 3"/></svg>匯率</button>
     <button class="tab" role="tab" data-tab="info" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 3.5 5.4 3.5 8.5s-1 5.9-3.5 8.5c-2.5-2.6-3.5-5.4-3.5-8.5S9.5 6.1 12 3.5z"/></svg>資訊</button>
     <button class="tab" role="tab" data-tab="safe" aria-selected="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5 19 6v5.5c0 4.4-3 7.9-7 9-4-1.1-7-4.6-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>安全</button>
   </nav>
@@ -413,7 +414,7 @@ body.compact .route-top{display:none!important}
 
   <section class="panel" id="p-info" role="tabpanel" hidden>
     <div class="segbar" id="infoSeg" role="tablist" aria-label="資訊分類">
-      <button class="segpill" data-sec="wx" role="tab">天氣穿搭</button><button class="segpill" data-sec="fx" role="tab">匯率</button><button class="segpill" data-sec="tax" role="tab">退稅</button><button class="segpill" data-sec="notes" role="tab">入境備忘</button><button class="segpill" data-sec="priv" role="tab">隱私與備份</button>
+      <button class="segpill" data-sec="wx" role="tab">天氣穿搭</button><button class="segpill" data-sec="tax" role="tab">退稅</button><button class="segpill" data-sec="notes" role="tab">入境備忘</button><button class="segpill" data-sec="priv" role="tab">隱私與備份</button>
     </div>
   </section>
   <section class="panel" id="p-wx" role="tabpanel" hidden><div class="box" id="accWx"><span class="acc-s" id="sumWx" hidden></span><div id="wxBox"></div></div></section>
@@ -492,7 +493,7 @@ body.compact .route-top{display:none!important}
 <footer class="small muted" style="max-width:760px;margin:0 auto;padding-inline:16px;padding-block:0 calc(var(--nav-h) + 28px + env(safe-area-inset-bottom,0px));font-size:var(--t-xs);line-height:1.6">匯率：<a href="https://www.exchangerate-api.com" target="_blank" rel="noopener noreferrer">Rates By Exchange Rate API</a> · 天氣：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Weather data by Open-Meteo.com</a>（CC BY 4.0） · 國際參考評級：<a href="https://travel.gc.ca/travelling/advisories" target="_blank" rel="noopener noreferrer">Government of Canada</a> · 台灣燈號、退稅、入境規定為內建整理資料，可能已變動</footer>
 <div class="toast" id="toast" role="status"></div>
 <script>
-const APP_VERSION='v9.2';
+const APP_VERSION='v9.3';
 const M=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 const WD=['日','一','二','三','四','五','六'];
 const wd=s=>{if(!s)return'';const[y,m,d]=s.split('-').map(Number);return '（'+WD[new Date(y,m-1,d).getDay()]+'）'};
@@ -970,7 +971,7 @@ let typesInit=false;
 function renderTypes(){S.types=S.types||[];$('typesSum').textContent=S.types.length?S.types.join('、'):'尚未選擇，點開設定';if(!typesInit){$('typesBox').open=!S.types.length;typesInit=true}$('types').innerHTML=Object.keys(TYPES).map(t=>`<button class="chip" data-type="${t}" style="${S.types.includes(t)?'background:var(--accent);color:var(--paper);border-style:solid':''}">${S.types.includes(t)?'✓ ':''}${t}</button>`).join('');
  const n=tripDates().length;$('qtyLine').innerHTML=n?`這趟 ${n} 天 ${Math.max(0,n-1)} 夜，衣物建議：上衣 ${n} 件、褲子 ${Math.ceil(n/2)} 件、內衣褲 ${n} 套、襪子 ${n} 雙${n>5?'（住處能洗衣可減半）':''}`:''}
 
-const INFOSECS=['wx','fx','tax','notes','priv'];
+const INFOSECS=['wx','tax','notes','priv'];
 const TABGROUP={info:null};
 const openAcc=id=>{const d=$(id);if(d&&d.tagName==='DETAILS')d.open=true};
 function setTab(t,jump){
