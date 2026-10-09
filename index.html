@@ -437,7 +437,7 @@ body.compact .route-top{display:none!important}
         <details class="sub"><summary>常用金額對照與匯率來源</summary>
         <div class="chart"><table><thead><tr><th id="qh">外幣</th><th id="qh2">本國</th></tr></thead><tbody id="quick"></tbody></table></div>
         <div class="small muted" id="fxNote" style="margin-top:8px"></div>
-        <div class="field" style="margin-top:8px"><label class="label" for="rate">自訂匯率：1 <span id="rateUnit">JPY</span> = ? <span id="rateUnit2">TWD</span></label>
+        <div class="field" style="margin-top:8px"><div class="seg" id="rateDir" role="group" aria-label="匯率輸入方式"><button type="button" data-dir="f2o" aria-pressed="true">1 <span class="rdF">外幣</span> = ? <span class="rdO">台幣</span></button><button type="button" data-dir="o2f" aria-pressed="false">1 <span class="rdO">台幣</span> = ? <span class="rdF">外幣</span></button></div><label class="label" for="rate" style="margin-top:6px">自訂匯率：1 <span id="rateUnit">JPY</span> = ? <span id="rateUnit2">TWD</span></label>
           <input id="rate" class="inp mono" type="number" step="any" inputmode="decimal" placeholder="請輸入匯率"></div></details>
       </div>
     </div>
@@ -492,7 +492,7 @@ body.compact .route-top{display:none!important}
 <footer class="small muted" style="max-width:760px;margin:0 auto;padding-inline:16px;padding-block:0 calc(var(--nav-h) + 28px + env(safe-area-inset-bottom,0px));font-size:var(--t-xs);line-height:1.6">匯率：<a href="https://www.exchangerate-api.com" target="_blank" rel="noopener noreferrer">Rates By Exchange Rate API</a> · 天氣：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Weather data by Open-Meteo.com</a>（CC BY 4.0） · 國際參考評級：<a href="https://travel.gc.ca/travelling/advisories" target="_blank" rel="noopener noreferrer">Government of Canada</a> · 台灣燈號、退稅、入境規定為內建整理資料，可能已變動</footer>
 <div class="toast" id="toast" role="status"></div>
 <script>
-const APP_VERSION='v9.1';
+const APP_VERSION='v9.2';
 const M=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 const WD=['日','一','二','三','四','五','六'];
 const wd=s=>{if(!s)return'';const[y,m,d]=s.split('-').map(Number);return '（'+WD[new Date(y,m-1,d).getDay()]+'）'};
@@ -664,7 +664,7 @@ function save(){S.lastEdit=new Date().toISOString();
  if(LOCK){clearTimeout(encT);encT=setTimeout(async()=>{try{localStorage.setItem(ENC_KEY,JSON.stringify(await encObj(LOCK,stateForSave())));localStorage.removeItem(KEY)}catch(e){}},250);try{sessionStorage.setItem('trip-tab',S.tab||'')}catch(e){}return}
  try{localStorage.setItem(KEY,JSON.stringify(S));if(localStorage.getItem(KEY)===null)throw 0;if(!storageOk){storageOk=true;try{renderNotice()}catch(_){}}}catch(e){storeFail()}}
 // 只接受已知欄位，避免還原檔夾帶奇怪內容
-const SAFE_KEYS=['infoSec','lastEdit','backupSnooze','closedCats','orig','origAp','dest','destAp','city','cityTxt','dep','ret','example','items','nid','todo','memo','rates','log','amt','lastBackup','types','plan','info','exp','budget','hideHint','collapsed'];
+const SAFE_KEYS=['rateDir','infoSec','lastEdit','backupSnooze','closedCats','orig','origAp','dest','destAp','city','cityTxt','dep','ret','example','items','nid','todo','memo','rates','log','amt','lastBackup','types','plan','info','exp','budget','hideHint','collapsed'];
 function sanitize(d){const out={};if(!d||typeof d!=='object')return out;for(const k of SAFE_KEYS)if(Object.prototype.hasOwnProperty.call(d,k))out[k]=d[k];
  if(out.items&&typeof out.items==='object'&&!Array.isArray(out.items)){const it={};for(const[c,arr]of Object.entries(out.items))if(Array.isArray(arr)&&c!=='__proto__')it[String(c).slice(0,40)]=arr.filter(i=>i&&typeof i==='object').map(i=>({id:+i.id||0,t:String(i.t??'').slice(0,200),d:!!i.d}));out.items=it}else delete out.items;
  if(out.todo)out.todo=Array.isArray(out.todo)?out.todo.map(i=>({id:+i.id||0,t:String(i.t??'').slice(0,200),d:!!i.d})):[];
@@ -867,12 +867,14 @@ function rate(){const k=pair();if(S.rates[k])return S.rates[k];const a=usdOf(dc(
 function nice(x){const p=10**Math.floor(Math.log10(x)),m=x/p;return(m<1.5?1:m<3.5?2:m<7.5?5:10)*p}
 function renderFx(){const d=dc(),o=oc(),r=rate(),same=d===o;
  $('fxSame').hidden=!same;$('fxMain').hidden=same;$('logBox').hidden=same;if(same){$('fxCur').textContent=d;return}
- $('fxCur').textContent=`${d} → ${o}`;$('rateUnit').textContent=d;$('rateUnit2').textContent=o;
+ $('fxCur').textContent=`${d} → ${o}`;const inv=S.rateDir==='o2f';$('rateUnit').textContent=inv?o:d;$('rateUnit2').textContent=inv?d:o;
+ document.querySelectorAll('#rateDir .rdF').forEach(x=>x.textContent=d);document.querySelectorAll('#rateDir .rdO').forEach(x=>x.textContent=o);document.querySelectorAll('#rateDir button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.dir==='o2f')===inv)));
  $('amtFLabel').textContent=`${curName(d)} ${d}`;$('amtTLabel').textContent=`${curName(o)} ${o}`;$('qh').textContent=d;$('qh2').textContent=o;
- if(document.activeElement!==$('rate'))$('rate').value=isFinite(r)?r:'';
+ if(document.activeElement!==$('rate'))$('rate').value=isFinite(r)?(S.rateDir==='o2f'?+(1/r).toPrecision(6):r):'';
  if(document.activeElement!==$('amtF'))$('amtF').value=S.amt;
  const sym=v=>fmt(v,v<100?2:0);
- const rateSrc=S.rates[pair()]?`使用你設定的匯率 ${S.rates[pair()]}`:(live.fx?`使用國際中間匯率（${fdt(live.fx.fetchedAt)}）`:'使用內建參考匯率');
+ const rateTxt=isFinite(r)?`1 ${d} = ${+r.toPrecision(6)} ${o}（1 ${o} = ${+(1/r).toPrecision(6)} ${d}）`:'';
+ const rateSrc=(S.rates[pair()]?'使用你設定的匯率':(live.fx?`國際中間匯率（${fdt(live.fx.fetchedAt)}）`:'內建參考匯率'))+(rateTxt?'：'+rateTxt:'');
  $('fxHero').innerHTML=isFinite(r)?`<span>${fmt(+S.amt||0)} ${d}</span><span class="muted">≈</span><span class="big">${sym((+S.amt||0)*r)}</span><span>${o}</span><div class="small muted" style="width:100%;text-align:center">${rateSrc}</div>`:'<span class="muted">請在下方輸入匯率</span>';
  if(document.activeElement!==$('amtT'))$('amtT').value=isFinite(r)?+(S.amt*r).toFixed(r*S.amt<100?2:0):'';
  const u=usdOf(d)||(isFinite(r)&&usdOf(o)?usdOf(o)/r:null);
@@ -1058,7 +1060,8 @@ $('todo').onclick=e=>{const b=e.target.closest('[data-tdel]');if(!b)return;const
 $('todoAdd').onclick=()=>{const t=$('newTodo').value.trim();if(!t)return;S.todo.push({id:Date.now(),t,d:false});$('newTodo').value='';save();renderNotes()};
 $('newTodo').onkeydown=e=>{if(e.key==='Enter')$('todoAdd').click()};
 $('memo').oninput=e=>{S.memo=e.target.value;save();renderSummaries()};
-$('rate').oninput=e=>{const v=parseFloat(e.target.value);if(v>0){S.rates[pair()]=v;save();renderFx()}};
+$('rate').oninput=e=>{const v=parseFloat(e.target.value);if(v>0&&Number.isFinite(v)){S.rates[pair()]=S.rateDir==='o2f'?1/v:v;save();renderFx()}};
+$('rateDir').onclick=e=>{const b=e.target.closest('[data-dir]');if(!b)return;S.rateDir=b.dataset.dir;save();renderFx()};
 $('amtF').oninput=e=>{S.amt=parseFloat(e.target.value)||0;save();renderFx()};
 $('amtT').oninput=e=>{const v=parseFloat(e.target.value)||0,r=rate();if(r>0){S.amt=+(v/r).toFixed(2);save();$('amtF').value=S.amt}};
 $('logAdd').onclick=()=>{const d=$('logDate').value,r=parseFloat($('logRate').value);if(!d||!(r>0)){toast('請填日期和匯率');return}
