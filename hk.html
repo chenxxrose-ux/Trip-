@@ -67,6 +67,7 @@ ol.steps li::before{content:counter(s);width:40px;height:40px;border-radius:50%;
   display:grid;place-items:center;font-weight:800;font-size:20px}
 ol.steps li span{padding-top:4px;min-width:0}
 ol.steps b,ol.steps .key{white-space:nowrap}
+.warn{display:inline-block;margin-top:4px;color:var(--alert);font-weight:800;font-size:18px}
 .key{background:var(--alert-soft);color:var(--alert);font-weight:800;padding:0 4px;border-radius:4px}
 .note{font-size:17px;color:var(--muted);border-left:4px solid var(--line);padding-left:12px;margin:0}
 .url{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
@@ -151,9 +152,13 @@ footer{font-size:15px;color:var(--muted);text-align:center}
       <a class="btn" href="https://www.china-airlines.com/hk/zh/prepare-for-the-fly/information/check-in/online-check-in" target="_blank" rel="noopener">打開華航報到網頁</a>
       <ol class="steps">
         <li><span>按上面的<b>藍色按鈕</b></span></li>
-        <li><span>按「<b>前往報到</b>」</span></li>
-        <li><span>打 <span class="key">訂位代號</span></span></li>
-        <li><span>打<b>英文姓</b>和<b>英文名</b>（看護照）</span></li>
+        <li><span>往下滑，按「<b>前往報到</b>」<br>（不是「前往預約」）</span></li>
+        <li><span>第一格<br>打 <span class="key">訂位代號</span></span></li>
+        <li><span>第二格「名字」<br>打<b>英文名</b>（看護照）</span></li>
+        <li><span>第三格「姓氏」<br>打<b>英文姓</b>（看護照）<br><span class="warn">注意：華航是名字在前、姓在後</span></span></li>
+        <li><span>勾「<b>我已清楚閱讀</b>…」那個小方框</span></li>
+        <li><span>等黑色框框出現綠色勾勾「<b>成功</b>」</span></li>
+        <li><span>按「<b>登入</b>」</span></li>
         <li><span>選 <b>CI936</b> 這班</span></li>
         <li><span>照畫面打<b>證件資料</b></span></li>
         <li><span>看到<b>登機證</b>，馬上<b>截圖</b></span></li>
