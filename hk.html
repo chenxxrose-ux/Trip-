@@ -74,7 +74,8 @@ ol.steps b,ol.steps .key{white-space:nowrap}
 .url button{flex:none;font:inherit;font-size:15px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
 .bring{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
 .bring h2,.fail h2{font-size:24px;margin:0 0 10px}
-.count{margin:-4px 0 8px;font-weight:800;color:var(--alert);font-size:20px}
+.bring .small{margin:0 0 6px}
+.count{margin:0 0 8px;font-weight:800;color:var(--alert);font-size:20px}
 .count.done{color:var(--ok)}
 .bring label{display:flex;gap:14px;align-items:center;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
 .bring label:first-of-type{border-top:0}
@@ -101,7 +102,7 @@ footer{font-size:15px;color:var(--muted);text-align:center}
 
   <section class="alert">
     <b class="big">訂位代號 不是 Trip.com 訂單編號</b>
-    <p>要輸入的是<b>航空公司的訂位代號</b>：<b>6 碼英文加數字</b>（例如 A9B8C7，<b>這只是範例，不能照打</b>）。在 Trip.com 點進這張機票的訂單，找「航空公司訂位代號」或「PNR」。</p>
+    <p>要輸入的是<b>航空公司的訂位代號</b>：<b>6 碼英文加數字</b>（例如 A9B8C7，<b>這只是範例，不能照打</b>）。在 Trip.com 點進這張機票的訂單，找「航空公司訂位代號」或「PNR」，<b>找到就先截圖存起來</b>。</p>
     <p class="group"><b>7 個人如果分成好幾筆訂位，每一個訂位代號都要辦一次。</b>辦完要確認 7 個人都有登機證。</p>
   </section>
 
@@ -126,6 +127,7 @@ footer{font-size:15px;color:var(--muted);text-align:center}
         <li><span>拿到 <b>電子登機證</b>，馬上 <b>截圖</b>。如果畫面說要查證件，就照指示到機場櫃檯辦</span></li>
       </ol>
       <p class="note">網頁上的字可能跟這裡不完全一樣，照意思找就好。</p>
+      <p class="note">線上報到辦好，有時還是要去櫃檯：<b>托運行李、查證件、或要拿紙本登機證</b>時，照航空公司指示去櫃檯。</p>
       <div class="url"><code>https://mybooking.hkexpress.com/zh-HK/manage-my-booking/my-trips</code><button type="button" data-copy="https://mybooking.hkexpress.com/zh-HK/manage-my-booking/my-trips">複製</button></div>
     </div>
   </article>
@@ -134,7 +136,7 @@ footer{font-size:15px;color:var(--muted);text-align:center}
     <div class="head"><div class="tag">回</div><div class="t"><b>中華航空</b><span>CI936・11/25（三）</span><span>香港 → 高雄</span></div></div>
     <div class="stub">
       <div><span class="lab">起飛</span><span class="num">20:45</span><div class="small">香港機場 T1</div></div>
-      <div><span class="lab">抵達高雄</span><span class="num">22:15</span><div class="small">當地時間</div></div>
+      <div><span class="lab">抵達高雄</span><span class="num">22:15</span><div class="small">請對照華航電子機票</div></div>
     </div>
     <div class="body">
       <div class="when">
@@ -151,15 +153,18 @@ footer{font-size:15px;color:var(--muted);text-align:center}
         <li><span>拿到 <b>電子登機證</b>，馬上 <b>截圖</b>。如果畫面說要查證件，就照指示到機場櫃檯辦</span></li>
       </ol>
       <p class="note">網頁上的字可能跟這裡不完全一樣，照意思找就好。</p>
+      <p class="note">線上報到辦好，有時還是要去櫃檯：<b>托運行李、查證件、或要拿紙本登機證</b>時，照航空公司指示去櫃檯。</p>
       <div class="url"><code>https://www.china-airlines.com/hk/zh/prepare-for-the-fly/information/check-in/online-check-in</code><button type="button" data-copy="https://www.china-airlines.com/hk/zh/prepare-for-the-fly/information/check-in/online-check-in">複製</button></div>
     </div>
   </article>
 
   <section class="bring">
     <h2>出門前檢查（必帶）</h2>
-    <p class="count" id="count">已完成 0／6 項</p>
+    <p class="small">每個人自己確認自己的，勾選只記在你這支手機上，不會同步給別人。</p>
+    <p class="count" id="count">已完成 0／7 項</p>
     <label><input type="checkbox" id="c1"><span>護照</span></label>
     <label><input type="checkbox" id="c2"><span>卡式台胞證</span></label>
+    <label><input type="checkbox" id="c7"><span>截圖：Trip.com 上有「航空公司訂位代號」的頁面</span></label>
     <label><input type="checkbox" id="c3"><span>截圖：去程訂票頁</span></label>
     <label><input type="checkbox" id="c4"><span>截圖：回程訂票頁</span></label>
     <label><input type="checkbox" id="c5"><span>截圖：去程登機證</span></label>
@@ -172,7 +177,7 @@ footer{font-size:15px;color:var(--muted);text-align:center}
 <script>
 var boxes=document.querySelectorAll('.bring input');
 function count(){ var n=0; boxes.forEach(function(b){ if(b.checked) n++; });
-  var c=document.getElementById('count'); c.textContent = n===boxes.length ? '全部帶齊了 6／6' : '已完成 '+n+'／'+boxes.length+' 項，還缺 '+(boxes.length-n)+' 項';
+  var c=document.getElementById('count'); c.textContent = n===boxes.length ? '全部帶齊了 '+n+'／'+boxes.length : '已完成 '+n+'／'+boxes.length+' 項，還缺 '+(boxes.length-n)+' 項';
   c.className = n===boxes.length ? 'count done' : 'count'; }
 boxes.forEach(function(el){
   try{ el.checked = localStorage.getItem('hk-'+el.id)==='1'; }catch(e){}
@@ -183,7 +188,7 @@ document.querySelectorAll('[data-copy]').forEach(function(b){
   b.addEventListener('click',function(){
     var t=b.getAttribute('data-copy');
     function done(){ b.textContent='已複製'; setTimeout(function(){b.textContent='複製';},1500); }
-    function fallback(){ var r=document.createRange(); r.selectNodeContents(b.previousElementSibling); var s=getSelection(); s.removeAllRanges(); s.addRange(r); }
+    function fallback(){ try{ var r=document.createRange(); r.selectNodeContents(b.previousElementSibling); var s=getSelection(); s.removeAllRanges(); s.addRange(r); }catch(e){} b.textContent='請長按網址複製'; setTimeout(function(){b.textContent='複製';},4000); }
     try{ navigator.clipboard.writeText(t).then(done,fallback); }catch(e){ fallback(); }
   });
 });
