@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
+<script>
+// 在 LINE 裡點開時，改用手機預設瀏覽器開
+try{ if(/\bLine\//i.test(navigator.userAgent) && !/openExternalBrowser=1/.test(location.search)){
+  location.replace(location.origin+location.pathname+'?openExternalBrowser=1'+location.hash); } }catch(e){}
+</script>
 <title>香港線上報到</title>
 <style>
 /* 版面：單欄直式，像一疊登機證；系統字體，不載任何圖片或外部檔案 */
