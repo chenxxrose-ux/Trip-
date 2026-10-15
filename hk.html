@@ -35,6 +35,7 @@ h1{font-size:32px;line-height:1.25;margin:0;text-wrap:balance}
 .alert{background:var(--alert-soft);border:3px solid var(--alert);border-radius:16px;padding:18px}
 .alert b.big{display:block;color:var(--alert);font-size:26px;line-height:1.35;margin-bottom:8px}
 .alert p{margin:0}
+.alert p.group{margin-top:12px;padding-top:12px;border-top:1px solid var(--alert)}
 .flight{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;scroll-margin-top:12px}
 .head{background:var(--brand);color:var(--brand-ink);padding:16px 18px;display:flex;align-items:center;gap:14px}
 .tag{font-size:34px;font-weight:800;border:3px solid currentColor;border-radius:12px;width:60px;height:60px;display:grid;place-items:center;flex:none}
@@ -46,14 +47,17 @@ h1{font-size:32px;line-height:1.25;margin:0;text-wrap:balance}
 .stub>div+div{border-left:1px solid var(--line)}
 .lab{display:block;font-size:16px;color:var(--muted);letter-spacing:.05em}
 .num{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2}
+.num.sm{font-size:22px;display:block;padding-block:4px}
 .small{font-size:15px;color:var(--muted);line-height:1.4}
 .body{padding:18px;display:flex;flex-direction:column;gap:18px}
 .when{background:var(--brand-soft);border-radius:14px;padding:14px 16px}
 .when{display:flex;flex-direction:column;gap:6px}
 .when .row{display:flex;flex-direction:column;font-variant-numeric:tabular-nums;line-height:1.35}
 .when .row span{font-size:17px;color:var(--muted)}
-.when .row b{font-size:22px;white-space:nowrap}
-.tip{margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-weight:700}
+.when .row b{white-space:nowrap}
+.tip{font-size:28px;font-weight:800;line-height:1.3;color:var(--brand);padding-bottom:12px;margin-bottom:4px;border-bottom:1px solid var(--line)}
+.tip span{display:block;font-size:17px;font-weight:700;color:var(--muted)}
+.when .row b{font-size:19px}
 .btn{display:block;text-align:center;background:var(--brand);color:var(--brand-ink);text-decoration:none;font-weight:800;font-size:22px;
   padding:18px 12px;border-radius:14px}
 .btn:focus-visible,.jump a:focus-visible,button:focus-visible{outline:3px solid var(--alert);outline-offset:3px}
@@ -62,6 +66,7 @@ ol.steps li{counter-increment:s;display:grid;grid-template-columns:40px 1fr;gap:
 ol.steps li::before{content:counter(s);width:40px;height:40px;border-radius:50%;background:var(--ink);color:var(--card);
   display:grid;place-items:center;font-weight:800;font-size:20px}
 ol.steps li span{padding-top:4px;min-width:0}
+ol.steps b,ol.steps .key{white-space:nowrap}
 .key{background:var(--alert-soft);color:var(--alert);font-weight:800;padding:0 4px;border-radius:4px}
 .note{font-size:17px;color:var(--muted);border-left:4px solid var(--line);padding-left:12px;margin:0}
 .url{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
@@ -69,6 +74,8 @@ ol.steps li span{padding-top:4px;min-width:0}
 .url button{flex:none;font:inherit;font-size:15px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
 .bring{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
 .bring h2,.fail h2{font-size:24px;margin:0 0 10px}
+.count{margin:-4px 0 8px;font-weight:800;color:var(--alert);font-size:20px}
+.count.done{color:var(--ok)}
 .bring label{display:flex;gap:14px;align-items:center;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
 .bring label:first-of-type{border-top:0}
 .bring input{width:30px;height:30px;flex:none;accent-color:var(--ok)}
@@ -94,20 +101,21 @@ footer{font-size:15px;color:var(--muted);text-align:center}
 
   <section class="alert">
     <b class="big">訂位代號 不是 Trip.com 訂單編號</b>
-    <p>要輸入的是<b>航空公司的訂位代號</b>：<b>6 碼英文加數字</b>（例如 A9B8C7）。在 Trip.com 點進這張機票的訂單，找「航空公司訂位代號」或「PNR」。</p>
+    <p>要輸入的是<b>航空公司的訂位代號</b>：<b>6 碼英文加數字</b>（例如 A9B8C7，<b>這只是範例，不能照打</b>）。在 Trip.com 點進這張機票的訂單，找「航空公司訂位代號」或「PNR」。</p>
+    <p class="group"><b>7 個人如果分成好幾筆訂位，每一個訂位代號都要辦一次。</b>辦完要確認 7 個人都有登機證。</p>
   </section>
 
   <article class="flight" id="go">
     <div class="head"><div class="tag">去</div><div class="t"><b>HK Express</b><span>UO131・11/23（一）</span><span>高雄 → 香港</span></div></div>
     <div class="stub">
       <div><span class="lab">起飛</span><span class="num">10:10</span><div class="small">小港機場 國際線</div></div>
-      <div><span class="lab">登機門關閉</span><span class="num">09:40</span><div class="small">起飛前 30 分鐘</div></div>
+      <div><span class="lab">登機門關閉</span><span class="num sm">看登機證</span><div class="small">以登機證上的時間為準</div></div>
     </div>
     <div class="body">
       <div class="when">
+        <div class="tip"><span>哪天辦</span>11/22（日）晚上<br>在家辦</div>
         <div class="row"><span>最早可報到</span><b>11/21（六）10:10</b></div>
         <div class="row"><span>最晚報到</span><b>11/23（一）08:55</b></div>
-        <div class="tip">建議 11/22（日）晚上在家辦</div>
       </div>
       <a class="btn" href="https://mybooking.hkexpress.com/zh-HK/manage-my-booking/my-trips" target="_blank" rel="noopener">打開 HK Express 報到網頁</a>
       <ol class="steps">
@@ -115,7 +123,7 @@ footer{font-size:15px;color:var(--muted);text-align:center}
         <li><span>輸入 <span class="key">訂位代號</span> 和 <b>英文姓氏</b>（照護照上的拼音）</span></li>
         <li><span>找到這班 UO131，按「網上辦理登機」</span></li>
         <li><span>照畫面填證件資料</span></li>
-        <li><span>出現 <b>登機證（有 QR Code）</b>，馬上 <b>截圖</b></span></li>
+        <li><span>拿到 <b>電子登機證</b>，馬上 <b>截圖</b>。如果畫面說要查證件，就照指示到機場櫃檯辦</span></li>
       </ol>
       <p class="note">網頁上的字可能跟這裡不完全一樣，照意思找就好。</p>
       <div class="url"><code>https://mybooking.hkexpress.com/zh-HK/manage-my-booking/my-trips</code><button type="button" data-copy="https://mybooking.hkexpress.com/zh-HK/manage-my-booking/my-trips">複製</button></div>
@@ -130,9 +138,9 @@ footer{font-size:15px;color:var(--muted);text-align:center}
     </div>
     <div class="body">
       <div class="when">
+        <div class="tip"><span>哪天辦</span>11/24（二）晚上<br>在飯店辦</div>
         <div class="row"><span>最早可報到</span><b>11/23（一）20:45</b></div>
         <div class="row"><span>最晚報到</span><b>11/25（三）19:45</b></div>
-        <div class="tip">建議 11/24（二）晚上在飯店辦</div>
       </div>
       <a class="btn" href="https://www.china-airlines.com/hk/zh/prepare-for-the-fly/information/check-in/online-check-in" target="_blank" rel="noopener">打開華航報到網頁</a>
       <ol class="steps">
@@ -140,7 +148,7 @@ footer{font-size:15px;color:var(--muted);text-align:center}
         <li><span>輸入 <span class="key">訂位代號</span> 和 <b>英文姓名</b>（照護照上的拼音）</span></li>
         <li><span>選 CI936 這班</span></li>
         <li><span>照畫面填證件資料</span></li>
-        <li><span>出現 <b>登機證（有 QR Code）</b>，馬上 <b>截圖</b></span></li>
+        <li><span>拿到 <b>電子登機證</b>，馬上 <b>截圖</b>。如果畫面說要查證件，就照指示到機場櫃檯辦</span></li>
       </ol>
       <p class="note">網頁上的字可能跟這裡不完全一樣，照意思找就好。</p>
       <div class="url"><code>https://www.china-airlines.com/hk/zh/prepare-for-the-fly/information/check-in/online-check-in</code><button type="button" data-copy="https://www.china-airlines.com/hk/zh/prepare-for-the-fly/information/check-in/online-check-in">複製</button></div>
@@ -149,6 +157,7 @@ footer{font-size:15px;color:var(--muted);text-align:center}
 
   <section class="bring">
     <h2>出門前檢查（必帶）</h2>
+    <p class="count" id="count">已完成 0／6 項</p>
     <label><input type="checkbox" id="c1"><span>護照</span></label>
     <label><input type="checkbox" id="c2"><span>卡式台胞證</span></label>
     <label><input type="checkbox" id="c3"><span>截圖：去程訂票頁</span></label>
@@ -161,10 +170,15 @@ footer{font-size:15px;color:var(--muted);text-align:center}
 </div>
 
 <script>
-document.querySelectorAll('.bring input').forEach(function(el){
+var boxes=document.querySelectorAll('.bring input');
+function count(){ var n=0; boxes.forEach(function(b){ if(b.checked) n++; });
+  var c=document.getElementById('count'); c.textContent = n===boxes.length ? '全部帶齊了 6／6' : '已完成 '+n+'／'+boxes.length+' 項，還缺 '+(boxes.length-n)+' 項';
+  c.className = n===boxes.length ? 'count done' : 'count'; }
+boxes.forEach(function(el){
   try{ el.checked = localStorage.getItem('hk-'+el.id)==='1'; }catch(e){}
-  el.addEventListener('change',function(){ try{ localStorage.setItem('hk-'+el.id, el.checked?'1':'0'); }catch(e){} });
+  el.addEventListener('change',function(){ try{ localStorage.setItem('hk-'+el.id, el.checked?'1':'0'); }catch(e){} count(); });
 });
+count();
 document.querySelectorAll('[data-copy]').forEach(function(b){
   b.addEventListener('click',function(){
     var t=b.getAttribute('data-copy');
