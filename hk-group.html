@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<script>
+try{ if(/\bLine\//i.test(navigator.userAgent) && !/openExternalBrowser=1/.test(location.search)){
+  location.replace(location.origin+location.pathname+'?openExternalBrowser=1'+location.hash); } }catch(e){}
+</script>
+<title>香港三天兩夜・同行版</title>
+<style>:root{--paper:#f3f5f7;--card:#fff;--ink:#16212e;--muted:#5a6675;--line:#d5dbe2;--brand:#1d4f80;--brand-ink:#fff;--brand-soft:#e3edf7;--alert:#b3261e;--alert-soft:#fdecea;--ok:#1e6b3c;--warn-soft:#fff6e0;
+--sans:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}
+@media (prefers-color-scheme:dark){:root{--paper:#11161c;--card:#1b232c;--ink:#eef2f6;--muted:#a3afbd;--line:#33404d;--brand:#7fb2e5;--brand-ink:#0d1620;--brand-soft:#1f3347;--alert:#ff8a80;--alert-soft:#3a1e1c;--ok:#7fd3a0;--warn-soft:#3a3220;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:19px;line-height:1.6;-webkit-text-size-adjust:100%}
+.wrap{max-width:600px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+h1{font-size:34px;line-height:1.2;margin:2px 0 6px}
+h2{font-size:24px;margin:0 0 8px}
+h3{font-size:20px;margin:14px 0 6px}
+.eyebrow{margin:0;font-size:15px;color:var(--muted);letter-spacing:.06em}
+.meta{margin:0;color:var(--ink)}
+.rules{list-style:none;padding:0;margin:12px 0 0;display:flex;flex-wrap:wrap;gap:8px}
+.rules li{background:var(--brand-soft);color:var(--brand);font-weight:700;font-size:16px;padding:4px 10px;border-radius:999px}
+.legend{font-size:15px;color:var(--muted);margin:10px 0 0}
+.jump{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--paper);padding-block:6px}
+.jump a{text-align:center;padding:10px 2px;border-radius:12px;background:var(--card);border:1px solid var(--line);color:var(--ink);text-decoration:none;font-weight:700;font-size:16px;white-space:nowrap}
+.day,.card{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;scroll-margin-top:64px}
+.card{padding:18px}
+.dh{background:var(--brand);color:var(--brand-ink);display:flex;gap:14px;align-items:center;padding:14px 18px}
+.dtag{font-size:30px;font-weight:800;width:54px;height:54px;border:3px solid currentColor;border-radius:12px;display:grid;place-items:center;flex:none}
+.dh b{display:block;font-size:23px;line-height:1.3}
+.dh span{font-size:17px;opacity:.9}
+ol.tl{list-style:none;margin:0;padding:6px 18px 10px}
+ol.tl li{display:grid;grid-template-columns:116px 1fr;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+ol.tl li:first-child{border-top:0}
+ol.tl time{font-variant-numeric:tabular-nums;font-weight:700;color:var(--brand);font-size:15px;padding-top:3px;white-space:nowrap}
+ol.tl span{min-width:0}
+i.ok,i.est,i.q{font-style:normal}
+.tip{margin:0 18px 18px;background:var(--warn-soft);border-radius:12px;padding:12px 14px;font-size:17px}
+.card .tip{margin:14px 0 0}
+.plan-b{margin:0 18px 18px;border:2px solid var(--alert);border-radius:14px;padding:14px}
+.plan-b h3{margin:0 0 6px;color:var(--alert)}
+.plan-b p{margin:6px 0}
+.plan-b ul{margin:4px 0;padding-left:1.2em}
+.small{font-size:16px;color:var(--muted)}
+ul.plain{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:8px}
+.link{display:inline-block;margin-top:6px;background:var(--brand);color:var(--brand-ink);text-decoration:none;font-weight:800;padding:10px 14px;border-radius:12px}
+.rest{display:flex;flex-direction:column;gap:10px}
+.r{border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column}
+.r.done{background:var(--brand-soft)}
+.tel{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;user-select:all}
+#check label{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
+#check input{width:26px;height:26px;flex:none;margin-top:2px;accent-color:var(--ok)}
+#check input:checked+span{color:var(--ok);text-decoration:line-through}
+footer{text-align:center;font-size:15px;color:var(--muted)}
+a:focus-visible,input:focus-visible{outline:3px solid var(--alert);outline-offset:2px}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+
+.keys{background:var(--brand-soft);margin:14px 18px 4px;border-radius:14px;padding:12px 14px}
+.keys p{margin:0 0 6px;font-size:15px;font-weight:700;color:var(--muted)}
+.keys ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.keys li{display:grid;grid-template-columns:64px 1fr;gap:8px;font-weight:700}
+.keys time{font-size:22px;font-variant-numeric:tabular-nums;color:var(--brand);line-height:1.3}
+.keys span{padding-top:2px}
+em.tag{font-style:normal;font-size:14px;font-weight:700;padding:0 7px;border-radius:6px;white-space:nowrap;display:inline-block;vertical-align:2px;border:1.5px solid var(--brand);color:var(--brand)}
+em.tag.pend{border-style:dashed;border-color:var(--muted);color:var(--muted)}
+ol.tl li.flex time{color:var(--muted);font-weight:600}
+ol.tl time small{display:block;font-size:13px;font-weight:600;color:var(--muted)}
+.lg-fix{color:var(--brand)}.lg-flex{color:var(--muted)}
+.keys span small{display:block;font-size:14px;font-weight:600;color:var(--muted)}
+.keys .knote{margin:8px 0 0;font-size:15px;font-weight:400;color:var(--ink)}
+details.how{margin-top:6px}
+details.how summary{display:inline-flex;align-items:center;gap:4px;font-size:16px;font-weight:700;color:var(--brand);cursor:pointer;list-style:none;padding:4px 12px;border:1.5px solid var(--brand);border-radius:999px;min-height:32px}
+details.how summary::-webkit-details-marker{display:none}
+details.how summary::after{content:"▾"}
+details.how[open] summary::after{content:"▴"}
+details.how ol{margin:8px 0 2px;padding-left:1.3em;font-size:17px;line-height:1.55}
+details.how ol li{display:list-item;margin:0 0 6px;padding:0;border:0}
+details.how{grid-column:1/-1;margin:0 0 0 126px}
+details.how[open]{margin-left:0;background:var(--brand-soft);border-radius:12px;padding:10px 12px}
+
+ol.tl li{grid-template-columns:64px 1fr}
+.addr{background:var(--card);border:2px solid var(--brand);border-radius:16px;padding:14px 16px;margin:16px 0 0}
+.addr p{margin:0}.addr .en{font-size:17px;color:var(--muted)}
+.lost{margin:0 18px 18px;background:var(--brand-soft);border-radius:14px;padding:14px 16px}
+.lost h3{margin:0 0 6px}.lost ol{margin:0;padding-left:1.3em}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <p class="eyebrow">同行版・10/16</p>
+  <h1>香港三天兩夜</h1>
+  <p class="meta">11/23（一）～ 11/25（三）・<b>7 人</b></p>
+  <ul class="rules"><li>大家一起行動</li><li>不搭計程車</li><li>記得帶台胞證</li></ul>
+  <p class="legend">時間是大概的，<b>跟著帶路的人走就好</b>。最重要的是每天框起來的集合時間。</p>
+  <div class="addr">
+    <p><b>我們住的飯店</b></p>
+    <p><b>香港華國酒店 Hotel Benito</b></p>
+    <p>尖沙咀金馬倫道 7 號</p>
+    <p class="en">7 Cameron Road, Tsim Sha Tsui</p>
+  </div>
+</header>
+<nav class="jump" aria-label="跳到">
+  <a href="#d1">第 1 天</a><a href="#d2">第 2 天</a><a href="#d3">第 3 天</a>
+</nav>
+<section class="day" id="d1"><header class="dh"><span class="dtag">1</span><div><b>中環＋維港夜遊</b><span>11/23（一）</span></div></header><div class="keys"><p>這幾個時間不要遲到</p><ul><li><time>17:35</time><span>中環街市集合，一起走去碼頭</span></li></ul></div><ol class="tl"><li><time>10:10</time><span>高雄小港機場起飛（香港快運 UO131）</span></li><li><time>11:50</time><span>到香港機場，入境、領行李</span></li><li><time>13:15</time><span>坐機場巴士 <b>A21</b> 到飯店，車程約 1 個半小時</span></li><li><time>15:00</time><span>到飯店放行李</span></li><li><time>15:35</time><span>坐地鐵到中環</span></li><li><time>16:00</time><span><b>中環街市</b>：逛街、吃點心、休息</span></li><li><time>17:35</time><span><b>集合</b>，一起走去碼頭</span></li><li><time>18:45</time><span>坐 <b>Aqua Luna 紅帆船</b>遊維多利亞港</span></li><li><time>19:30</time><span>尖沙咀海邊看夜景，20:00 燈光秀</span></li><li><time>20:30</time><span><b>Pici</b> 吃義大利麵</span></li><li><time>21:45</time><span>走回飯店休息</span></li></ol><p class="tip">晚上會走比較多路，<b>穿好走的鞋</b>。</p></section>
+<section class="day" id="d2"><header class="dh"><span class="dtag">2</span><div><b>旺角購物日</b><span>11/24（二）</span></div></header><div class="keys"><p>這幾個時間不要遲到</p><ul><li><time>10:00</time><span>飯店出發去旺角</span></li></ul></div><ol class="tl"><li><time>08:30</time><span>起床</span></li><li><time>09:00</time><span>飯店附近吃早餐</span></li><li><time>10:00</time><span>坐地鐵到旺角</span></li><li><time>10:25</time><span><b>波鞋街</b>買鞋</span></li><li><time>11:30</time><span><b>樂天皇朝</b>吃午餐（彩色小籠包）</span></li><li><time>13:00</time><span>逛 <b>T.O.P</b>、<b>THE FOREST</b>、<b>朗豪坊</b>，中間會坐下來休息兩次</span></li><li><time>18:00</time><span><b>妹記大排檔</b>吃晚餐</span></li><li><time>19:20</time><span>旺角街上走走、拍照</span></li><li><time>19:45</time><span>坐地鐵回飯店</span></li></ol><p class="tip">想買鞋，在<b>波鞋街</b>和 <b>THE FOREST</b> 買最多選擇。下午逛街時間可以彈性調整。</p></section>
+<section class="day" id="d3"><header class="dh"><span class="dtag">3</span><div><b>尖沙咀購物＋回家</b><span>11/25（三）</span></div></header><div class="keys"><p>這幾個時間不要遲到</p><ul><li><time>08:30</time><span>退房，行李寄放飯店</span></li><li><time>14:20</time><span>停止購物</span></li><li><time>15:00</time><span>飯店集合，拿行李</span></li></ul></div><ol class="tl"><li><time>08:30</time><span>吃早餐、整理行李、<b>退房</b>（行李先寄放在飯店）</span></li><li><time>09:30</time><span>逛 <b>K11 MUSEA</b></span></li><li><time>11:05</time><span>逛 <b>The ONE</b></span></li><li><time>11:35</time><span><b>龍點心</b>吃午餐</span></li><li><time>13:00</time><span><b>海港城</b>買東西</span></li><li><time>14:20</time><span><b>停止購物</b>，走回飯店</span></li><li><time>15:00</time><span><b>飯店集合</b>，拿行李、上廁所</span></li><li><time>15:35</time><span>15:35 前到站牌，坐巴士 A21 去機場</span></li><li><time>約 17:00</time><span>到機場，辦登機、吃晚餐</span></li><li><time>20:45</time><span>起飛（中華航空 CI936），22:15 到高雄</span></li></ol><p class="tip">買的東西要放得進行李箱，<b>14:20 一定要停</b>，才來得及去機場。</p></section>
+<section class="lost">
+  <h3>走散了怎麼辦</h3>
+  <ol><li>站在原地不要亂走</li><li>打電話或 LINE 給帶路的人</li><li>真的找不到人，把上面的飯店地址拿給路人或店員看</li></ol>
+</section>
+<footer>2026/10/16 同行版</footer>
+</div>
+</body>
+</html>
