@@ -8,111 +8,93 @@
 try{ if(/\bLine\//i.test(navigator.userAgent) && !/openExternalBrowser=1/.test(location.search)){
   location.replace(location.origin+location.pathname+'?openExternalBrowser=1'+location.hash); } }catch(e){}
 </script>
-<title>香港三天兩夜・同行版</title>
-<style>:root{--paper:#f3f5f7;--card:#fff;--ink:#16212e;--muted:#5a6675;--line:#d5dbe2;--brand:#1d4f80;--brand-ink:#fff;--brand-soft:#e3edf7;--alert:#b3261e;--alert-soft:#fdecea;--ok:#1e6b3c;--warn-soft:#fff6e0;
---sans:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}
-@media (prefers-color-scheme:dark){:root{--paper:#11161c;--card:#1b232c;--ink:#eef2f6;--muted:#a3afbd;--line:#33404d;--brand:#7fb2e5;--brand-ink:#0d1620;--brand-soft:#1f3347;--alert:#ff8a80;--alert-soft:#3a1e1c;--ok:#7fd3a0;--warn-soft:#3a3220;color-scheme:dark}}
+<title>香港三天兩夜</title>
+<style>
+:root{--paper:#fbf7f2;--card:#fff;--ink:#1d2430;--muted:#5f6776;--line:#ece4da;
+--d1:#1f5a96;--d1s:#e6eef8;--d2:#d9572b;--d2s:#fdebe3;--d3:#7a4bb3;--d3s:#f0e9f9;--sans:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC",sans-serif}
+@media (prefers-color-scheme:dark){:root{--paper:#14161b;--card:#1d2028;--ink:#eef0f4;--muted:#a7adb9;--line:#2c313c;
+--d1:#7fb2e5;--d1s:#1c2c3f;--d2:#ff9a73;--d2s:#3a2219;--d3:#c3a0ef;--d3s:#2b2238;color-scheme:dark}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:19px;line-height:1.6;-webkit-text-size-adjust:100%}
-.wrap{max-width:600px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
-h1{font-size:34px;line-height:1.2;margin:2px 0 6px}
-h2{font-size:24px;margin:0 0 8px}
-h3{font-size:20px;margin:14px 0 6px}
-.eyebrow{margin:0;font-size:15px;color:var(--muted);letter-spacing:.06em}
-.meta{margin:0;color:var(--ink)}
-.rules{list-style:none;padding:0;margin:12px 0 0;display:flex;flex-wrap:wrap;gap:8px}
-.rules li{background:var(--brand-soft);color:var(--brand);font-weight:700;font-size:16px;padding:4px 10px;border-radius:999px}
-.legend{font-size:15px;color:var(--muted);margin:10px 0 0}
-.jump{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;position:sticky;top:env(safe-area-inset-top,0px);z-index:2;background:var(--paper);padding-block:6px}
-.jump a{text-align:center;padding:10px 2px;border-radius:12px;background:var(--card);border:1px solid var(--line);color:var(--ink);text-decoration:none;font-weight:700;font-size:16px;white-space:nowrap}
-.day,.card{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;scroll-margin-top:64px}
-.card{padding:18px}
-.dh{background:var(--brand);color:var(--brand-ink);display:flex;gap:14px;align-items:center;padding:14px 18px}
-.dtag{font-size:30px;font-weight:800;width:54px;height:54px;border:3px solid currentColor;border-radius:12px;display:grid;place-items:center;flex:none}
-.dh b{display:block;font-size:23px;line-height:1.3}
-.dh span{font-size:17px;opacity:.9}
-ol.tl{list-style:none;margin:0;padding:6px 18px 10px}
-ol.tl li{display:grid;grid-template-columns:116px 1fr;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
-ol.tl li:first-child{border-top:0}
-ol.tl time{font-variant-numeric:tabular-nums;font-weight:700;color:var(--brand);font-size:15px;padding-top:3px;white-space:nowrap}
-ol.tl span{min-width:0}
-i.ok,i.est,i.q{font-style:normal}
-.tip{margin:0 18px 18px;background:var(--warn-soft);border-radius:12px;padding:12px 14px;font-size:17px}
-.card .tip{margin:14px 0 0}
-.plan-b{margin:0 18px 18px;border:2px solid var(--alert);border-radius:14px;padding:14px}
-.plan-b h3{margin:0 0 6px;color:var(--alert)}
-.plan-b p{margin:6px 0}
-.plan-b ul{margin:4px 0;padding-left:1.2em}
-.small{font-size:16px;color:var(--muted)}
-ul.plain{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:8px}
-.link{display:inline-block;margin-top:6px;background:var(--brand);color:var(--brand-ink);text-decoration:none;font-weight:800;padding:10px 14px;border-radius:12px}
-.rest{display:flex;flex-direction:column;gap:10px}
-.r{border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column}
-.r.done{background:var(--brand-soft)}
-.tel{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;user-select:all}
-#check label{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
-#check input{width:26px;height:26px;flex:none;margin-top:2px;accent-color:var(--ok)}
-#check input:checked+span{color:var(--ok);text-decoration:line-through}
-footer{text-align:center;font-size:15px;color:var(--muted)}
-a:focus-visible,input:focus-visible{outline:3px solid var(--alert);outline-offset:2px}
-@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
-
-.keys{background:var(--brand-soft);margin:14px 18px 4px;border-radius:14px;padding:12px 14px}
-.keys p{margin:0 0 6px;font-size:15px;font-weight:700;color:var(--muted)}
-.keys ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
-.keys li{display:grid;grid-template-columns:64px 1fr;gap:8px;font-weight:700}
-.keys time{font-size:22px;font-variant-numeric:tabular-nums;color:var(--brand);line-height:1.3}
-.keys span{padding-top:2px}
-em.tag{font-style:normal;font-size:14px;font-weight:700;padding:0 7px;border-radius:6px;white-space:nowrap;display:inline-block;vertical-align:2px;border:1.5px solid var(--brand);color:var(--brand)}
-em.tag.pend{border-style:dashed;border-color:var(--muted);color:var(--muted)}
-ol.tl li.flex time{color:var(--muted);font-weight:600}
-ol.tl time small{display:block;font-size:13px;font-weight:600;color:var(--muted)}
-.lg-fix{color:var(--brand)}.lg-flex{color:var(--muted)}
-.keys span small{display:block;font-size:14px;font-weight:600;color:var(--muted)}
-.keys .knote{margin:8px 0 0;font-size:15px;font-weight:400;color:var(--ink)}
-details.how{margin-top:6px}
-details.how summary{display:inline-flex;align-items:center;gap:4px;font-size:16px;font-weight:700;color:var(--brand);cursor:pointer;list-style:none;padding:4px 12px;border:1.5px solid var(--brand);border-radius:999px;min-height:32px}
-details.how summary::-webkit-details-marker{display:none}
-details.how summary::after{content:"▾"}
-details.how[open] summary::after{content:"▴"}
-details.how ol{margin:8px 0 2px;padding-left:1.3em;font-size:17px;line-height:1.55}
-details.how ol li{display:list-item;margin:0 0 6px;padding:0;border:0}
-details.how{grid-column:1/-1;margin:0 0 0 126px}
-details.how[open]{margin-left:0;background:var(--brand-soft);border-radius:12px;padding:10px 12px}
-
-ol.tl li{grid-template-columns:64px 1fr}
-.addr{background:var(--card);border:2px solid var(--brand);border-radius:16px;padding:14px 16px;margin:16px 0 0}
-.addr p{margin:0}.addr .en{font-size:17px;color:var(--muted)}
-.lost{margin:0 18px 18px;background:var(--brand-soft);border-radius:14px;padding:14px 16px}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:18px;line-height:1.55;-webkit-text-size-adjust:100%}
+.wrap{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+.hero{text-align:center;padding:10px 0 4px}
+.hero .big{font-size:44px;line-height:1}
+.hero h1{font-size:34px;margin:8px 0 4px;letter-spacing:.02em}
+.hero .sub{margin:0;color:var(--muted)}
+.count{display:inline-block;margin:14px 0 4px;background:var(--d2);color:#fff;font-weight:800;border-radius:999px;padding:6px 16px;font-size:18px}
+@media (prefers-color-scheme:dark){.count{color:#1d2430}}
+.rules{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;list-style:none;padding:0;margin:14px 0 0}
+.rules li{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:16px;font-weight:700}
+.addr{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px;margin:18px 0 0;display:flex;gap:12px;align-items:flex-start}
+.addr{text-align:left}.addr .lab{font-size:14px;color:var(--muted);font-weight:700}
+.eat small{display:block;font-size:13px;color:var(--c);font-weight:800;letter-spacing:.05em}
+.addr .ic{font-size:28px;line-height:1.2}.addr p{margin:0}.addr .en{font-size:16px;color:var(--muted)}
+.jump{position:sticky;top:0;z-index:5;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 0;background:var(--paper)}
+.jump a{text-align:center;text-decoration:none;font-weight:800;border-radius:12px;padding:10px 0;color:#fff}
+.jump a:nth-child(1){background:var(--d1)}.jump a:nth-child(2){background:var(--d2)}.jump a:nth-child(3){background:var(--d3)}
+@media (prefers-color-scheme:dark){.jump a{color:#14161b}}
+.gday{background:var(--card);border-radius:22px;overflow:hidden;margin:14px 0 22px;border:1px solid var(--line);scroll-margin-top:70px}
+.gday header{padding:18px 18px 16px;color:#fff;background:var(--c)}
+@media (prefers-color-scheme:dark){.gday header{color:#14161b}}
+.gday .dn{font-size:14px;font-weight:800;letter-spacing:.15em;opacity:.85}
+.gday h2{margin:2px 0 0;font-size:26px;line-height:1.3}.gday header p{margin:2px 0 0;opacity:.9}
+.d1{--c:var(--d1);--s:var(--d1s)}.d2{--c:var(--d2);--s:var(--d2s)}.d3{--c:var(--d3);--s:var(--d3s)}
+.eat{margin:14px 16px 0;background:var(--s);border-radius:12px;padding:10px 14px;font-weight:700}
+.must{margin:10px 16px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.must .mt{font-weight:800;color:var(--c);font-size:16px}
+.pill{border:2px solid var(--c);border-radius:999px;padding:2px 10px;font-size:16px}
+.pill b{color:var(--c);font-variant-numeric:tabular-nums}
+ol.gl{list-style:none;margin:8px 0 0;padding:0 16px 6px}
+ol.gl li{display:grid;grid-template-columns:62px 40px 1fr;align-items:start;gap:4px;padding:12px 0;border-top:1px solid var(--line)}
+ol.gl li:first-child{border-top:0}
+ol.gl time{font-size:15px;font-weight:800;color:var(--c);font-variant-numeric:tabular-nums;white-space:nowrap;padding-top:3px}
+.em{font-style:normal;font-size:24px;line-height:1.2;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--s);border-radius:50%}
+ol.gl div b{display:block;font-size:19px}
+ol.gl div span{display:block;font-size:16px;color:var(--muted)}
+.gtip{margin:4px 16px 16px;background:var(--s);border-radius:12px;padding:10px 14px;font-size:16px}
+.lost{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px 16px}
 .lost h3{margin:0 0 6px}.lost ol{margin:0;padding-left:1.3em}
+footer{text-align:center;color:var(--muted);font-size:14px;margin-top:22px}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header class="top">
-  <p class="eyebrow">同行版・10/16</p>
+<header class="hero">
+  <div class="big">🇭🇰</div>
   <h1>香港三天兩夜</h1>
-  <p class="meta">11/23（一）～ 11/25（三）・<b>7 人</b></p>
-  <ul class="rules"><li>大家一起行動</li><li>不搭計程車</li><li>記得帶台胞證</li></ul>
-  <p class="legend">時間是大概的，<b>跟著帶路的人走就好</b>。最重要的是每天框起來的集合時間。</p>
-  <div class="addr">
-    <p><b>我們住的飯店</b></p>
-    <p><b>香港華國酒店 Hotel Benito</b></p>
+  <p class="sub">11/23（一）～ 11/25（三）・我們 7 個人</p>
+  <div class="count" id="cd">11/23 出發！</div>
+  <ul class="rules"><li>👫 大家一起走</li><li>🪪 帶台胞證</li><li>👟 穿好走的鞋</li></ul>
+  <div class="addr"><span class="ic">🏨</span><div>
+    <p class="lab">我們住這裡</p><p><b>香港華國酒店</b></p><p><b>Hotel Benito</b></p>
     <p>尖沙咀金馬倫道 7 號</p>
-    <p class="en">7 Cameron Road, Tsim Sha Tsui</p>
-  </div>
+    <p class="en">7 Cameron Road, Tsim Sha Tsui</p></div></div>
 </header>
-<nav class="jump" aria-label="跳到">
-  <a href="#d1">第 1 天</a><a href="#d2">第 2 天</a><a href="#d3">第 3 天</a>
-</nav>
-<section class="day" id="d1"><header class="dh"><span class="dtag">1</span><div><b>中環＋維港夜遊</b><span>11/23（一）</span></div></header><div class="keys"><p>這幾個時間不要遲到</p><ul><li><time>17:35</time><span>中環街市集合，一起走去碼頭</span></li></ul></div><ol class="tl"><li><time>10:10</time><span>高雄小港機場起飛（香港快運 UO131）</span></li><li><time>11:50</time><span>到香港機場，入境、領行李</span></li><li><time>13:15</time><span>坐機場巴士 <b>A21</b> 到飯店，車程約 1 個半小時</span></li><li><time>15:00</time><span>到飯店放行李</span></li><li><time>15:35</time><span>坐地鐵到中環</span></li><li><time>16:00</time><span><b>中環街市</b>：逛街、吃點心、休息</span></li><li><time>17:35</time><span><b>集合</b>，一起走去碼頭</span></li><li><time>18:45</time><span>坐 <b>Aqua Luna 紅帆船</b>遊維多利亞港</span></li><li><time>19:30</time><span>尖沙咀海邊看夜景，20:00 燈光秀</span></li><li><time>20:30</time><span><b>Pici</b> 吃義大利麵</span></li><li><time>21:45</time><span>走回飯店休息</span></li></ol><p class="tip">晚上會走比較多路，<b>穿好走的鞋</b>。</p></section>
-<section class="day" id="d2"><header class="dh"><span class="dtag">2</span><div><b>旺角購物日</b><span>11/24（二）</span></div></header><div class="keys"><p>這幾個時間不要遲到</p><ul><li><time>10:00</time><span>飯店出發去旺角</span></li></ul></div><ol class="tl"><li><time>08:30</time><span>起床</span></li><li><time>09:00</time><span>飯店附近吃早餐</span></li><li><time>10:00</time><span>坐地鐵到旺角</span></li><li><time>10:25</time><span><b>波鞋街</b>買鞋</span></li><li><time>11:30</time><span><b>樂天皇朝</b>吃午餐（彩色小籠包）</span></li><li><time>13:00</time><span>逛 <b>T.O.P</b>、<b>THE FOREST</b>、<b>朗豪坊</b>，中間會坐下來休息兩次</span></li><li><time>18:00</time><span><b>妹記大排檔</b>吃晚餐</span></li><li><time>19:20</time><span>旺角街上走走、拍照</span></li><li><time>19:45</time><span>坐地鐵回飯店</span></li></ol><p class="tip">想買鞋，在<b>波鞋街</b>和 <b>THE FOREST</b> 買最多選擇。下午逛街時間可以彈性調整。</p></section>
-<section class="day" id="d3"><header class="dh"><span class="dtag">3</span><div><b>尖沙咀購物＋回家</b><span>11/25（三）</span></div></header><div class="keys"><p>這幾個時間不要遲到</p><ul><li><time>08:30</time><span>退房，行李寄放飯店</span></li><li><time>14:20</time><span>停止購物</span></li><li><time>15:00</time><span>飯店集合，拿行李</span></li></ul></div><ol class="tl"><li><time>08:30</time><span>吃早餐、整理行李、<b>退房</b>（行李先寄放在飯店）</span></li><li><time>09:30</time><span>逛 <b>K11 MUSEA</b></span></li><li><time>11:05</time><span>逛 <b>The ONE</b></span></li><li><time>11:35</time><span><b>龍點心</b>吃午餐</span></li><li><time>13:00</time><span><b>海港城</b>買東西</span></li><li><time>14:20</time><span><b>停止購物</b>，走回飯店</span></li><li><time>15:00</time><span><b>飯店集合</b>，拿行李、上廁所</span></li><li><time>15:35</time><span>15:35 前到站牌，坐巴士 A21 去機場</span></li><li><time>約 17:00</time><span>到機場，辦登機、吃晚餐</span></li><li><time>20:45</time><span>起飛（中華航空 CI936），22:15 到高雄</span></li></ol><p class="tip">買的東西要放得進行李箱，<b>14:20 一定要停</b>，才來得及去機場。</p></section>
+<nav class="jump" aria-label="跳到"><a href="#d1">DAY 1</a><a href="#d2">DAY 2</a><a href="#d3">DAY 3</a></nav>
+<section class="gday d1" id="d1">
+<header><span class="dn">DAY 1</span><h2>坐紅帆船看夜景</h2><p>11/23（一）・中環＋維多利亞港</p></header>
+<div class="eat"><small>今天吃什麼</small>🥟 中環街市點心、🍝 Pici 義大利麵</div>
+<div class="must"><span class="mt">⏰ 不要遲到</span><span class="pill"><b>17:35</b> 中環街市集合</span></div>
+<ol class="gl"><li><time>10:10</time><i class="em">✈️</i><div><b>小港起飛！</b><span>香港快運 UO131，飛 1 個多小時就到</span></div></li><li><time>11:50</time><i class="em">🛬</i><div><b>抵達香港</b><span>入境、領行李，買張八達通</span></div></li><li><time>13:15</time><i class="em">🚌</i><div><b>坐雙層巴士 A21</b><span>坐上層最前面，一路看風景進市區</span></div></li><li><time>15:00</time><i class="em">🏨</i><div><b>飯店放行李</b><span>Hotel Benito，就在尖沙咀最熱鬧的地方</span></div></li><li><time>15:35</time><i class="em">🚇</i><div><b>坐地鐵過海到中環</b><span>只要坐 2 站</span></div></li><li><time>16:00</time><i class="em">🏛️</i><div><b>中環街市</b><span>老街市改成的美食市集，逛逛、吃點心、坐著休息</span></div></li><li><time>17:35</time><i class="em">📣</i><div><b>集合！一起走去碼頭</b><span>這個時間要準時喔</span></div></li><li><time>18:45</time><i class="em">⛵</i><div><b>坐紅帆船 Aqua Luna</b><span>紅色帆的復古中式帆船，在海上看香港夜景</span></div></li><li><time>19:30</time><i class="em">🌃</i><div><b>海邊看夜景</b><span>20:00 有燈光秀，兩岸大樓一起打燈</span></div></li><li><time>20:30</time><i class="em">🍝</i><div><b>Pici 吃義大利麵</b><span>現做的手工義大利麵</span></div></li><li><time>21:45</time><i class="em">😴</i><div><b>走回飯店</b><span>第一天辛苦了</span></div></li></ol><p class="gtip">時間都是大概的，<b>跟著帶路的人走就好</b> 😊</p></section>
+<section class="gday d2" id="d2">
+<header><span class="dn">DAY 2</span><h2>買鞋＋吃吃吃</h2><p>11/24（二）・旺角</p></header>
+<div class="eat"><small>今天吃什麼</small>🥟 八色小籠包、🔥 大排檔熱炒</div>
+<div class="must"><span class="mt">⏰ 不要遲到</span><span class="pill"><b>10:00</b> 飯店出發</span></div>
+<ol class="gl"><li><time>09:00</time><i class="em">🥐</i><div><b>飯店附近吃早餐</b><span>睡飽再出門</span></div></li><li><time>10:00</time><i class="em">🚇</i><div><b>坐地鐵到旺角</b><span>坐 3 站</span></div></li><li><time>10:25</time><i class="em">👟</i><div><b>波鞋街</b><span>一整條街都是球鞋店，想買鞋的衝！</span></div></li><li><time>11:30</time><i class="em">🥟</i><div><b>樂天皇朝</b><span>招牌是八種顏色的小籠包，拍照很好看</span></div></li><li><time>13:00</time><i class="em">🛍️</i><div><b>T.O.P、THE FOREST、朗豪坊</b><span>三個商場慢慢逛，中間會坐下來休息兩次</span></div></li><li><time>18:00</time><i class="em">🔥</i><div><b>妹記大排檔</b><span>港式熱炒，熱鬧的香港味</span></div></li><li><time>19:20</time><i class="em">📸</i><div><b>旺角街頭拍照</b><span>滿街霓虹招牌，最有香港感</span></div></li><li><time>19:45</time><i class="em">🚇</i><div><b>坐地鐵回飯店</b><span>回去整理戰利品</span></div></li></ol><p class="gtip">想買鞋就在 <b>波鞋街</b> 和 <b>THE FOREST</b> 買，選擇最多 👟</p></section>
+<section class="gday d3" id="d3">
+<header><span class="dn">DAY 3</span><h2>最後衝刺買買買</h2><p>11/25（三）・尖沙咀＋回家</p></header>
+<div class="eat"><small>今天吃什麼</small>🥢 龍點心港式點心</div>
+<div class="must"><span class="mt">⏰ 不要遲到</span><span class="pill"><b>08:30</b> 退房</span><span class="pill"><b>14:20</b> 停止購物</span><span class="pill"><b>15:00</b> 飯店集合</span></div>
+<ol class="gl"><li><time>08:30</time><i class="em">🧳</i><div><b>退房</b><span>吃早餐、整理行李，行李先寄放飯店</span></div></li><li><time>09:30</time><i class="em">🎨</i><div><b>K11 MUSEA</b><span>海邊的藝術購物中心，建築本身就很好拍</span></div></li><li><time>11:05</time><i class="em">🏬</i><div><b>The ONE</b><span>快速逛一圈</span></div></li><li><time>11:35</time><i class="em">🥢</i><div><b>龍點心</b><span>港式點心吃到飽足</span></div></li><li><time>13:00</time><i class="em">🛍️</i><div><b>海港城</b><span>最後衝刺！香港超大購物中心</span></div></li><li><time>14:20</time><i class="em">⏰</i><div><b>停止購物！</b><span>走回飯店，這個時間一定要停</span></div></li><li><time>15:00</time><i class="em">📣</i><div><b>飯店集合</b><span>拿行李、上廁所</span></div></li><li><time>15:35</time><i class="em">🚌</i><div><b>坐 A21 去機場</b><span>15:35 前到站牌</span></div></li><li><time>17:00</time><i class="em">🛫</i><div><b>到機場（大約）</b><span>辦登機、吃晚餐、買伴手禮</span></div></li><li><time>20:45</time><i class="em">🏠</i><div><b>飛回高雄</b><span>中華航空 CI936，22:15 到家</span></div></li></ol><p class="gtip">買的東西要塞得進行李箱喔 🧳</p></section>
 <section class="lost">
-  <h3>走散了怎麼辦</h3>
-  <ol><li>站在原地不要亂走</li><li>打電話或 LINE 給帶路的人</li><li>真的找不到人，把上面的飯店地址拿給路人或店員看</li></ol>
+  <h3>🙋 走散了怎麼辦</h3>
+  <ol><li>站在原地不要亂走</li><li>打電話或 LINE 給帶路的人</li><li>真的找不到人，把上面的飯店地址給路人或店員看</li></ol>
 </section>
 <footer>2026/10/16 同行版</footer>
 </div>
+<script>
+try{var d=new Date(),t=new Date(2026,10,23),n=Math.ceil((t-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5),e=document.getElementById('cd');
+if(n>0)e.textContent='✈️ 還有 '+n+' 天出發！';else if(n>-3)e.textContent='🎉 香港玩起來！';else e.textContent='🏠 平安回家，下次再一起玩！';}catch(x){}
+</script>
 </body>
 </html>
