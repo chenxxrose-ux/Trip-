@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<script>
+// 在 LINE 裡點開時，改用手機預設瀏覽器開
+try{ if(/\bLine\//i.test(navigator.userAgent) && !/openExternalBrowser=1/.test(location.search)){
+  location.replace(location.origin+location.pathname+'?openExternalBrowser=1'+location.hash); } }catch(e){}
+</script>
+<title>拿 Trip.com 電子收據</title>
+<style>
+/* 版面：單欄直式，像一疊登機證；系統字體，不載任何圖片或外部檔案 */
+:root{
+  --paper:#f3f5f7; --card:#ffffff; --ink:#16212e; --muted:#5a6675;
+  --line:#d5dbe2; --brand:#1d4f80; --brand-ink:#ffffff; --brand-soft:#e3edf7;
+  --alert:#b3261e; --alert-soft:#fdecea; --ok:#1e6b3c;
+  --sans:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#11161c; --card:#1b232c; --ink:#eef2f6; --muted:#a3afbd;
+  --line:#33404d; --brand:#7fb2e5; --brand-ink:#0d1620; --brand-soft:#1f3347;
+  --alert:#ff8a80; --alert-soft:#3a1e1c; --ok:#7fd3a0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#11161c; --card:#1b232c; --ink:#eef2f6; --muted:#a3afbd;
+  --line:#33404d; --brand:#7fb2e5; --brand-ink:#0d1620; --brand-soft:#1f3347;
+  --alert:#ff8a80; --alert-soft:#3a1e1c; --ok:#7fd3a0; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:20px;line-height:1.6;-webkit-text-size-adjust:100%}
+.wrap{max-width:560px;margin:0 auto;padding-block:20px 48px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:20px}
+h1{font-size:32px;line-height:1.25;margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:4px 0 0;font-size:18px}
+.jump{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.jump a{display:block;text-align:center;padding:14px 8px;border-radius:14px;background:var(--card);border:2px solid var(--line);
+  color:var(--ink);text-decoration:none;font-weight:700;font-size:22px}
+.alert{background:var(--alert-soft);border:3px solid var(--alert);border-radius:16px;padding:18px}
+.alert b.big{display:block;color:var(--alert);font-size:26px;line-height:1.35;margin-bottom:8px}
+.alert p{margin:0}
+.alert p.group{margin-top:12px;padding-top:12px;border-top:1px solid var(--alert)}
+.flight{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;scroll-margin-top:12px}
+.head{background:var(--brand);color:var(--brand-ink);padding:16px 18px;display:flex;align-items:center;gap:14px}
+.tag{font-size:34px;font-weight:800;border:3px solid currentColor;border-radius:12px;width:60px;height:60px;display:grid;place-items:center;flex:none}
+.head .t{min-width:0}
+.head .t b{display:block;font-size:24px;line-height:1.3}
+.head .t span{font-size:17px;opacity:.9;display:block}
+.stub{display:grid;grid-template-columns:1fr 1fr;border-bottom:2px dashed var(--line)}
+.stub>div{padding:14px 18px;min-width:0}
+.stub>div+div{border-left:1px solid var(--line)}
+.lab{display:block;font-size:16px;color:var(--muted);letter-spacing:.05em}
+.num{font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2}
+.num.sm{font-size:22px;display:block;padding-block:4px}
+.small{font-size:15px;color:var(--muted);line-height:1.4}
+.body{padding:18px;display:flex;flex-direction:column;gap:18px}
+.when{background:var(--brand-soft);border-radius:14px;padding:14px 16px}
+.when{display:flex;flex-direction:column;gap:6px}
+.when .row{display:flex;flex-direction:column;font-variant-numeric:tabular-nums;line-height:1.35}
+.when .row span{font-size:17px;color:var(--muted)}
+.when .row b{white-space:nowrap}
+.tip{font-size:28px;font-weight:800;line-height:1.3;color:var(--brand);padding-bottom:12px;margin-bottom:4px;border-bottom:1px solid var(--line)}
+.tip .sub2{font-size:20px;color:var(--brand);font-weight:700;display:inline}
+.tip span{display:block;font-size:17px;font-weight:700;color:var(--muted)}
+.when .row b{font-size:19px}
+.btn{display:block;text-align:center;background:var(--brand);color:var(--brand-ink);text-decoration:none;font-weight:800;font-size:22px;
+  padding:18px 12px;border-radius:14px}
+.btn:focus-visible,.jump a:focus-visible,button:focus-visible{outline:3px solid var(--alert);outline-offset:3px}
+ol.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;counter-reset:s}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:start}
+ol.steps li::before{content:counter(s);width:40px;height:40px;border-radius:50%;background:var(--ink);color:var(--card);
+  display:grid;place-items:center;font-weight:800;font-size:20px}
+ol.steps li span{padding-top:4px;min-width:0}
+ol.steps b,ol.steps .key{white-space:nowrap}
+.warn{display:inline-block;margin-top:4px;color:var(--alert);font-weight:800;font-size:18px}
+.key{background:var(--alert-soft);color:var(--alert);font-weight:800;padding:0 4px;border-radius:4px}
+.note{font-size:17px;color:var(--muted);border-left:4px solid var(--line);padding-left:12px;margin:0}
+.url{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
+.url code{flex:1;min-width:0;overflow-wrap:anywhere;user-select:all}
+.url button{flex:none;font:inherit;font-size:15px;padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.bring{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.bring h2,.fail h2{font-size:24px;margin:0 0 10px}
+.bring .small{margin:0 0 6px}
+.count{margin:0 0 8px;font-weight:800;color:var(--alert);font-size:20px}
+.count.done{color:var(--ok)}
+.bring label{display:flex;gap:14px;align-items:center;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
+.bring label:first-of-type{border-top:0}
+.bring input{width:30px;height:30px;flex:none;accent-color:var(--ok)}
+.bring input:checked+span{color:var(--ok);text-decoration:line-through}
+.fail{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.fail p{margin:0}
+footer{font-size:15px;color:var(--muted);text-align:center}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+
+.stepcard{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.stepcard h2{font-size:24px;margin:0;display:flex;gap:10px;align-items:center}
+.stepcard h2 i{font-style:normal;flex:none;font-size:15px;font-weight:800;background:var(--brand);color:var(--brand-ink);border-radius:999px;padding:3px 10px}
+.done{background:var(--brand-soft);border-radius:18px;padding:18px}
+.done h2{font-size:24px;margin:0 0 8px}
+.done p{margin:0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>拿 Trip.com 電子收據</h1>
+    <p class="sub">給你們兩位：入境香港如果被問，拿出這份收據就好。照著一步一步做，大約 3 分鐘。</p>
+  </header>
+
+  <section class="alert">
+    <b class="big">要用你們自己的 Trip.com</b>
+    <p>你們的機票是<b>另外訂的</b>，要用<b>當初訂票的那支手機、那個 Trip.com 帳號</b>來拿。收據會寄到<b>訂票時填的電子信箱</b>。</p>
+  </section>
+
+  <article class="stepcard">
+    <h2><i>第 1 段</i>在 Trip.com 申請收據</h2>
+    <ol class="steps">
+      <li><span>打開 <b>Trip.com App</b></span></li>
+      <li><span>按最下面的「<b>我的行程</b>」</span></li>
+      <li><span>按<b>香港</b>這趟行程</span></li>
+      <li><span>按寫著「<b>已出票</b>」的那張訂單</span></li>
+      <li><span>往下滑，按「<b>管理我的訂單</b>」</span></li>
+      <li><span>按「<b>取得電子收據</b>」</span></li>
+      <li><span>訂單已經打勾，<br>按「<b>下一步</b>」</span></li>
+      <li><span>選「<span class="key">個人</span>」<br>（不要選公司）</span></li>
+      <li><span>信箱會自己填好，<br>按「<b>傳送</b>」</span></li>
+      <li><span>看到「<b>完成！</b>」<br>再按「<b>知道了</b>」</span></li>
+    </ol>
+  </article>
+
+  <article class="stepcard">
+    <h2><i>第 2 段</i>到信箱存下來</h2>
+    <ol class="steps">
+      <li><span>打開<b>收信的 App</b><br>（例如 Gmail）</span></li>
+      <li><span>找 Trip.com 寄來的<br>「<b>您的電子收據</b>」</span></li>
+      <li><span>滑到最下面，按附件<br>「<b>電子收據.pdf</b>」</span></li>
+      <li><span>按右上角「<b>分享</b>」</span></li>
+      <li><span>按「<b>儲存到檔案</b>」</span></li>
+      <li><span>按「<b>儲存</b>」</span></li>
+    </ol>
+    <p class="note">沒收到信？等幾分鐘，再看<b>垃圾郵件</b>。</p>
+    <p class="note">畫面上的字可能不太一樣，意思對就好。</p>
+  </article>
+
+  <section class="done">
+    <h2>最後一步：截圖放相簿</h2>
+    <p>打開 PDF，翻到<b>英文那一頁</b>，<b>截圖</b>。在香港機場沒網路也拿得出來。</p>
+  </section>
+
+  <section class="fail">
+    <h2>注意</h2>
+    <p>收據上有<b>訂位代號和名字</b>，<b>不要貼到群組或網路上</b>。</p>
+  </section>
+
+  <footer>香港行程・11/23–11/25</footer>
+</div>
+
+</body>
+</html>
